@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+/**	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+ *   - see license.txt for details.
+ *
+ *  Description:
+ *     navTrail css file.
+ *     
+ */
+ 
+ .ss-navigation-trail {
+ 	background-color:rgb(227, 227, 227);
+ 	padding:5px;
+ }
+ 

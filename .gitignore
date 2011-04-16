@@ -1,0 +1,18 @@
+
+# Eclipse related files. #
+Servers/
+.metadata/
+.settings/
+.project
+.classpath
+
+# Java compilation files. #
+build/
+bin/
+
+# Git related files. #
+*.orig
+
+# Editor bread crumbs. #
+*~
+

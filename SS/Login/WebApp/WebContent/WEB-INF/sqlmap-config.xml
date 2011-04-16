@@ -1,0 +1,26 @@
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Ibatis SQL map configuration.
+-->
+<sqlMapConfig>
+	<properties resource="sql-dialect.properties"/>
+	
+	<typeHandler javaType="java.lang.Object" jdbcType="BLOB"
+		callback="ca.sciencestudio.util.sql.ibatis.BlobToObjectTypeHandlerCallback"/>
+	
+	<sqlMap resource="ca/sciencestudio/model/person/dao/ibatis/maps/Person.xml"/>
+	
+	<sqlMap resource="ca/sciencestudio/login/model/dao/ibatis/maps/Account.xml"/>
+	<sqlMap resource="ca/sciencestudio/login/model/dao/ibatis/maps/LoginRole.xml"/>
+	<sqlMap resource="ca/sciencestudio/login/model/dao/ibatis/maps/LoginGroup.xml"/>
+	<sqlMap resource="ca/sciencestudio/login/model/dao/ibatis/maps/LoginGroupMember.xml"/>
+	<sqlMap resource="ca/sciencestudio/login/model/dao/ibatis/maps/LoginSession.xml"/>
+	
+	<sqlMap resource="ca/sciencestudio/model/project/dao/ibatis/maps/ProjectPerson.xml"/>
+	
+</sqlMapConfig>

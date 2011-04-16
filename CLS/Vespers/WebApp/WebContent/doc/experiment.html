@@ -1,0 +1,70 @@
+<html>
+<head>
+</head>
+<body>
+<h1>Setting Up Experiment</h1>
+
+<h3>Setting Up Experiment</h3>
+
+<p>Join active session [link to Joining a Session]. Create/add experiment under session folder [link]. Go to Experiment Setup tab 
+window and view image of loaded sample [link to Loading a Sample]. Choose experiment from the dropdown experiment list. Move 
+sample stage to view sample [link to Moving Sample Stage]. Look for any fiducial markings you may have put on the sample in order 
+to help you locate the sample area you want to analyse. Move the sample stage so that the feature you want to test during setup 
+is located in the centre of the image, under the green spot marking the x-ray beam position on the sample.</p>
+
+<p>Before running an experiment, you need to set or optimize the detector parameters and also determine the sample area you 
+want to analyse. The fields for detector parameter settings are accessible within the XRF tab window. Enter a time for 
+collection of a spectrum, in seconds, in the preset time field. Enter a value for maximum energy in keV. Click on the ‘Set’ 
+button to set the newly entered values.</p>
+
+<p>Click on the Start button to start the scan. The elapsed time in seconds is shown in the detector status box below, as the 
+scan progresses. Deadtime % is also shown [link for explanation]. If the deadtime is greater than 10% you should consider filtering 
+(attenuating) the incoming x-ray beam [link to section on filters]. If a filter is placed in the beam or there is a change in 
+filtering, retest the detector response. If the counts, shown in the detector status box, are too low or very high, consider 
+changing the preset time. Inspect the collected spectrum in the spectrum window. Note that spectra can be viewed in linear or log 
+scale by choosing the desired scale from the drop down list in the Plot Style box. If the spectrum is weak and the counts are low, 
+retest with a higher preset time. If the counts are high and minor peaks are apparent above the background consider retesting with a 
+smaller preset time. The collection of spectra will be faster and more efficient.</p>
+
+<p>Note that spectra collected during this testing or setup phase, while in the XRF tab window, are not saved in Science Studio and 
+will not appear in the Project Navigator tree. Spectra can, however, be saved as txt, png or xml files by clicking on the desired 
+file format in the Save Data box. Note that you may save only the current spectrum in the Spectrum window. Once you have determined 
+the optimum detector parameters, you may also test as many spots on your sample as you wish in order to determine the area you want 
+to run.</p>
+
+<p>You are now ready to start your spot, line or area scan. Go back to Experiment Setup window. If you wish to do a simple spot scan, 
+make sure that the green dot indicating the x-ray beam spot position on your sample, is located over the feature you want to analyse. 
+For a simple spot scan, also make sure that there is no red outlined rectangular box (or a red line) within the sample image view. 
+The red rectangular box or red line indicates the position of an intended area or line scan. Also, check that the Number of Points 
+for H and V read 1 for both, as this would be consistent with a spot scan.</p>
+
+<p>For a line or area scan, check the value for the x-ray beam spot size. Enter the step scan size in mm in the Step Size field 
+[link to Setting scan step size]. Define the line or area that you wish to scan [link to Defining a Scan Region]. As you are defining
+the scan region, you will see the values for Number of Points for H and V change as the size of the region is changed 
+[increased or decreased]. The total number of points in the defined scan region can be calculated (#pts. H x #pts. V). Knowing 
+the preset time for XRF data collection will also allow you to estimate the time it will take to collect the scan region. Note that 
+collection of scan point data is greater that the preset time as the collection of a scan point involves moving the stage to a new 
+sample position, allowing the stage movement to settle and then collecting the scan with the detector, repeat, etc.</p>
+
+
+<h3>Starting Experiment</h3>
+
+<p>Once the experiment has been set up [link to 'setting up experiment'], the experiment is ready to be started. To start the 
+experiment (spot/line/area scan) click on the 'Start' button on the 'Experiment Setup' page in the 'Scan Control' window on 
+the right hand side under the 'Scan Setup' window. Once the start has been activated, a small window will pop up requesting a 
+scan name. Enter a scan name with some context and click on OK.</p>
+
+<p>The sample stage will move so as to position the desired start point on the sample under the x-ray beam. The green spot on 
+the microscope image of the sample within the experiment setup window, representing the x-ray beam position, will appear to 
+move so as to coincide with the start position of the scan on the sample. Note that the system is set up to start an area scan 
+on the bottom left most point in the rectangle drawn out on the sample, representing the area to be scanned [link to Defining a 
+Scan Region]. The scanning proceeds from this bottom left most point horizontally to the right. The sample stage is rastered or 
+moved from left to right, from the bottom of the scan area towards the top most row.</p>
+
+<p>Collecting scans may be viewed in the XRF tab window for XRF scans, and images in the XRD window for Laue XRD scans. The scans 
+collected during a session will appear in the project navigator tree on the left under the associated session and experiment. At 
+the moment, scans do not appear in the tree until they have been completed. Future plans include the ability to download partial 
+scans while they are still being collected and also to view maps of the collecting scans while they are being collected.</p>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Data Access Objects configuration.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+<!-- ===================================================================
+  	-  DAOs
+  	-  =================================================================== -->
+	
+	<bean id="loginSessionDAO"
+		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginSessionDAO">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="scanDAO"
+		class="ca.sciencestudio.model.session.dao.ibatis.IbatisScanDAO">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="experimentDAO"
+		class="ca.sciencestudio.model.session.dao.ibatis.IbatisExperimentDAO">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="sessionDAO"
+		class="ca.sciencestudio.model.session.dao.ibatis.IbatisSessionDAO">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<bean id="projectDAO"
+		class="ca.sciencestudio.model.project.dao.ibatis.IbatisProjectDAO">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+		
+</beans>

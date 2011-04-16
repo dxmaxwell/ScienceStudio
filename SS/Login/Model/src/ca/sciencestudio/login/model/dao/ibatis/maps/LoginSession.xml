@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	- see license.txt for details.
+
+	Description:
+		LoginSession sql map xml file.
+-->
+
+<sqlMap namespace="LoginSession">
+
+	<resultMap class="ca.sciencestudio.login.model.LoginSession" id="loginSession">
+		<result property="id" column="login_session_id"/>
+		<result property="session" column="login_session_data" jdbcType="BLOB" javaType="java.lang.Object"/>
+		<result property="timestamp" column="login_session_timestamp" jdbcType="TIMESTAMP"/>
+	</resultMap>
+	
+	<parameterMap class="ca.sciencestudio.login.model.LoginSession" id="insertLoginSession">
+		<parameter property="id" jdbcType="VARCHAR"/>
+		<parameter property="session" jdbcType="BLOB" javaType="java.lang.Object"/>
+		<parameter property="timestamp" jdbcType="TIMESTAMP"/>
+	</parameterMap>
+	
+	<parameterMap class="ca.sciencestudio.login.model.LoginSession" id="updateLoginSession">
+		<parameter property="id" jdbcType="VARCHAR"/>
+		<parameter property="session" jdbcType="BLOB" javaType="java.lang.Object"/>
+		<parameter property="timestamp" jdbcType="TIMESTAMP"/>
+		<parameter property="id" jdbcType="VARCHAR"/>
+	</parameterMap>
+	
+	<insert id="addLoginSession" parameterMap="insertLoginSession">
+		INSERT INTO ${database}.login_session
+			(login_session_id, login_session_data, login_session_timestamp)
+		VALUES 
+			(?,?,?)
+	</insert>
+	
+	<update id="editLoginSession" parameterMap="updateLoginSession">
+		UPDATE ${database}.login_session
+		SET 
+			login_session_id = ?,
+			login_session_data = ?,
+			login_session_timestamp = ?
+		WHERE 
+			login_session_id = ?
+	</update>
+	
+	<delete id="removeLoginSession">
+		DELETE 
+			FROM ${database}.login_session
+			WHERE login_session_id = #value#
+	</delete>
+	
+	<select id="getLoginSessionById" resultMap="loginSession">
+		SELECT * 
+			FROM ${database}.login_session
+			WHERE login_session_id = #value#
+	</select>
+	
+	<select id="getLoginSessionList" resultMap="loginSession">
+		SELECT * 
+			FROM ${database}.login_session
+	</select>
+	
+</sqlMap>

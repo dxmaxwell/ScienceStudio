@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+
+	Description:
+		Configuration for device proxies.
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- Synchronize the device proxies by querying the respective devices. -->
+
+	<bean id="synchronizeDeviceProxyEventListeners"
+		class="ca.sciencestudio.device.proxy.event.SynchronizeDeviceProxyEventListeners">
+		<constructor-arg ref="jmsDeviceMessageListenerContainer"/>
+		<constructor-arg value="1000"/><!-- Milliseconds to wait for JMS to connect. -->
+	</bean>
+
+	<!-- Device Message Receiver -->
+
+	<bean id="deviceMessageRecieverProxyEventPublisher"
+		class="ca.sciencestudio.device.proxy.messaging.SimpleDeviceMessageReceiverProxyEventPublisher">
+		<constructor-arg>
+			<list>
+				<ref bean="storageRingStatusStateMap"/>
+				<ref bean="shutterStatus"/>
+				<ref bean="monoStatus"/>
+				<ref bean="mirrorStatus"/>
+				<!--<ref bean="sampleStageXYZStateMap"/>-->
+				<ref bean="sampleStageHVStateMap"/>
+				<ref bean="sampleCameraStateMap"/>
+				<ref bean="fourElementDetectorStateMap"/>
+				<!--<ref bean="vortexDetectorStateMap"/>-->
+				<ref bean="scanDeviceStateMap"/>
+				<ref bean="beamlineInformationStateMap"/>
+				<ref bean="beamlineSessionStateMap"/>
+				<!-- CCD device proxies disabled for initial release. -->
+				<!--<ref bean="ccdSetupStateMap"/>-->
+				<!--<ref bean="ccdCollectionStateMap"/>-->
+				<!--<ref bean="ccdStageStateMap"/>-->
+				<!--<ref bean="ccdFileStateMap"/>-->
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="jmsDeviceMessageReceiver"
+		class="ca.sciencestudio.device.messaging.jms.DelegatingJmsDeviceMessageReceiver">
+		<property name="deviceMessageReceiver" ref="deviceMessageRecieverProxyEventPublisher"/>
+	</bean>
+	
+	<bean id="jmsDeviceMessageListenerContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="destinationName" value="${jms.topic.subscriber}"/>
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="messageListener" ref="jmsDeviceMessageReceiver"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+	
+	<!-- Device Message Sender -->
+	
+	<bean id="jmsDeviceMessageTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="explicitQosEnabled" value="true"/>
+		<property name="deliveryPersistent" value="false"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+	
+	<bean id="deviceMessageSender" class="ca.sciencestudio.device.messaging.spring.SpringDeviceMessageSender">
+		<property name="destinationName" value="${jms.topic.publisher}"/>
+		<property name="jmsTemplate" ref="jmsDeviceMessageTemplate"/>
+	</bean>
+	
+	<!-- Device State Maps -->
+
+	<bean id="storageRingStatusStateMap"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="storageRingStatus"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<bean id="shutterStatus"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="shutterStatus"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<bean id="monoStatus"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="monoStatus"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<bean id="mirrorStatus"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="mirrorStatus"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<bean id="fourElementDetectorStateMap"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="fourElementDetector"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<!--<bean id="vortexDetectorStateMap"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="vortexDetector"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>-->
+
+	<bean id="sampleCameraStateMap"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="sampleCamera"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<bean id="sampleStageHVStateMap"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="sampleStageHV"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<!--<bean id="sampleStageXYZStateMap"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="sampleStageXYZ"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>-->
+
+	<bean id="scanDeviceStateMap"
+		class="ca.sciencestudio.vespers.device.proxy.event.ScanDeviceProxyEventListener">
+		<property name="scanDAO" ref="scanDAO"/>
+		<property name="deviceId" value="scanDevice"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<bean id="beamlineInformationStateMap"
+		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="beamlineInformation"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>
+
+	<bean id="beamlineSessionStateMap"
+		class="ca.sciencestudio.vespers.device.proxy.event.BeamlineSessionProxyEventListener">
+		<property name="deviceId" value="beamlineSession"/>
+		<property name="projectDAO" ref="projectDAO"/>
+		<property name="sessionDAO" ref="sessionDAO"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+		<!-- CCD configuration disabled for initial release. -->
+		<!--<property name="DEFAULT_XRD_MODE" value="${ccd.defaultMode}"/>-->
+		<!--<property name="DEFAULT_XRD_TRIGGER_MODE" value="${ccd.defaultTriggerMode}"/>-->
+	</bean>
+
+	<!-- CCD device proxies disabled for initial release. -->
+	
+	<!--<bean id="ccdSetupStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="ccdSetup"></property>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>-->
+
+	<!--<bean id="ccdCollectionStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="ccdCollection"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>-->
+
+	<!--<bean id="ccdStageStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="ccdStage"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>-->
+
+	<!--<bean id="ccdFileStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+		<property name="deviceId" value="ccdFile"/>
+		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+	</bean>-->
+
+
+	<!-- Axis PTZ Video Cameras -->
+
+	<bean id="camera101"
+		class="ca.sciencestudio.vespers.device.camera.axis.AxisHttpPTZCamera">
+		<property name="name" value="camera101"/>
+		<property name="baseUrl" value="http://camera-101"/>
+	</bean>
+
+	<bean id="camera201"
+		class="ca.sciencestudio.vespers.device.camera.axis.AxisHttpPTZCamera">
+		<property name="name" value="camera201"/>
+		<property name="baseUrl" value="http://camera-201"/>
+	</bean>
+
+	<bean id="camera202"
+		class="ca.sciencestudio.vespers.device.camera.axis.AxisHttpPTZCamera">
+		<property name="name" value="camera202"/>
+		<property name="baseUrl" value="http://camera-202"/>
+	</bean>
+
+</beans>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+
+	Description:
+		Configuration for 'admin-sim' servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:annotation-config/>
+
+	<bean id="mainPageController"
+		class="ca.sciencestudio.vespers.service.admin.controllers.MainPageController">
+		<property name="htmlHeaderTitle" value="Science Studio :: VESPERS Simulation Administration"/>
+		<property name="pageHeaderTitle" value="VESPERS Simulation Administration"/>		
+	</bean>
+	
+	<bean id="laboratorySessionController"
+		class="ca.sciencestudio.vespers.service.admin.controllers.LaboratorySessionController">
+		<property name="facilityName" value="CLS"/>
+		<property name="laboratoryName" value="SIMVESPERS"/>
+		<property name="beamlineSessionProxy" ref="simBeamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="heartbeatController"
+		class="ca.sciencestudio.vespers.service.controllers.HeartbeatController">
+		<property name="stateMapList">
+		   	<list>
+				<ref bean="simBeamlineInformationStateMap"/>
+			</list>
+		</property>
+		<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="beamlineInformationController"
+		class="ca.sciencestudio.vespers.service.admin.controllers.BeamlineInformationController">
+		<property name="beamlineInformationDeviceProxy" ref="simBeamlineInformationStateMap"/>
+	</bean>
+
+	<bean id="laboratorySessionValidator"
+		class="ca.sciencestudio.vespers.service.admin.validators.LaboratorySessionValidator">
+	</bean>
+
+	<bean id="annotationMapping"
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+
+</beans>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Survey" >
+	<resultMap  class="ca.sciencestudio.uso.survey.model.SurveyParticipantNotifyEvent" id="event">
+		<result property="id"                         column="event_id"/>
+		<result property="participantId"              column="participant_id"/>
+		<result property="personId"                   column="person_id"/>
+		<result property="event"                      column="event"/>
+		<result property="recordTime"                 column="record_time"/>
+	</resultMap>
+
+	<select id="getNotifyEventListByParticipantId" resultMap="event">
+		SELECT * 
+			FROM ${database}.survey_participant_notify_event
+			WHERE participant_id = #participantId:INTEGER#
+				AND person_id = (SELECT person_id FROM ${database}.survey_participant
+									WHERE participant_id = #participantId:INTEGER#)
+	</select>
+	
+	<insert id="addSurveyParticipantNotifyEvent">
+		INSERT INTO ${database}.survey_participant_notify_event
+			(participant_id, person_id, event, record_time)
+		VALUES 
+			(#participantId:INTEGER#, #personId:INTEGER#, #event:VARCHAR#, CURRENT_TIMESTAMP)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			 ${identity.function}
+		</selectKey>
+	</insert>
+</sqlMap>

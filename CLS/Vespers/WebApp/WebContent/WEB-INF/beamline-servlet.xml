@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+
+	Description:
+		Configuration file for 'beamline' servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:annotation-config/>
+  
+  	<!-- Application Controllers -->
+
+	<bean id="mainPageController"
+		class="ca.sciencestudio.vespers.service.controllers.MainPageController">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+    <!--  Beamline Controllers -->
+
+    <bean id="heartbeatController"
+    	class="ca.sciencestudio.vespers.service.controllers.HeartbeatController">
+    	<property name="stateMapList">
+    		<list>
+    			<ref bean="storageRingStatusStateMap"/>
+    			<ref bean="shutterStatus"/>
+    			<ref bean="monoStatus"/>
+    			<ref bean="mirrorStatus"/>
+    			<ref bean="fourElementDetectorStateMap"/>
+    			<!--<ref bean="vortexDetectorStateMap"/>-->
+    			<ref bean="sampleStageHVStateMap"/>
+    			<!--<ref bean="sampleStageXYZStateMap"/>-->
+    			<ref bean="scanDeviceStateMap"/>
+    			<ref bean="sampleCameraStateMap"/>
+    			<ref bean="beamlineInformationStateMap"/>
+    			<ref bean="beamlineSessionStateMap"/>
+    			<!--<ref bean="ccdSetupStateMap"/>-->
+				<!--<ref bean="ccdCollectionStateMap"/>-->
+				<!--<ref bean="ccdStageStateMap"/>-->
+				<!--<ref bean="ccdFileStateMap"/>-->
+    		</list>
+    	</property>
+    	<property name="excludeMap">
+    		<map>
+    			<entry key-ref="fourElementDetectorStateMap">
+    				<set>
+    					<value>spectrumAll</value>
+    				</set>
+    			</entry>
+    			<entry key-ref="sampleCameraStateMap">
+    				<set>
+    					<value>image</value>
+ 					</set>
+    			</entry>
+    			<entry key-ref="sampleStageHVStateMap">
+    				<set>
+    					<value>setPointH</value>
+    					<value>setPointV</value>
+    				</set>
+    			</entry>
+    		</map>
+    	</property>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>
+
+	<!-- fourElementDetector Controllers -->
+
+	<bean id="getFourElementSpectrumController"
+		class="ca.sciencestudio.vespers.service.controllers.GetFourElementSpectrumController">
+		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="startStopFourElementDetectorController"
+		class="ca.sciencestudio.vespers.service.controllers.StartStopFourElementDetectorController">
+		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="saveFourElementSpectrumController"
+		class="ca.sciencestudio.vespers.service.controllers.SaveFourElementSpectrumController">
+		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="updateFourElementDetectorController"
+		class="ca.sciencestudio.vespers.service.controllers.UpdateFourElementDetectorController">
+		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+    <!-- vortexDetector Controllers -->
+
+    <!--<bean id="getVortexSpectrumController"
+    	class="ca.sciencestudio.vespers.service.controllers.GetVortexSpectrumController">
+    	<property name="vortexDetectorStateMap" ref="vortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>-->
+
+    <!--<bean id="startStopVortexDetectorController"
+    	class="ca.sciencestudio.vespers.service.controllers.StartStopVortexDetectorController">
+    	<property name="vortexDetectorStateMap" ref="vortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>-->
+
+    <!--<bean id="saveVortexSpectrumController"
+    	class="ca.sciencestudio.vespers.service.controllers.SaveVortexSpectrumController">
+    	<property name="vortexDetectorStateMap" ref="vortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>-->
+
+    <!--<bean id="updateVortexDetectorController"
+    	class="ca.sciencestudio.vespers.service.controllers.UpdateVortexDetectorController">
+    	<property name="vortexDetextorStateMap" ref="vortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>-->
+
+    <!-- sampleCamera Controllers -->
+
+	<bean id="getSampleCameraQueryController"
+		class="ca.sciencestudio.vespers.service.controllers.GetSampleCameraQueryController">
+		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="getSampleCameraImageController"
+		class="ca.sciencestudio.vespers.service.controllers.GetSampleCameraImageController">
+		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sampleNotAvailableImageUrl" value="/ssvespers/img/sample_not_available.jpg"/>
+	</bean>
+
+	<bean id="updateSampleCameraScaleController"
+		class="ca.sciencestudio.vespers.service.controllers.UpdateSampleCameraScaleController">
+		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+	<!-- sampleStageHV Controllers -->
+
+    <bean id="updateSampleStageHVController"
+    	class="ca.sciencestudio.vespers.service.controllers.UpdateSampleStageHVController">
+    	<property name="sampleStateHVStateMap" ref="sampleStageHVStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>
+
+	<!-- sampleStageXYZ Controllers -->
+
+    <!--<bean id="updateSampleStageXYZController"
+    	class="ca.sciencestudio.vespers.service.controllers.UpdateSampleStageXYZController">
+    	<property name="sampleStateXYZStateMap" ref="sampleStageXYZStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>-->
+
+    <!-- beamlineSession Controllers -->
+
+    <bean id="updateBeamlineSessionController"
+    	class="ca.sciencestudio.vespers.service.controllers.UpdateBeamlineSessionController">
+    	<property name="experimentDAO" ref="experimentDAO"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>
+
+    <bean id="controlBeamlineController"
+    	class="ca.sciencestudio.vespers.service.controllers.ControlBeamlineController">
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    </bean>
+
+    <!-- scan Controllers -->
+
+	<bean id="getExperimentListController"
+		class="ca.sciencestudio.vespers.service.controllers.GetExperimentListController">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="experimentDAO" ref="experimentDAO"/>
+	</bean>
+
+    <bean id="startStopPauseScanDeviceController"
+    	class="ca.sciencestudio.vespers.service.controllers.StartStopPauseScanDeviceController">
+    	<property name="scanDeviceStateMap" ref="scanDeviceStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="scanDAO" ref="scanDAO"/>
+    	<!--<property name="ccdCollectionStateMap" ref="ccdCollectionStateMap"></property>-->
+		<!--<property name="ccdFileStateMap" ref="ccdFileStateMap"></property>-->
+		<!--<property name="filePath" value="${ccd.filePath}"></property>-->
+		<!--<property name="templateScan" value="${ccd.scanTemplate}"></property>-->
+    </bean>
+    
+    <bean id="updateScanDeviceController"
+		class="ca.sciencestudio.vespers.service.controllers.UpdateScanDeviceController">
+		<property name="scanDeviceStateMap" ref="scanDeviceStateMap"/>
+		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+	</bean>
+
+	<!-- PZT Cameras -->
+
+	<bean id="axisPTZCameraController"
+		class="ca.sciencestudio.vespers.service.controllers.AxisPTZCameraController">
+		<property name="cameraNotAvailableImageUrl" value="/img/camera_not_available.jpg"/>
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="axisHttpPTZCameras">
+			<list>
+				<ref bean="camera101"/>
+				<ref bean="camera201"/>
+				<ref bean="camera202"/>
+			</list>
+		</property>
+	</bean>
+
+	<!-- CCD controllers -->
+
+	<!--<bean id="CCDSetupController" class="ca.sciencestudio.vespers.service.controllers.CCDSetupController">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"></property>
+		<property name="ccdSetupStateMap" ref="ccdSetupStateMap"></property>
+	</bean>-->
+
+	<!--<bean id="updateCCDExposureTimeController" class="ca.sciencestudio.vespers.service.controllers.CCDExposureTimeController">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"></property>
+		<property name="ccdCollectionStateMap" ref="ccdCollectionStateMap"></property>
+	</bean>-->
+
+	<!--<bean id="ccdFocusController" class="ca.sciencestudio.vespers.service.controllers.CCDFocusController">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"></property>
+		<property name="ccdFileStateMap" ref="ccdFileStateMap"></property>
+		<property name="ccdCollectionStateMap" ref="ccdCollectionStateMap"></property>
+		<property name="filePath" value="${ccd.focusFilePath}"></property>
+		<property name="templateFocus" value="${ccd.focusTemplate}"></property>
+	</bean>-->
+
+	<!--<bean id="ccdFocusImage" class="ca.sciencestudio.vespers.service.controllers.CCDFocusImageController" init-method="init" destroy-method="destroy">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"></property>
+		<property name="imageServiceURL" value="${ccd.focusImageService}"></property>
+	</bean>-->
+
+	<!--<bean id="ccdImage" class="ca.sciencestudio.vespers.service.controllers.CCDImageController" init-method="init" destroy-method="destroy">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"></property>
+		<property name="imageServiceURL" value="${ccd.imageService}"></property>
+		<property name="fileTemplate" value="${ccd.scanTemplate}"></property>
+	</bean>-->
+
+	<!--<bean id="ccdMode" class="ca.sciencestudio.vespers.service.controllers.CCDModeController">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"></property>
+		<property name="ccdCollectionStateMap" ref="ccdCollectionStateMap"></property>
+		<property name="ccdFileStateMap" ref="ccdFileStateMap"></property>
+		<property name="templateScan" value="${ccd.scanTemplate}"></property>
+	</bean>-->
+
+	<!--<bean id="ccdFile" class="ca.sciencestudio.vespers.service.controllers.CCDFileController">
+		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"></property>
+		<property name="ccdFileStateMap" ref="ccdFileStateMap"></property>
+	</bean>-->
+
+	<bean id="annotationMapping"
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+
+</beans>

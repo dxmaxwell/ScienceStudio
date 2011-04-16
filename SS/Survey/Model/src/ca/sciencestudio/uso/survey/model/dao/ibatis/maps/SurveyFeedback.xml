@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Survey" >
+	<resultMap  class="ca.sciencestudio.uso.survey.model.SurveyFeedback" id="feedback">
+		<result property="id"                         column="feedback_id"/>
+		<result property="questionId"                 column="question_id"/>
+		<result property="participantId"              column="participant_id"/>
+		<result property="choice"                     column="choice"/>
+		<result property="answer"                     column="answer"/>
+	</resultMap>
+
+	<select id="getSurveyFeedback" resultMap="feedback">
+		SELECT *
+			FROM ${database}.survey_feedback
+			WHERE question_id = #questionId:INTEGER#
+			  AND participant_id = #participantId:INTEGER#
+	</select>
+	
+	<insert id="addSurveyFeedback">
+		INSERT INTO ${database}.survey_feedback
+			(question_id, participant_id, choice, answer)
+		VALUES
+			(
+				#questionId:INTEGER#,
+				#participantId:INTEGER#,
+				#choice:INTEGER#,
+				#answer:VARCHAR#
+			)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="updateSurveyFeedback">
+		UPDATE ${database}.survey_feedback
+			SET 
+				question_id = #questionId:INTEGER#,
+				participant_id = #participantId:INTEGER#,
+				choice = #choice:INTEGER#,
+				answer = #answer:VARCHAR#
+			WHERE 
+				feedback_id = #id:INTEGER#
+	</update>
+	
+	<delete id="removeSurveyFeedback">
+		DELETE 
+			FROM ${database}.survey_feedback
+			WHERE feedback_id = #value#
+	</delete>
+	
+</sqlMap>

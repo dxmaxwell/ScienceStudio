@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Controllers for model servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	
+	<!-- ===================================================================
+  	-  Project Controllers
+  	-  =================================================================== -->
+	
+	<bean id="projectController"
+		class="ca.sciencestudio.service.project.controllers.ProjectController">
+	</bean>
+	
+	<bean id="projectPageController"
+		class="ca.sciencestudio.service.project.controllers.ProjectPageController">
+	</bean>
+	
+	<bean id="projectFromController"
+		class="ca.sciencestudio.service.project.controllers.ProjectFormController">
+	</bean>
+	
+	<bean id="projectPersonController"
+		class="ca.sciencestudio.service.project.controllers.ProjectPersonController">
+	</bean>
+	
+	<bean id="projectPersonPageController"
+		class="ca.sciencestudio.service.project.controllers.ProjectPersonPageController">
+	</bean>
+	
+	<bean id="projectPersonGridController"
+		class="ca.sciencestudio.service.project.controllers.ProjectPersonGridController">
+	</bean>
+	
+	<bean id="projectPersonFormController"
+		class="ca.sciencestudio.service.project.controllers.ProjectPersonFormController">
+	</bean>
+	
+	<!-- ===================================================================
+  	-  Sample Controllers
+  	-  =================================================================== -->
+  	
+  	<bean id="sampleController"
+		class="ca.sciencestudio.service.sample.controllers.SampleController">
+	</bean>
+	
+	<bean id="samplePageController"
+		class="ca.sciencestudio.service.sample.controllers.SamplePageController">
+	</bean>
+	
+	<bean id="sampleFormController"
+		class="ca.sciencestudio.service.sample.controllers.SampleFormController">
+	</bean>
+	
+	<!-- ===================================================================
+  	-  Session Controllers
+  	-  =================================================================== -->
+  	
+  	<bean id="sessionController"
+  		class="ca.sciencestudio.service.session.controllers.SessionController">
+  	</bean>
+  	
+  	<bean id="sessionPageController"
+  		class="ca.sciencestudio.service.session.controllers.SessionPageController">
+  	</bean>
+  	
+  	<bean id="sessionFormController"
+		class="ca.sciencestudio.service.session.controllers.SessionFormController">
+	</bean>
+	
+	<bean id="sessionGridController"
+		class="ca.sciencestudio.service.session.controllers.SessionGridController">
+	</bean>
+	
+	<!-- ===================================================================
+  	-  Experiment Controllers
+  	-  =================================================================== -->
+  	
+  	<bean id="experimentController"
+  		class="ca.sciencestudio.service.session.controllers.ExperimentController">
+  	</bean>
+  	
+  	<bean id="experimentPageController"
+		class="ca.sciencestudio.service.session.controllers.ExperimentPageController">
+	</bean>
+	
+	<bean id="experimentFormController"
+		class="ca.sciencestudio.service.session.controllers.ExperimentFormController">
+	</bean>
+  	
+  	<bean id="experimentGridController"
+  		class="ca.sciencestudio.service.session.controllers.ExperimentGridController">
+  	</bean>
+	
+	<!-- ===================================================================
+  	-  Scan Controllers
+  	-  =================================================================== -->
+  	
+  	<bean id="scanController"
+  		class="ca.sciencestudio.service.session.controllers.ScanController">
+  	</bean>
+  	
+  	<bean id="scanFormController"
+  		class="ca.sciencestudio.service.session.controllers.ScanFormController">
+  	</bean>
+  	
+  	<bean id="scanPageController"
+  		class="ca.sciencestudio.service.session.controllers.ScanPageController">
+  	</bean>
+	
+	<!-- ===================================================================
+  	-  Person Controllers
+  	-  =================================================================== -->
+  	
+  	<bean id="personPageController"
+  		class="ca.sciencestudio.service.person.controllers.PersonPageController">
+  	</bean>
+  	
+</beans>

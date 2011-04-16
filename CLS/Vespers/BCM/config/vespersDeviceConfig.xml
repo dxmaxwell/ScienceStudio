@@ -1,0 +1,1462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	 - see license.txt for details.
+
+	Description:
+		vespersDeviceConfig Spring configuration file.
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<!-- JMS ActiveMQ Setup -->
+
+	<bean id="jmsActiveMQConnectionFactory"
+		class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://localhost:61616"/>
+		<property name="copyMessageOnSend" value="true"/>
+	</bean>
+
+	<bean id="jmsConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="jmsActiveMQConnectionFactory"/>
+		<property name="sessionCacheSize" value="1"/>
+	</bean>
+
+	<!-- Device Event Sender -->
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="explicitQosEnabled" value="true"/>
+		<property name="deliveryPersistent" value="false"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+
+	<bean id="jmsDeviceEventSender" class="ca.sciencestudio.device.control.messaging.spring.SpringDeviceEventSender">
+		<property name="destinationName" value="vespers.topic.device.event.send"/>
+		<property name="jmsTemplate" ref="jmsTemplate"/>
+	</bean>
+
+	<bean id="jmsDeviceEventListenerSender" class="ca.sciencestudio.device.control.event.impl.DelegatingDeviceEventListenerSender">
+		<constructor-arg>
+			<list>
+				<ref bean="storageRingStatus"/>
+				<ref bean="shutterStatus"/>
+				<ref bean="monoStatus"/>
+				<ref bean="mirrorStatus"/>
+				<ref bean="sampleStageHV"/>
+				<ref bean="sampleStageXYZ"/>
+				<ref bean="sampleCamera"/>
+				<ref bean="fourElementDetector"/>
+				<!--<ref bean="vortexDetector"/>-->
+				<ref bean="scanDevice"/>
+				<!--<ref bean="ccdSetup"/>-->
+				<!--<ref bean="ccdCollection"/>-->
+				<!--<ref bean="ccdStage"/>-->
+				<!--<ref bean="ccdFile"/>-->
+			</list>
+		 </constructor-arg>
+		<property name="deviceEventSender" ref="jmsDeviceEventSender"/>
+	</bean>
+
+	<!-- Device Event Receiver -->
+
+	<bean id="jmsMessageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="destinationName" value="vespers.topic.device.event.receive"/>
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="messageListener" ref="jmsDeviceEventReceiver"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+
+	<bean id="jmsDeviceEventReceiver" class="ca.sciencestudio.device.control.messaging.jms.DelegatingJmsDeviceEventReceiver">
+		<property name="deviceEventReceiver" ref="jmsDeviceEventReceiverHandler"/>
+	</bean>
+
+	<bean id="jmsDeviceEventReceiverHandler" class="ca.sciencestudio.device.control.event.impl.SimpleDeviceEventReceiverHandler"/>
+
+	<!-- Storage Ring Status -->
+
+	<bean id="storageRingStatus"
+		class="ca.sciencestudio.vespers.bcm.device.model.StorageRingStatus">
+		<constructor-arg value="storageRingStatus"/>
+		<constructor-arg>
+			<map>
+				<entry key="srEnergy" value-ref="SRStatus_SR_energy"/>
+				<entry key="srCurrent" value-ref="PCT1402-01_mA_fbk"/>
+				<entry key="srShutters" value-ref="SRStatus_shutters"/>
+				<entry key="srHalfLife" value-ref="PCT1402-01_halfLife"/>
+				<entry key="srInjecting" value-ref="SRStatus_injecting"/>
+				<entry key="srStatusMsg1" value-ref="SRStatus_msg_tL1"/>
+				<entry key="srStatusMsg2" value-ref="SRStatus_msg_tL2"/>
+				<entry key="srStatusMsg3" value-ref="SRStatus_msg_tL3"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="SRStatus_SR_energy"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SRStatus:SR:energy"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="PCT1402-01_mA_fbk"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="PCT1402-01:mA:fbk"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="SRStatus_shutters"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SRStatus:shutters"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="PCT1402-01_halfLife"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="PCT1402-01:halfLife"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="SRStatus_injecting"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SRStatus:injecting"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="SRStatus_msg_tL1"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SRStatus:msg:tL1"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="SRStatus_msg_tL2"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SRStatus:msg:tL2"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="SRStatus_msg_tL3"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SRStatus:msg:tL3"/>
+		<constructor-arg ref="storageRingStatusCAJContext"/>
+	</bean>
+
+	<bean id="storageRingStatusCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+
+	<!--  Shutter Status -->
+
+	<bean id="shutterStatus"
+		class="ca.sciencestudio.vespers.bcm.device.model.ShutterStatus">
+		<constructor-arg value="shutterStatus"/>
+		<constructor-arg>
+			<map>
+				<entry key="photonShutter1State" value-ref="PSH1408-B20-01_state"/>
+				<entry key="photonShutter2State" value-ref="PSH1408-B20-02_state"/>
+				<entry key="safetyShutter1State" value-ref="SSH1408-B20-01_state"/>
+				<entry key="safetyShutter2State" value-ref="SSH1607-1-B21-01_state"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="PSH1408-B20-01_state"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="PSH1408-B20-01:state"/>
+		<constructor-arg ref="shutterStatusCAJContext"/>
+	</bean>
+
+	<bean id="PSH1408-B20-02_state"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="PSH1408-B20-02:state"/>
+		<constructor-arg ref="shutterStatusCAJContext"/>
+	</bean>
+
+	<bean id="SSH1408-B20-01_state"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SSH1408-B20-01:state"/>
+		<constructor-arg ref="shutterStatusCAJContext"/>
+	</bean>
+
+	<bean id="SSH1607-1-B21-01_state"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SSH1607-1-B21-01:state"/>
+		<constructor-arg ref="shutterStatusCAJContext"/>
+	</bean>
+
+	<bean id="shutterStatusCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+
+	<!-- Mono Status -->
+
+	<bean id="monoStatus"
+		class="ca.sciencestudio.vespers.bcm.device.model.MonoStatus">
+		<constructor-arg value="monoStatus"/>
+		<constructor-arg>
+			<map>
+				<entry key="monoEnergySP" value-ref="PV07B2_Mono_SineB_Ea"/>
+				<entry key="monoEnergyFbk" value-ref="PV07B2_Mono_SineB_Egec_eV"/>
+				<entry key="monoMiddleSP" value-ref="PV07B2_Mono_X_MiddleON"/>
+				<entry key="monoOutboard16SP" value-ref="PV07B2_Mono_X_16OutboardON"/>
+				<entry key="monoOutboardSiSP" value-ref="PV07B2_Mono_X_SiOutboardON"/>
+				<entry key="monoOutboard10SP" value-ref="PV07B2_Mono_X_10OutboardON"/>
+				<entry key="monoInboard16SP" value-ref="PV07B2_Mono_X_16InboardON"/>
+				<entry key="monoInboardSiSP" value-ref="PV07B2_Mono_X_SiInboardON"/>
+				<entry key="monoInboard10SP" value-ref="PV07B2_Mono_X_10InboardON"/>
+				<entry key="monoMiddleFbk" value-ref="PV07B2_Mono_X_MiddleONenc"/>
+				<entry key="monoOutboard16Fbk" value-ref="PV07B2_Mono_X_16OutboardONenc"/>
+				<entry key="monoOutboardSiFbk" value-ref="PV07B2_Mono_X_SiOutboardONenc"/>
+				<entry key="monoOutboard10Fbk" value-ref="PV07B2_Mono_X_10OutboardONenc"/>
+				<entry key="monoInboard16Fbk" value-ref="PV07B2_Mono_X_16InboardONenc"/>
+				<entry key="monoInboardSiFbk" value-ref="PV07B2_Mono_X_SiInboardONenc"/>
+				<entry key="monoInboard10Fbk" value-ref="PV07B2_Mono_X_10InboardONenc"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="PV07B2_Mono_SineB_Eo"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_SineB_Eo"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_SineB_Ea"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_SineB_Ea"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_SineB_Egec_eV"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_SineB_Egec:eV"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_MiddleON"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_MiddleON"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_16OutboardON"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_16OutboardON"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_SiOutboardON"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_SiOutboardON"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_10OutboardON"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_10OutboardON"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_16InboardON"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_16InboardON"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_SiInboardON"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_SiInboardON"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_10InboardON"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_10InboardON"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_MiddleONenc"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_MiddleONenc"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_16OutboardONenc"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_16OutboardONenc"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_SiOutboardONenc"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_SiOutboardONenc"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_10OutboardONenc"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_10OutboardONenc"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_16InboardONenc"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_16InboardONenc"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_SiInboardONenc"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_SiInboardONenc"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_Mono_X_10InboardONenc"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_Mono_X_10InboardONenc"/>
+		<constructor-arg ref="monoStatusCAJContext"/>
+	</bean>
+
+	<bean id="monoStatusCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+
+	<!-- Mirror Status -->
+
+	<bean id="mirrorStatus"
+		class="ca.sciencestudio.vespers.bcm.device.model.MirrorStatus">
+		<constructor-arg value="mirrorStatus"/>
+		<constructor-arg>
+			<map>
+				<entry key="mirror1AOnPt" value-ref="PV07B2_M1A_X_OnPt"/>
+				<entry key="mirror1AOnSi" value-ref="PV07B2_M1A_X_OnSi"/>
+				<entry key="mirror1AOnPd" value-ref="PV07B2_M1A_X_OnPd"/>
+				<entry key="mirror1BOnPt" value-ref="PV07B2_M1B_X_OnPt"/>
+				<entry key="mirror1BOnSi" value-ref="PV07B2_M1B_X_OnSi"/>
+				<entry key="mirror1BOnPd" value-ref="PV07B2_M1B_X_OnPd"/>
+				<entry key="mirror2AOnPt" value-ref="PV07B2_M2A_X_OnPt"/>
+				<entry key="mirror2AOnSi" value-ref="PV07B2_M2A_X_OnSi"/>
+				<entry key="mirror2AOnPd" value-ref="PV07B2_M2A_X_OnPd"/>
+				<entry key="mirror2BOnPt" value-ref="PV07B2_M2B_X_OnPt"/>
+				<entry key="mirror2BOnSi" value-ref="PV07B2_M2B_X_OnSi"/>
+				<entry key="mirror2BOnPd" value-ref="PV07B2_M2B_X_OnPd"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="PV07B2_M1A_X_OnPt"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M1A_X:OnPt"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M1A_X_OnSi"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M1A_X:OnSi"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M1A_X_OnPd"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M1A_X:OnPd"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M2A_X_OnPt"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M2A_X:OnPt"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M2A_X_OnSi"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M2A_X:OnSi"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M2A_X_OnPd" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M2A_X:OnPd"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M1B_X_OnPt"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M1B_X:OnPt"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M1B_X_OnSi"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M1B_X:OnSi"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M1B_X_OnPd"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M1B_X:OnPd"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M2B_X_OnPt"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M2B_X:OnPt"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M2B_X_OnSi"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M2B_X:OnSi"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="PV07B2_M2B_X_OnPd" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="07B2_M2B_X:OnPd"/>
+		<constructor-arg ref="mirrorStatusCAJContext"/>
+	</bean>
+
+	<bean id="mirrorStatusCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+
+	<!-- Scan Device -->
+
+	<bean id="scanDevice"
+		class="ca.sciencestudio.vespers.bcm.daq.AreaScanDevice">
+		<constructor-arg value="scanDevice"/>
+		<property name="resourceManager">
+			<bean id="resourceManager" class="ca.sciencestudio.util.io.ResourceManager">
+				<property name="baseResource" value="file:///path/to/scan/data/"/>
+			</bean>
+		</property>
+		<property name="destFileSeqNo" value="0"/>
+		<property name="destFileName" value="scanData%03d.dat"/>
+		<property name="destFileVersion" value="20090917A"/>
+		<property name="executableFile" value="/path/to/acquisitionCL"/>
+		<property name="configurationFile" value="/path/to/vespers/scan.cfg"/>
+		<property name="macroFile" value="/path/to/vespers/macros.txt"/>
+		<property name="scanCountEvent" value="readMCS"/>
+		<property name="scanNameX" value="axis1"/>
+		<property name="scanNameY" value="axis2"/>
+	</bean>
+
+	 <!-- Four Element MultiElementDetector -->
+    
+    <bean id="fourElementDetector"
+    	class="ca.sciencestudio.vespers.bcm.device.model.MultiElementDetector">
+    	<constructor-arg value="fourElementDetector"/>
+    	<constructor-arg value="4"/>
+    	<constructor-arg>
+    		<map>
+    			<entry key="spectrumAll" value-ref="dxp1607-B21-04_spectrumAll"/>
+				<entry key="acquireStartAll" value-ref="dxp1607-B21-04_acquireStartAll"/>
+				<entry key="acquireStopAll" value-ref="dxp1607-B21-04_acquireStopAll"/>
+				<entry key="acquireEraseAll" value-ref="dxp1607-B21-04_acquireEraseAll"/>
+				<entry key="acquireEraseStartAll" value-ref="dxp1607-B21-04_acquireEraseStartAll"/>
+				<entry key="acquireStateAll" value-ref="dxp1607-B21-04_acquireStateAll"/>
+				<entry key="elapsedTimeAll" value-ref="dxp1607-B21-04_elapsedTimeAll"/>
+				<entry key="presetTimeAll" value-ref="dxp1607-B21-04_presetTimeAll"/>
+				<entry key="deadTimeAll" value-ref="dxp1607-B21-04_deadTimeAll"/>
+				<entry key="maxEnergyAll" value-ref="dxp1607-B21-04_maxEnergyAll"/>
+				<entry key="nChannelsAll" value-ref="dxp1607-B21-04_nChannelsAll"/>
+ 				<entry key="slowPeaks1" value-ref="dxp1607-B21-04_slowPeaks1"/>
+ 				<entry key="inputCountRate1" value-ref="dxp1607-B21-04_inputCountRate1"/>
+				<entry key="outputCountRate1" value-ref="dxp1607-B21-04_outputCountRate1"/>
+ 				<entry key= "slowPeaks2" value-ref="dxp1607-B21-04_slowPeaks2"/>
+ 				<entry key="inputCountRate2" value-ref="dxp1607-B21-04_inputCountRate2"/>
+				<entry key= "outputCountRate2" value-ref="dxp1607-B21-04_outputCountRate2"/>
+	 			<entry key= "slowPeaks3" value-ref="dxp1607-B21-04_slowPeaks3"/>
+	 			<entry key="inputCountRate3" value-ref="dxp1607-B21-04_inputCountRate3"/>
+				<entry key= "outputCountRate3" value-ref="dxp1607-B21-04_outputCountRate3"/>
+	 			<entry key="slowPeaks4" value-ref="dxp1607-B21-04_slowPeaks4"/>
+	 			<entry key="inputCountRate4" value-ref="dxp1607-B21-04_inputCountRate4"/>
+	 			<entry key="outputCountRate4" value-ref="dxp1607-B21-04_outputCountRate4"/>
+    		</map>
+    	</constructor-arg>	
+    </bean>
+    
+    <!-- MultiElementDetector (PVs) -->
+    
+    <bean id="dxp1607-B21-04_spectrumAll"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:mcaCorrected.VAL"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+	<bean id="dxp1607-B21-04_acquireStartAll"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:StartAll"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+	<bean id="dxp1607-B21-04_acquireStopAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:StopAll"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+    <bean id="dxp1607-B21-04_acquireEraseAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:EraseAll"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+    <bean id="dxp1607-B21-04_acquireEraseStartAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:EraseStart"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+    <bean id="dxp1607-B21-04_acquireStateAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:Acquiring"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+     <bean id="dxp1607-B21-04_elapsedTimeAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:ElapsedReal"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+	<bean id="dxp1607-B21-04_presetTimeAll"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<!-- Preset time can be set directly for the four element detector. -->
+		<!--<constructor-arg value="dxp1607-B21-04:PresetReal"/>-->
+		<!-- Preset time is set using the synchronized dwell time application. -->
+		<constructor-arg value="BL1607-B2-1:dwell:setTime"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+     <bean id="dxp1607-B21-04_deadTimeAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:DeadTime"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+	
+	<bean id="dxp1607-B21-04_maxEnergyAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:mcaEMax"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+    <bean id="dxp1607-B21-04_nChannelsAll"
+    	class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+    	<constructor-arg value="dxp1607-B21-04:mcaAll.NUSE"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+    
+	<bean id="dxp1607-B21-04_slowPeaks1"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp1.SLOW_PEAKS"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_inputCountRate1"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp1.ICR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_outputCountRate1"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp1.OCR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_slowPeaks2"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp2.SLOW_PEAKS"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_inputCountRate2"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp2.ICR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_outputCountRate2"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp2.OCR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_slowPeaks3"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp3.SLOW_PEAKS"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_inputCountRate3"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp3.ICR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_outputCountRate3"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp3.OCR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_slowPeaks4"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp4.SLOW_PEAKS"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_inputCountRate4"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp4.ICR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<bean id="dxp1607-B21-04_outputCountRate4"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="dxp1607-B21-04:dxp4.OCR"/>
+		<constructor-arg ref="fourElementDetectorCAJContext"/>
+	</bean>
+
+	<!-- MultiElementDetector CAJ Context -->
+
+	<bean id="fourElementDetectorCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+
+	<!-- VortexDetector -->
+
+	<!--<bean id="vortexDetector"
+		class="ca.sciencestudio.vespers.bcm.device.model.VortexDetector">
+		<constructor-arg value="vortexDetector"/>
+		<constructor-arg>
+			<map>
+				<entry key="data" value-ref="IOC1607-004_mca1"/>
+				<entry key="acquireStart" value-ref="IOC1607-004_mca1Start"/>
+				<entry key="acquireStop" value-ref="IOC1607-004_mca1Stop"/>
+				<entry key="acquireErase" value-ref="IOC1607-004_mca1Erase"/>
+				<entry key="acquireEraseStart" value-ref="IOC1607-004_mca1EraseStart"/>
+				<entry key="acquireState" value-ref="IOC1607-004_mca1.ACQG"/>
+				<entry key="elapsedTime" value-ref="IOC1607-004_mca1.ERTM"/>
+				<entry key="presetTime" value-ref="IOC1607-004_mca1.PRTM"/>
+				<entry key="deadTime" value-ref="IOC1607-004_mca1.IDTIM"/>
+				<entry key="peakingTime" value-ref="IOC1607-004_dxp1.PKTIM_RBV"/>
+				<entry key="peakingTimeSP" value-ref="IOC1607-004_dxp1.PKTIM"/>
+				<entry key="triggerLevel" value-ref="IOC1607-004_dxp1.SLOW_TRIG_RBV"/>
+				<entry key="triggerLevelSP" value-ref="IOC1607-004_dxp1.SLOW_TRIG"/>
+				<entry key="maxEnergy" value-ref="IOC1607-004_dxp1.EMAX_RBV"/>
+				<entry key="maxEnergySP" value-ref="IOC1607-004_dxp1.EMAX"/>
+				<entry key="counts" value-ref="IOC1607-004_dxp1.SLOW_PEAKS"/>
+				<entry key="inputCountRate" value-ref="IOC1607-004_dxp1.ICR"/>
+				<entry key="outputCountRate" value-ref="IOC1607-004_dxp1.OCR"/>
+			</map>
+		</constructor-arg>
+	</bean>-->
+
+	<!-- VortexDetector (PVs) -->
+
+	<!--<bean id="IOC1607-004_mca1"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1Start"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1Start"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1Stop"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1Stop"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1Erase"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1Erase"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1EraseStart"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1EraseStart"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1.ACQG"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1.ACQG"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1.ERTM"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1.ERTM"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1.IDTIM"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1.IDTIM"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1.PRTM"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:mca1.PRTM"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.PKTIM_RBV"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.PKTIM_RBV"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.PKTIM"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.PKTIM"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.SLOW_TRIG_RBV"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.SLOW_TRIG_RBV"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.SLOW_TRIG"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.SLOW_TRIG"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.EMAX_RBV"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.EMAX_RBV"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.EMAX"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.EMAX"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.SLOW_PEAKS"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.SLOW_PEAKS"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.ICR"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.ICR"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>
+
+	<bean id="IOC1607-004_dxp1.OCR"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-004:dxp1.OCR"/>
+		<constructor-arg ref="vortexCAJContext"/>
+	</bean>-->
+
+	<!-- Vortex Detect CAJ Context -->
+
+	<!--<bean id="vortexCAJContext" class="com.cosylab.epics.caj.CAJContext"/>-->
+
+	<!--  SampleCamera -->
+
+	<bean id="sampleCamera"
+		class="ca.sciencestudio.vespers.bcm.device.model.SampleCamera">
+		<constructor-arg value="sampleCamera"/>
+		<constructor-arg>
+			<map>
+				<entry key="data" value-ref="CCD1607-004_data"/>
+				<entry key="bpp" value-ref="CCD1607-004_bpp"/>
+				<entry key="width" value-ref="CCD1607-004_width"/>
+				<entry key="height" value-ref="CCD1607-004_height"/>
+			</map>
+		</constructor-arg>
+		<constructor-arg ref="sampleStageHV"/>
+		<constructor-arg ref="scanDevice"/>
+		<property name="scale" value="0.0025"/>
+	</bean>
+
+	<!-- SampleCamera (PVs) -->
+
+	<bean id="CCD1607-004_data"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="CCD1607-004:data"/>
+		<constructor-arg ref="sampleCameraDataCAJContext"/>
+		<constructor-arg value="false"/>
+	</bean>
+
+	<bean id="CCD1607-004_bpp"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="CCD1607-004:bpp"/>
+		<constructor-arg ref="sampleCameraCAJContext"/>
+	</bean>
+
+	<bean id="CCD1607-004_width"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="CCD1607-004:width"/>
+		<constructor-arg ref="sampleCameraCAJContext"/>
+	</bean>
+
+	<bean id="CCD1607-004_height"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="CCD1607-004:height"/>
+		<constructor-arg ref="sampleCameraCAJContext"/>
+	</bean>
+
+	<!--<bean id="CCD1607-004_set_width"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="CDD1607-004:set_width"/>
+		<constructor-arg ref="sampleCameraCAJContext"/>
+	</bean>-->
+
+	<!--<bean id="CCD1607-004_set_height"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="CDD1607-004:set_height"/>
+		<constructor-arg ref="sampleCameraCAJContext"/>
+	</bean>-->
+
+	<!-- Sample Camera CAJ Contexts -->
+
+	<bean id="sampleCameraCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+	<bean id="sampleCameraDataCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+
+	<!-- SampleStageHV -->
+
+	<bean id="sampleStageHV"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleStageHV">
+		<constructor-arg value="sampleStageHV"/>
+		<constructor-arg>
+			<map>
+				<entry key="motorH" value-ref="sampleStageHVMotorH"/>
+				<entry key="motorV" value-ref="sampleStageHVMotorV"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- SampleStageHV (SimpleMotors) -->
+
+       <bean id="sampleStageHVMotorH"
+                class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+                <constructor-arg value="sampleStageHVMotorH"/>
+                <constructor-arg>
+                        <map>
+                                <entry key="position" value-ref="TS1607-2-B21-01_H_user_mm_fbk"/>
+                                <entry key="setPoint" value-ref="TS1607-2-B21-01_H_user_mm"/>
+                                <entry key="status" value-ref="TS1607-2-B21-01_H_status"/>
+                        </map>
+                </constructor-arg>
+        </bean>
+
+	<bean id="sampleStageHVMotorV"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageHVMotorV"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="TS1607-2-B21-01_V_user_mm_fbk"/>
+				<entry key="setPoint" value-ref="TS1607-2-B21-01_V_user_mm"/>
+				<entry key="status" value-ref="TS1607-2-B21-01_V_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- SampleStageHVMotorH (PVs) -->
+
+        <bean id="TS1607-2-B21-01_H_user_mm_fbk"
+                class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+                <constructor-arg value="TS1607-2-B21-01:H:user:mm:fbk"/>
+                <constructor-arg ref="motorCAJContext"/>
+        </bean>
+
+        <bean id="TS1607-2-B21-01_H_user_mm"
+                class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+                <constructor-arg value="TS1607-2-B21-01:H:user:mm"/>
+                <constructor-arg ref="motorCAJContext"/>
+        </bean>
+
+    <bean id="TS1607-2-B21-01_H_status"
+                class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+                <constructor-arg value="TS1607-2-B21-01:H:status"/>
+                <constructor-arg ref="motorCAJContext"/>
+        </bean>
+
+	<!-- SampleStageHVMotorV (PVs) -->
+
+	<bean id="TS1607-2-B21-01_V_user_mm_fbk"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="TS1607-2-B21-01:V:user:mm:fbk"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+	<bean id="TS1607-2-B21-01_V_user_mm"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="TS1607-2-B21-01:V:user:mm"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+    <bean id="TS1607-2-B21-01_V_status"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="TS1607-2-B21-01:V:status"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+
+
+
+	<!-- SampleStageXYZ -->
+
+	<bean id="sampleStageXYZ"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleStageXYZ">
+		<constructor-arg value="sampleStageXYZ"/>
+		<constructor-arg>
+			<map>
+				<entry key="motorX" value-ref="sampleStageXYZMotorX"/>
+				<entry key="motorY" value-ref="sampleStageXYZMotorY"/>
+				<entry key="motorZ" value-ref="sampleStageXYZMotorZ"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!--  SampleStageXYZ (SimpleMotors) -->
+
+	<bean id="sampleStageXYZMotorX"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageXYZMotorX"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="SVM1607-2-B21-02_mm_fbk"/>
+				<entry key="setPoint" value-ref="SVM1607-2-B21-02_mm"/>
+				<entry key="status" value-ref="SVM1607-2-B21-02_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="sampleStageXYZMotorY"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageXYZMotorY"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="SVM1607-2-B21-03_mm_fbk"/>
+				<entry key="setPoint" value-ref="SVM1607-2-B21-03_mm"/>
+				<entry key="status" value-ref="SVM1607-2-B21-03_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="sampleStageXYZMotorZ"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageXYZMotorZ"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="SVM1607-2-B21-01_mm_fbk"/>
+				<entry key="setPoint" value-ref="SVM1607-2-B21-01_mm"/>
+				<entry key="status" value-ref="SVM1607-2-B21-01_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- SampleStageXYZMotorX (PVs) -->
+
+	<bean id="SVM1607-2-B21-02_mm_fbk"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-02:mm:fbk"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+	<bean id="SVM1607-2-B21-02_mm"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-02:mm"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+    <bean id="SVM1607-2-B21-02_status"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-02:status"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+    <!-- SampleStageXYZMotorY (PVs) -->
+
+	<bean id="SVM1607-2-B21-03_mm_fbk"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-03:mm:fbk"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+	<bean id="SVM1607-2-B21-03_mm"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-03:mm"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+    <bean id="SVM1607-2-B21-03_status"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-03:status"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+    <!-- SampleStageXYZMotorZ (PVs) -->
+
+	<bean id="SVM1607-2-B21-01_mm_fbk"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-01:mm:fbk"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+	<bean id="SVM1607-2-B21-01_mm"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-01:mm"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+    <bean id="SVM1607-2-B21-01_status"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SVM1607-2-B21-01:status"/>
+		<constructor-arg ref="motorCAJContext"/>
+	</bean>
+
+	<!-- Motor CAJ Context -->
+
+    <bean id="motorCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
+
+
+	<!-- CCD Stage -->
+	<!--<bean id="ccdStage" class="ca.sciencestudio.vespers.bcm.device.model.SimpleCCDStage">
+		<constructor-arg value="ccdStage" />
+		<constructor-arg>
+			<map>
+				<entry key="motorZ" value-ref="SMTR1607-2-B21-18_mm_sp" />
+			</map>
+		</constructor-arg>
+	</bean>-->
+
+	<!--<bean id="ccdStage" class="ca.sciencestudio.vespers.bcm.device.model.CCDStage">
+		<constructor-arg value="ccdStage" />
+		<constructor-arg>
+			<map>
+				<entry key="motorZ" value-ref="ccdStageMotorZ" />
+			</map>
+		</constructor-arg>
+	</bean>-->
+
+	<!-- CCD Stage (SimpleMotors) -->
+
+<!--cannot use simple motor now because we do not publish the set point-->
+	<!--<bean id="ccdStageMotorZ" class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="ccdStageMotorZ" />
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="SMTR1607-2-B21-18_mm_fbk" />
+				<entry key="setPoint" value-ref="SMTR1607-2-B21-18_mm"/>
+				<entry key="status" value-ref="SMTR1607-2-B21-18_status"/>
+			</map>
+		</constructor-arg>
+	</bean>-->
+
+	<!-- CCD Stage MotorZ (PVs) -->
+	<!--Just use the single PV for the CCD stage-->
+	<!--<bean id="SMTR1607-2-B21-18_mm_sp" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SMTR1607-2-B21-18:mm:sp" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>-->
+
+	<!--
+		<bean id="SMTR1607-2-B21-18_mm"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SMTR1607-2-B21-18:mm"/> <constructor-arg
+		ref="cajContext"/> </bean>
+	-->
+
+	<!--
+		<bean id="SMTR1607-2-B21-18_status"
+		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="SMTR1607-2-B21-18:status"/> <constructor-arg
+		ref="cajContext"/> </bean>
+	-->
+	
+	<!-- CCD Setup -->
+	<!--
+	<bean id="ccdSetup" class="ca.sciencestudio.vespers.bcm.device.model.CCDSetup">
+		<constructor-arg value="ccdSetup" />
+		<constructor-arg>
+			<map>
+	-->
+				<!--
+					<entry key="manufacturer"
+					value-ref="IOC1607-003_det1_CCDManufacturer" />
+				-->
+				<!--<entry key="model" value-ref="IOC1607-003_det1_CCDModel" />-->
+				<!--<entry key="portNameRBV" value-ref="IOC1607-003_det1_PortName_RBV"></entry>
+				<entry key="asynIOCNNT" value-ref="IOC1607-003_det1_AsynIO.CNCT"></entry>
+				<entry key="temperature" value-ref="IOC1607-003_det1_Temp" />
+				<entry key="temperatureRBV" value-ref="IOC1607-003_det1_Temp_RBV" />
+				<entry key="binX" value-ref="IOC1607-003_det1_BinX"></entry>
+				<entry key="binXRBV" value-ref="IOC1607-003_det1_BinX_RBV"></entry>
+				<entry key="binY" value-ref="IOC1607-003_det1_BinY"></entry>
+				<entry key="binYRBV" value-ref="IOC1607-003_det1_BinY_RBV"></entry>
+				<entry key="imageReverseXRBV" value-ref="IOC1607-003_det1_ReverseX_RBV"></entry>
+				<entry key="imageReverseYRBV" value-ref="IOC1607-003_det1_ReverseY_RBV"></entry>
+				<entry key="autoDataType" value-ref="IOC1607-003_det1_AutoDataType"></entry>
+				<entry key="autoDataTypeRBV" value-ref="IOC1607-003_det1_AutoDataType_RBV"></entry>
+				<entry key="dataType" value-ref="IOC1607-003_det1_DataType"></entry>
+				<entry key="dataTypeRBV" value-ref="IOC1607-003_det1_DataType_RBV"></entry>
+				<entry key="gain" value-ref="IOC1607-003_det1_Gain"></entry>
+				<entry key="gainRBV" value-ref="IOC1607-003_det1_Gain_RBV"></entry>
+				<entry key="imageSizeRBV" value-ref="IOC1607-003_det1_ImageSize_RBV"></entry>
+				<entry key="regionStartX" value-ref="IOC1607-003_det1_MinX"></entry>
+				<entry key="regionStartY" value-ref="IOC1607-003_det1_MinY"></entry>
+				<entry key="regionSizeX" value-ref="IOC1607-003_det1_SizeX"></entry>
+				<entry key="regionSizeY" value-ref="IOC1607-003_det1_SizeY"></entry>
+				<entry key="regionSizeXRBV" value-ref="IOC1607-003_det1_SizeX_RBV"></entry>
+				<entry key="regionSizeYRBV" value-ref="IOC1607-003_det1_SizeY_RBV"></entry>
+			</map>
+		</constructor-arg>
+	</bean>
+	-->
+	
+	<!--<bean id="IOC1607-003_det1_CCDManufacturer" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:CCDManufacturer" />
+		<constructor-arg ref="ccdCAJContext" />
+	</bean>-->
+
+	<!--<bean id="IOC1607-003_det1_CCDModel" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:CCDModel" />
+		<constructor-arg ref="ccdCAJContext" />
+	</bean>-->
+
+	<!--
+	<bean id="IOC1607-003_det1_PortName_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:PortName_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_AsynIO.CNCT" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AsynIO.CNCT" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_Temp" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:Temperature" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_Temp_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:Temperature_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_BinX" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:BinX" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_BinX_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:BinX_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_BinY" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:BinY" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_BinY_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:BinY_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_ReverseX_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:ReverseX_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_ReverseY_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:ReverseY_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_AutoDataType" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AutoDataType" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_AutoDataType_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AutoDataType_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_DataType" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:DataType" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_DataType_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:DataType_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_Gain" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:Gain" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_Gain_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:Gain_RBV" />
+		<constructor-arg ref="ccdSetupContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_ImageSize_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:ImageSize_RBV"></constructor-arg>
+		<constructor-arg ref="ccdSetupContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_MinX" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:MinX"></constructor-arg>
+		<constructor-arg ref="ccdSetupContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_MinY" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:MinY"></constructor-arg>
+		<constructor-arg ref="ccdSetupContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_SizeX" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:SizeX"></constructor-arg>
+		<constructor-arg ref="ccdSetupContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_SizeY" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:SizeY"></constructor-arg>
+		<constructor-arg ref="ccdSetupContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_SizeX_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:SizeX_RBV"></constructor-arg>
+		<constructor-arg ref="ccdSetupContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_SizeY_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:SizeY_RBV"></constructor-arg>
+		<constructor-arg ref="ccdSetupContext"></constructor-arg>
+	</bean>
+	-->
+
+	<!-- CCD CAJ Context -->
+	<!--<bean id="ccdSetupContext" class="com.cosylab.epics.caj.CAJContext" />-->
+	
+
+	<!--
+	<bean id="ccdCollection" class="ca.sciencestudio.vespers.bcm.device.model.CCDCollection">
+		<constructor-arg value="ccdCollection" />
+		<constructor-arg>
+			<map>
+				<entry key="exposureTime" value-ref="IOC1607-003_det1_AcquireTime" />
+				<entry key="exposureTimeRBV" value-ref="IOC1607-003_det1_AcquireTime_RBV" />
+				<entry key="acquirePeriod" value-ref="IOC1607-003_det1_AcquirePeriod" />
+				<entry key="acquirePeriodRBV" value-ref="IOC1607-003_det1_AcquirePeriod_RBV" />
+				<entry key="numExposures" value-ref="IOC1607-003_det1_NumExposures" />
+				<entry key="numExposuresRBV" value-ref="IOC1607-003_det1_NumExposures_RBV" />
+				<entry key="exposureCounter" value-ref="IOC1607-003_det1_NumExposuresCounter_RBV" />
+				<entry key="numImages" value-ref="IOC1607-003_det1_NumImages"></entry>
+				<entry key="numImagesRBV" value-ref="IOC1607-003_det1_NumImages_RBV"></entry>
+				<entry key="imageCounter" value-ref="IOC1607-003_det1_NumImagesCounter_RBV"></entry>
+				<entry key="numAcquisitions" value-ref="IOC1607-003_det1_NumAcquisitions"></entry>
+				<entry key="numAcquisitionsRBV" value-ref="IOC1607-003_det1_NumAcquisitions_RBV"></entry>
+				<entry key="acquisitionCounter" value-ref="IOC1607-003_det1_NumAcquisitionsCounter_RBV"></entry>
+				<entry key="imageMode" value-ref="IOC1607-003_det1_ImageMode"></entry>
+				<entry key="imageModeRBV" value-ref="IOC1607-003_det1_ImageMode_RBV"></entry>
+				<entry key="triggerMode" value-ref="IOC1607-003_det1_TriggerMode"></entry>
+				<entry key="triggerModeRBV" value-ref="IOC1607-003_det1_TriggerMode_RBV"></entry>
+				<entry key="acquire" value-ref="IOC1607-003_det1_Acquire"></entry>
+				<entry key="detectorStateRBV" value-ref="IOC1607-003_det1_DetectorState_RBV"></entry>
+				<entry key="timeRemainingRBV" value-ref="IOC1607-003_det1_TimeRemaining_RBV"></entry>
+				<entry key="imageRateRBV" value-ref="IOC1607-003_det1_ImageRate_RBV"></entry>
+			</map>
+		</constructor-arg>
+	</bean>
+
+
+
+
+
+	<bean id="IOC1607-003_det1_AcquireTime" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AcquireTime" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_AcquireTime_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AcquireTime_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_AcquirePeriod" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AcquirePeriod" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_AcquirePeriod_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AcquirePeriod_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumExposures" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumExposures" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumExposures_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumExposures_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumExposuresCounter_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumExposuresCounter_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumImages" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumImages" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumImages_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumImages_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumImagesCounter_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumImagesCounter_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumAcquisitions" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumAcquisitions" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumAcquisitions_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumAcquisitions_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_NumAcquisitionsCounter_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:NumAcquisitionsCounter_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_ImageMode" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:ImageMode" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_ImageMode_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:ImageMode_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+	<bean id="IOC1607-003_det1_TriggerMode" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:TriggerMode" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+
+	<bean id="IOC1607-003_det1_TriggerMode_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:TriggerMode_RBV" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_Acquire" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:Acquire" />
+		<constructor-arg ref="ccdCollectionContext" />
+	</bean>
+
+	<bean id="IOC1607-003_det1_DetectorState_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:DetectorState_RBV"></constructor-arg>
+		<constructor-arg ref="ccdCollectionContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_TimeRemaining_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:TimeRemaining_RBV"></constructor-arg>
+		<constructor-arg ref="ccdCollectionContext"></constructor-arg>
+	</bean>
+
+	<bean id="IOC1607-003_det1_ImageRate_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:ImageRate_RBV"></constructor-arg>
+		<constructor-arg ref="ccdCollectionContext"></constructor-arg>
+	</bean>
+	-->
+	
+	<!-- CCD CAJ Context -->
+	<!--<bean id="ccdCollectionContext" class="com.cosylab.epics.caj.CAJContext" />-->
+
+	<!-- CCD File --><!--
+	<bean id="ccdFile" class="ca.sciencestudio.vespers.bcm.device.model.CCDFile">
+		<constructor-arg value="ccdFile"></constructor-arg>
+		<constructor-arg>
+			<map>
+				<entry key="filePathRBV" value-ref="IOC1607-003_det1_FilePath_RBV"></entry>
+				<entry key="filePath" value-ref="IOC1607-003_det1_FilePath"></entry>
+				<entry key="fileNameRBV" value-ref="IOC1607-003_det1_FileName_RBV"></entry>
+				<entry key="fileName" value-ref="IOC1607-003_det1_FileName"></entry>
+				<entry key="fileNumberRBV" value-ref="IOC1607-003_det1_FileNumber_RBV"></entry>
+				<entry key="fileNumber" value-ref="IOC1607-003_det1_FileNumber"></entry>
+				<entry key="autoIncrement" value-ref="IOC1607-003_det1_AutoIncrement"></entry>
+				<entry key="autoIncrementRBV" value-ref="IOC1607-003_det1_AutoIncrement_RBV"></entry>
+				<entry key="fileTemplate" value-ref="IOC1607-003_det1_FileTemplate"></entry>
+				<entry key="fileTemplateRBV" value-ref="IOC1607-003_det1_FileTemplate_RBV"></entry>
+				<entry key="fullfilenameRBV" value-ref="IOC1607-003_det1_FullFileName_RBV"></entry>
+				<entry key="fileFormatRBV" value-ref="IOC1607-003_det1_FileFormat_RBV"></entry>
+			</map>
+		</constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FilePath_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FilePath_RBV"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FilePath" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FilePath"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FileName_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FileName_RBV"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FileName" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FileName"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FullFileName_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FullFileName_RBV"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FileFormat_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FileFormat_RBV"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FileNumber_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FileNumber_RBV"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FileNumber" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FileNumber"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_AutoIncrement" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AutoIncrement"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_AutoIncrement_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:AutoIncrement_RBV"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FileTemplate" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FileTemplate"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
+	</bean>
+	<bean id="IOC1607-003_det1_FileTemplate_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		<constructor-arg value="IOC1607-003:det1:FileTemplate_RBV"></constructor-arg>
+		<constructor-arg ref="ccdFileContext"></constructor-arg>x
+	</bean>
+	-->
+	<!-- CCD File Context -->
+	<!--<bean id="ccdFileContext" class="com.cosylab.epics.caj.CAJContext" />-->
+</beans>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Application context security configuration.
+-->
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+
+	<http
+		entry-point-ref="loginUrlAuthenticationEntryPoint"
+		security-context-repository-ref="daoSecurityContextRepository">
+		<intercept-url pattern="/admin/**" access="ROLE_ADMIN_VESPERS" />
+		<intercept-url pattern="/simadmin/**" access="ROLE_ADMIN_VESPERS" />
+		<intercept-url pattern="/**" access="ROLE_EVERYBODY" />
+		
+		<!--<port-mappings><port-mapping http="8080" https="8443"/></port-mappings>--><!-- Used for development environments. -->
+	</http>
+  
+  	<!--  ### Session management configuration used instead of "<session-management/>". ### -->
+  	
+  	<beans:bean id="daoSecurityContextRepository"
+  		class="ca.sciencestudio.security.spring.web.context.DaoSecurityContextRepository">
+  		<beans:property name="loginSessionDAO" ref="loginSessionDAO"/>
+  	</beans:bean>
+  	
+  
+  	<!-- ### Bean definitions used instead of "<form-login/>" configuration. ### -->
+  	
+  	<beans:bean id="loginUrlAuthenticationEntryPoint"
+  		class="ca.sciencestudio.security.spring.web.authentication.ContextRelativeLoginUrlAuthenticationEntryPoint">
+  		<beans:property name="loginFormUrl" value="${security.login.formUrl}"/>
+  		<beans:property name="contextRelative" value="true"/>
+  	</beans:bean>
+	  
+  	<!-- ###################################################################### -->
+  
+	<authentication-manager>
+	</authentication-manager>
+
+</beans:beans>

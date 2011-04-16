@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Configuration file for laboratory servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:annotation-config/>
+	
+	<bean id="propertyConfigurer" 
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:lab.properties</value>
+                <value>classpath:vnc.properties</value>
+            </list>
+        </property>
+    </bean>
+	
+	<bean id="viewportController"
+		class="ca.sciencestudio.nanofab.service.controllers.MainPageController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+	</bean>
+	
+	<bean id="observeSessionController"
+		class="ca.sciencestudio.nanofab.service.controllers.ObserveSessionController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+		<property name="tunnelManager" ref="tunnelManager"/>
+		<property name="vncWidth" value="${vnc.width}"/>
+		<property name="vncHeight" value="${vnc.height}"/>
+		<property name="vncPassword" value="${vnc.password.view}"/>
+	</bean>
+	
+	<bean id="controlSessionController"
+		class="ca.sciencestudio.nanofab.service.controllers.ControlSessionController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+		<property name="tunnelManager" ref="tunnelManager"/>
+		<property name="vncWidth" value="${vnc.width}"/>
+		<property name="vncHeight" value="${vnc.height}"/>
+		<property name="vncPassword" value="${vnc.password.full}"/>
+	</bean>
+	
+	<bean id="shareDirectoryListController"
+		class="ca.sciencestudio.nanofab.service.controllers.ShareDirectoryListController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+		<property name="shareDirectory" value="${lab.shareDirectory}"/>
+	</bean>
+	
+	<bean id="shareFileListController"
+		class="ca.sciencestudio.nanofab.service.controllers.ShareFileListController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+		<property name="shareDirectory" value="${lab.shareDirectory}"/>
+	</bean>
+	
+	<bean id="heartbeatController"
+		class="ca.sciencestudio.nanofab.service.controllers.HeartbeatController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+	</bean>
+	
+	<bean id="getExperimentListController"
+		class="ca.sciencestudio.nanofab.service.controllers.GetExperimentListController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+		<property name="experimentDAO" ref="experimentDAO"/>
+	</bean>
+	
+	<bean id="updateSessionController"
+			class="ca.sciencestudio.nanofab.service.controllers.UpdateSessionController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+		<property name="experimentDAO" ref="experimentDAO"/>
+	</bean>
+	
+	<bean id="createScanController"
+		class="ca.sciencestudio.nanofab.service.controllers.CreateScanController">
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
+		<property name="scanDAO" ref="scanDAO"/>
+		<property name="experimentDAO" ref="experimentDAO"/>
+		<property name="shareDirectory" value="${lab.shareDirectory}"/>
+		<property name="scanDataDirectory" value="${lab.scanDataDirectory}"/>
+	</bean>
+
+	<bean id="annotationMapping"
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+
+</beans>

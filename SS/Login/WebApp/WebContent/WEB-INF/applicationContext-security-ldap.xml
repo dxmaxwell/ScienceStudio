@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Application Context file - security - LDAP
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+	
+	<!-- ### Form-based authentication filter (instead of using <form-login/>) ### -->
+  
+	<bean id="domainUsernamePasswordAuthenticationFilter"
+		class="ca.sciencestudio.security.spring.web.authentication.DomainUsernamePasswordAuthenticationFilter">
+		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="filterProcessesUrl" value="${security.login.processUrl}"/>
+		<property name="authenticationSuccessHandler" ref="authenticationSuccessHandler"/>
+		<property name="authenticationFailureHandler" ref="authenticationFailureHandler"/>
+  	</bean>
+
+	<!--############ Configuration for Domain ###########
+	
+		Here is the equivalent namespace configuration:
+
+		<ldap-authentication-provider   
+			server-ref="domainLdapContextSource" 
+			user-search-base="${security.ldap.domain.user.searchBase}"
+			user-search-filter="${security.ldap.domain.user.searchFilter}"
+			group-search-base="${security.ldap.domain.group.searchBase}"
+			group-search-filter="${security.ldap.domain.group.searchFilter}"
+		/> 
+	########################################################-->
+	
+	<bean id="domainLdapAuthenticationProvider"
+		class="ca.sciencestudio.security.spring.ldap.authentication.DomainLdapAuthenticationProvider">
+		<constructor-arg value="${security.ldap.domain}"/>
+		<constructor-arg ref="domainBindAuthenticator"/>
+		<constructor-arg ref="domainLdapAuthoritiesPopulator"/>   
+		<property name="userDetailsContextMapper" ref="scienceStudioUserDetailsContextMapper"/>
+	</bean>
+	
+	<bean id="domainBindAuthenticator"
+		class="ca.sciencestudio.security.spring.ldap.authentication.DomainBindAuthenticator">
+		<constructor-arg ref="domainLdapContextSource"/>
+		<property name="userSearch">
+			<bean class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch">
+				<constructor-arg value="${security.ldap.domain.user.searchBase}"/>
+				<constructor-arg value="${security.ldap.domain.user.searchFilter}"/>
+				<constructor-arg ref="domainLdapContextSource"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- User this bean for populating roles from LDAP server. -->
+	<bean id="domainLdapAuthoritiesPopulator"
+		class="org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator">
+		<constructor-arg ref="domainLdapContextSource"/>
+		<constructor-arg value="${security.ldap.domain.group.searchBase}"/>
+		<property name="groupSearchFilter" value="${security.ldap.domain.group.searchFilter}"/>
+	</bean>
+
+	<sec:ldap-server id="domainLdapContextSource" 
+		url="${security.ldap.domain.url}" 
+		manager-dn="${security.ldap.domain.managerDstName}" 
+		manager-password="${security.ldap.domain.managerPasswd}"
+	/>
+					
+</beans>

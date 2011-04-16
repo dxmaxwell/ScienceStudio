@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	- see license.txt for details.
+
+	Description:
+		LoginHistory sql map xml file.
+-->
+
+<sqlMap namespace="LoginHistory">
+
+	<resultMap class="ca.sciencestudio.login.model.LoginHistory" id="loginHistory">
+		<result property="id" column="login_history_id"/>
+		<result property="username" column="login_history_username"/>
+		<result property="address" column="login_history_address"/>
+		<result property="port" column="login_history_port"/>
+		<result property="agent" column="login_history_agent"/>
+		<result property="timestamp" column="login_history_timestamp" jdbcType="TIMESTAMP"/>
+		<result property="statusString" column="login_history_status"/>	
+	</resultMap>
+
+	<select id="getLoginHistoryById" resultMap="loginHistory">
+		SELECT * 
+		FROM ${database}.login_history
+		WHERE login_history_id = #value#
+	</select>
+
+	<insert id="addLoginHistory">
+		INSERT INTO ${database}.login_history
+			(
+				login_history_username, login_history_address,
+				login_history_port, login_history_agent,
+				login_history_timestamp, login_history_status
+			)
+		VALUE
+			(
+				#username:VARCHAR#, #address:VARCHAR#,
+				#port:INTEGER#, #agent:VARCHAR#,
+				#timestamp:TIMESTAMP#, #statusString:VARCHAR#
+			)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			 ${identity.function}
+		</selectKey>
+	</insert>
+		
+	<update id="editLoginHistory">
+		UPDATE  ${database}.login_history
+		SET
+			login_history_username = #username:VARCHAR#,
+			login_history_address = #address:VARCHAR#,
+			login_history_port = #port:INTEGER#, 
+			login_history_agent = #agent:VARCHAR#,
+			login_history_timestamp = #timestamp:TIMESTAMP#,
+			login_history_status = #statusString:VARCHAR#
+		WHERE
+			login_history_id = #id#
+	</update>
+	
+	<delete id="removeLoginHistory">
+		DELETE FROM ${database}.login_history
+		WHERE login_history_id = #value#
+	</delete>
+
+	<select id="getLoginHistoryList" resultMap="loginHistory">
+		SELECT * FROM ${database}.login_history
+	</select>
+
+</sqlMap>

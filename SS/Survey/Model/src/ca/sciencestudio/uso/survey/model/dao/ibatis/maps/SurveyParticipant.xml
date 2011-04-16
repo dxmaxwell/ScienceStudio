@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Survey" >
+	<resultMap  class="ca.sciencestudio.uso.survey.model.SurveyParticipant" id="participant">
+		<result property="id"                         column="participant_id"/>
+		<result property="surveyId"                   column="survey_id"/>
+		<result property="personId"                   column="person_id"/>
+		<result property="beamline"                   column="beamline"/>
+		<result property="description"                column="description"/>
+		<result property="status"                     column="status"/>
+		<result property="notificationDate"           column="notification_date"/>
+		<result property="remindDate1"                column="remind_date1"/>
+		<result property="remindDate2"                column="remind_date2"/>
+	</resultMap>
+
+	<select id="getSurveyParticipantById" resultMap="participant">
+		SELECT * 
+			FROM ${database}.survey_participant
+			WHERE participant_id = #value#
+	</select>
+	
+	<insert id="addSurveyParticipant">
+		INSERT INTO ${database}.survey_participant
+			(survey_id, person_id, beamline, description, status, notification_date, remind_date1, remind_date2)
+		VALUES 
+			(#surveyId:INTEGER#, #personId:INTEGER#, #beamline:VARCHAR#, #description:VARCHAR#, #status:INTEGER#, #notificationDate:DATE#, #remindDate1:DATE#, #remindDate2:DATE#)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			 ${identity.function}
+		</selectKey>
+	</insert>
+	
+	<delete id="removeSurveyParticipant">
+		DELETE 
+			FROM ${database}.survey_participant
+			WHERE participant_id = #value#
+	</delete>
+	
+	<update id="updateSurveyParticipant">
+		UPDATE ${database}.survey_participant
+			SET 
+				survey_id = #surveyId:INTEGER#,
+				person_id = #personId:INTEGER#,
+				beamline = #beamline:VARCHAR#,
+				description = #description:VARCHAR#,
+				status = #status:INTEGER#,
+				notification_date = #notificationDate:DATE#,
+				remind_date1 = #remindDate1:DATE#,
+				remind_date2 = #remindDate2:DATE#
+			WHERE participant_id = #id:INTEGER#
+	</update>
+	
+	<select id="getSurveyParticipantList" resultMap="participant">
+		SELECT * 
+			FROM ${database}.survey_participant
+			WHERE survey_id = #value#
+	</select>
+	
+	<select id="getSurveyParticipantListByPersonId" resultMap="participant">
+		SELECT * 
+			FROM ${database}.survey_participant
+			WHERE person_id = #personId:INTEGER#
+			  AND notification_date &lt; CURRENT_TIMESTAMP
+	</select>
+	
+	<select id="getSurveyMaxRemindDate" resultClass="java.util.Date">
+		SELECT Max(remind_date2)
+			FROM ${database}.survey_participant
+			WHERE survey_id = #value#
+	</select>
+</sqlMap>

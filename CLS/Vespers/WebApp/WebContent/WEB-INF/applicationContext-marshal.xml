@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Application context file marshaller configuration.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+   	
+   	
+   	<bean id="jsonMarshaller"
+   		class="ca.sciencestudio.util.marshal.ContainerAwareJsonMarshaller">
+   		<property name="marshaller" ref="jsonXStreamMarshaller"/>
+   	</bean>
+   	
+   	<bean id="jsonXStreamMarshaller"
+   		class="org.springframework.oxm.xstream.XStreamMarshaller">
+   		<property name="streamDriver">
+   			<bean class="com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver"/>
+   		</property>
+   		<property name="aliasesByType" ref="xstreamAliasesByType"/>
+   		<!--<property name="supportedClasses" ref="xstreamSupportedClasses"/>-->
+   	</bean>
+   	
+   	<bean id="xstreamAliasesByType" class="java.util.LinkedHashMap">
+   		<constructor-arg>
+   			<props>
+   				<prop key="experiment">ca.sciencestudio.model.session.Experiment</prop>
+   			</props>
+   		</constructor-arg>
+   	</bean>
+   	
+   	<!--<bean id="xstreamSupportedClasses" class="java.util.ArrayList">
+   		<constructor-arg>
+   			<list>
+   				<value>java.util.HashMap</value>
+   				<value>ca.sciencestudio.model.project.Project</value>
+   			</list>
+   		</constructor-arg>
+   	</bean>-->
+   	
+</beans>

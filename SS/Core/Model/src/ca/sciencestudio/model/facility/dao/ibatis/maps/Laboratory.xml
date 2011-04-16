@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Laboratory sql map xml file.	
+ -->
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Laboratory">
+	<resultMap  id="laboratory" class="ca.sciencestudio.model.facility.ibatis.IbatisLaboratory">
+		<result property="id" column="laboratory_id"/>
+		<result property="facilityId" column="facility_id" nullValue="0"/>
+		<result property="name" column="name"/>
+		<result property="longName" column="long_name"/>
+		<result property="description" column="description"/>
+		<result property="phoneNumber" column="phone_number"/>
+		<result property="emailAddress" column="email_address"/>
+		<result property="location" column="location"/>
+		<result property="viewUrl" column="view_url"/>
+	</resultMap>
+	
+	<insert id="addLaboratory">
+		INSERT INTO scstudio.laboratory
+		(
+			facility_id
+			name,
+			long_name
+			description
+			phone_number,
+			email_address,
+			location,
+			view_url
+		) VALUES (
+			#facilityId:INT#,
+			#name:VARCHAR#,
+			#longName:VARCHAR#,
+			#description:VARCHAR#,
+			#phoneNumber:VARCHAR#,
+			#emailAddress:VARCHAR#,				
+			#location:VARCHAR#,
+			#viewUrl:VARCHAR#
+		)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="editLaboratory">
+		UPDATE scstudio.laboratory
+			SET
+				facility_id = #facilityId:INT#,
+				name = #name:VARCHAR#,
+				long_name = #longName:VARCHAR#,
+				description = #description:VARCHAR#,
+				phone_number = #phoneNumber:VARCHAR#
+				email_address = #emailAddress:VARCHAR#,
+				location = #location:VARCHAR#,
+				view_url = #viewUrl:VARCHAR#
+			WHERE
+				laboratory_id = #id:INT#
+	</update>
+	
+	<delete id="removeLaboratory">
+		DELETE FROM scstudio.laboratory
+			WHERE laboratory_id = #value#
+	</delete>
+	
+	<select id="getLaboratoryList" resultMap="laboratory">
+		SELECT *
+			FROM scstudio.laboratory
+	</select>
+	
+	<select id="getLaboratoryById" resultMap="laboratory">
+		SELECT *
+			FROM scstudio.laboratory 
+			WHERE laboratory_id = #value#
+	</select>
+	
+	<select id="getLaboratoryListByFacilityId" resultMap="laboratory">
+		SELECT *
+			FROM scstudio.laboratory 
+			WHERE facility_id = #value#
+	</select>
+	
+	<select id="getLaboratoryListByName" resultMap="laboratory">
+		SELECT *
+			FROM scstudio.laboratory 
+			WHERE name LIKE #value#
+	</select>
+
+	<select id="getLaboratoryListByNameAndFacilityId" resultMap="laboratory">
+		SELECT *
+			FROM scstudio.laboratory
+			WHERE name LIKE #param1# AND facility_id = #param2#
+	</select>
+	
+</sqlMap>

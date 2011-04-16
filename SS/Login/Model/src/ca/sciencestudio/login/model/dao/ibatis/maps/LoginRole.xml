@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		LoginRole sql map xml file.	
+ -->
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="LoginRole">
+	<resultMap id="loginRole" class="ca.sciencestudio.login.model.ibatis.IbatisLoginRole">
+		<result property="id" column="login_role_id" />
+		<result property="name" column="name"/>
+	</resultMap>
+	
+	<insert id="addLoginRole">
+		INSERT INTO ${database}.login_role (
+			name
+		)
+		VALUES (
+			#name:VARCHAR#
+		)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="editLoginRole">
+		UPDATE ${database}.login_role
+			SET 
+				name = #name:VARCHAR#,
+			WHERE 
+				login_role_id = #id:INT#
+	</update>
+	
+	<delete id="removeLoginRole">
+		DELETE FROM ${database}.login_role
+			WHERE login_role_id = #value#
+	</delete>
+
+	<select id="getLoginRoleById" resultMap="loginRole">
+		SELECT * FROM ${database}.login_role
+			WHERE login_role_id = #value#
+	</select>
+	
+	<select id="getLoginRoleByName" resultMap="loginRole">
+		SELECT * FROM ${database}.login_role
+			WHERE name = #value#
+	</select>
+	
+	<select id="getLoginRoleList" resultMap="loginRole">
+		SELECT * FROM ${database}.login_role
+	</select>
+	
+	<select id="getLoginRoleListByPersonUid" resultMap="loginRole">
+		SELECT r.login_role_id, r.name 
+			FROM ${database}.login_role AS r, ${database}.login_group_role AS gr, ${database}.login_group_member AS gm
+			WHERE gm.person_uid = #value# AND gm.login_group_id = gr.login_group_id  AND gr.login_role_id = r.login_role_id
+	</select>
+	
+</sqlMap>

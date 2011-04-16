@@ -1,0 +1,42 @@
+/**	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+ *   - see license.txt for details.
+ *
+ *  Description:
+ *     login css file.
+ *     
+ */
+
+/************** Elements *****************/
+body {
+	text-align: center; /* for IE compatibility */
+}
+
+/************** Classes *****************/
+
+.Box {
+	border: 2px solid #495768;
+	background-color: #DDE5E9; 
+	text-align: center;
+	margin: 60px auto auto auto;
+	width: 600px;
+	color: black;
+}
+
+.Logo {
+  	margin: 20px 0px 0px 0px;
+  	border: none;
+}
+
+.Error {
+	color: red;
+	font-weight: bold;
+}
+
+.Label {
+	font-size: small;
+	text-align: right;
+}
+
+.Field {
+	text-align: left;	
+}

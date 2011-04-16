@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	- see license.txt for details.
+
+	Description:
+		Person sql map xml file.
+-->
+
+<sqlMap namespace="Person">
+	<resultMap  id="person" class="ca.sciencestudio.model.person.ibatis.IbatisPerson">
+		<result property="id" column="person_id"/>
+		<result property="uid" column="person_uid"/>
+		<result property="title" column="title"/>
+		<result property="firstName" column="first_name"/>
+		<result property="middleName" column="middle_name"/>
+		<result property="lastName" column="last_name"/>
+		<result property="phoneNumber" column="phone_number"/>
+		<result property="mobileNumber" column="mobile_number"/>
+		<result property="emailAddress" column="email_address"/>		
+		<result property="modificationDate" column="modification_date"/>
+	</resultMap>
+	
+	<insert id="addPerson">
+		INSERT INTO scstudio.person
+		(
+			person_uid,
+			title,
+			first_name,
+			middle_name,
+			last_name,
+			phone_number,
+			mobile_number,
+			email_address,
+			modification_date
+		)
+		VALUES 
+		(
+			#uid:VARCHAR#,
+			#title:VARCHAR#,
+			#firstName:VARCHAR#,
+			#middleName:VARCHAR#,
+			#lastName:VARCHAR#,
+			#phoneNumber:VARCHAR#,
+			#mobileNumber:VARCHAR#,
+			#emailAddress:VARCHAR#,
+			#modificationDate:DATE#
+		)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			 ${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="editPerson">
+		UPDATE scstudio.person
+		SET 
+			person_uid = #uid:VARCHAR#,
+			title = #title:VARCHAR#,
+			first_name = #firstName:VARCHAR#,
+			middle_name = #middleName:VARCHAR#,
+			last_name = #lastName:VARCHAR#,
+			phone_number = #phoneNumber:VARCHAR#,
+			mobile_number = #mobileNumber:VARCHAR#,
+			email_address = #emailAddress:VARCHAR#,
+			modification_date = #modificationDate:DATE#
+		WHERE 
+			person_id = #id#
+	</update>
+	
+	<delete id="removePerson">
+		DELETE FROM scstudio.person
+			WHERE person_id = #value#
+	</delete>
+	
+	<select id="getPersonById" resultMap="person">
+		SELECT * FROM scstudio.person
+			WHERE person_id = #value#
+	</select>
+	
+	<select id="getPersonByUid" resultMap="person">
+		SELECT * FROM scstudio.person
+			WHERE person_uid = #value#
+	</select>
+
+	<select id="getPersonList" resultMap="person">
+		SELECT * FROM scstudio.person
+	</select>
+	
+</sqlMap>

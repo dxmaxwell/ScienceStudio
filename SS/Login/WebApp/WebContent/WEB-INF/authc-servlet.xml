@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Config file for authc servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>classpath:security.properties</value>
+		</property>
+	</bean>
+	
+	<bean id="login" class="ca.sciencestudio.login.service.controllers.LoginController">
+		<property name="credentialsValidator" ref="credentialsValidator"/>
+		<property name="casLoginUrl">
+			<value>${security.cas.domain.url}/login?service=${security.cas.domain.serviceUrl}</value>
+		</property>
+		<property name="domainsConfig">
+			<value>${security.ldap.domain}=${security.ldap.domain.desc}</value>
+		</property>
+	</bean>
+	
+	<bean id="logout" class="ca.sciencestudio.login.service.controllers.LogoutController">
+		<property name="logoutProcessUrl" value="${security.logout.processUrl}"/>
+		<property name="loginFormUrl" value="${security.login.formUrl}"/>
+		<property name="casLogoutUrl" value="${security.cas.domain.url}/logout"/>
+	</bean>
+	
+	<bean id="credentialsValidator"
+		class="ca.sciencestudio.login.service.validators.CredentialsValidator">
+	</bean>
+	
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+    
+</beans>

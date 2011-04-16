@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Application Context file - XML (and JSON eventaully) Marshaller Configuration.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+   	
+   	<!--<bean id="xmlMarshaller"
+   		class="org.springframework.oxm.xstream.XStreamMarshaller">
+   		<property name="aliases" ref="xstreamAliases"/>
+   		<property name="supportedClasses" ref="xstreamSupportedClasses"/>
+   	</bean>-->
+   	
+   	
+   	<bean id="jsonMarshaller"
+   		class="ca.sciencestudio.util.marshal.ContainerAwareJsonMarshaller">
+   		<property name="marshaller" ref="jsonXStreamMarshaller"/>
+   	</bean>
+   	
+   	<bean id="jsonXStreamMarshaller"
+   		class="org.springframework.oxm.xstream.XStreamMarshaller">
+   		<property name="streamDriver">
+   			<bean class="com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver"/>
+   		</property>
+   		<property name="aliases" ref="xstreamAliases"/>
+   		<property name="aliasesByType" ref="xstreamAliasesByType"/>
+   		<!--<property name="supportedClasses" ref="xstreamSupportedClasses"/>-->
+   	</bean>
+   	
+   	<bean id="xstreamAliases" class="java.util.LinkedHashMap">
+   		<constructor-arg>
+   			<props>
+   				
+   				<prop key="projectRole">ca.sciencestudio.model.project.ProjectRole.ProjectRoleMarshallableEnumValue</prop>
+   				<prop key="projectStatus">ca.sciencestudio.model.project.ProjectStatus.ProjectStatusMarshallableEnumValue</prop>
+   				<prop key="personFormBacker">ca.sciencestudio.service.person.backers.PersonFormBacker</prop>
+   				<prop key="projectPersonFormBacker">ca.sciencestudio.service.project.backers.ProjectPersonFormBacker</prop>
+   				<prop key="projectPersonGridBacker">ca.sciencestudio.service.project.backers.ProjectPersonGridBacker</prop>
+   				<prop key="scanFormBacker">ca.sciencestudio.service.session.backers.ScanFormBacker</prop>
+   				<prop key="sampleFormBacker">ca.sciencestudio.service.sample.backers.SampleFormBacker</prop>
+   				<prop key="sessionFormBacker">ca.sciencestudio.service.session.backers.SessionFormBacker</prop>
+   				<prop key="sessionGridBacker">ca.sciencestudio.service.session.backers.SessionGridBacker</prop>
+   				<prop key="experimentFormBacker">ca.sciencestudio.service.session.backers.ExperimentFormBacker</prop>
+   				<prop key="experimentGridBacker">ca.sciencestudio.service.session.backers.ExperimentGridBacker</prop>
+   				<prop key="sampleState">ca.sciencestudio.model.sample.SampleState.SampleStateMarshallableEnumValue</prop>
+   				<prop key="instrumentTechniqueOption">ca.sciencestudio.service.session.backers.InstrumentTechniqueOption</prop>
+   			</props>
+   		</constructor-arg>
+   	</bean>
+   	
+   	<bean id="xstreamAliasesByType" class="java.util.LinkedHashMap">
+   		<constructor-arg>
+   			<props>
+   				<prop key="scan">ca.sciencestudio.model.session.Scan</prop>
+   				<prop key="sample">ca.sciencestudio.model.sample.Sample</prop>
+   				<prop key="project">ca.sciencestudio.model.project.Project</prop>
+   				<prop key="session">ca.sciencestudio.model.session.Session</prop>
+   				<prop key="technique">ca.sciencestudio.model.facility.Technique</prop>
+  				<prop key="laboratory">ca.sciencestudio.model.facility.Laboratory</prop>
+  				<prop key="instrument">ca.sciencestudio.model.facility.Instrument</prop>
+   			</props>
+   		</constructor-arg>
+   	</bean>
+   	
+   	<!--<bean id="xstreamSupportedClasses" class="java.util.ArrayList">
+   		<constructor-arg>
+   			<list>
+   				<value>java.util.HashMap</value>
+   				<value>ca.sciencestudio.model.project.Project</value>
+   			</list>
+   		</constructor-arg>
+   	</bean>-->
+   	
+</beans>

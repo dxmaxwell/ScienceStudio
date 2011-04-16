@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+
+	Description:
+		Configuration file for 'beamline-sim' servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:annotation-config/>
+  
+  	<!-- Application Controllers -->
+
+	<bean id="mainPageController"
+		class="ca.sciencestudio.vespers.service.controllers.MainPageController">
+		<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+		<property name="successView" value="page/main-sim"/>
+	</bean>
+
+    <!--  Beamline Controllers -->
+
+    <bean id="heartbeatController"
+    	class="ca.sciencestudio.vespers.service.controllers.HeartbeatController">
+    	<property name="stateMapList">
+    		<list>
+    			<ref bean="simVortexDetectorStateMap"/>
+    			<ref bean="simSampleStageHVStateMap"/>
+    			<ref bean="simScanDeviceStateMap"/>
+    			<ref bean="simSampleCameraStateMap"/>
+    			<ref bean="simBeamlineInformationStateMap"/>
+    			<ref bean="simBeamlineSessionStateMap"/>
+    		</list>
+    	</property>
+    	<property name="excludeMap">
+    		<map>
+    			<entry key-ref="simVortexDetectorStateMap">
+    				<set>
+    					<value>spectrum</value>
+    				</set>
+    			</entry>
+    			<entry key-ref="simSampleCameraStateMap">
+    				<set>
+    					<value>image</value>
+ 					</set>
+    			</entry>
+    			<entry key-ref="simSampleStageHVStateMap">
+    				<set>
+    					<value>setPointH</value>
+    					<value>setPointV</value>
+    				</set>
+    			</entry>
+    		</map>
+    	</property>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <!-- vortexDetector Controllers -->
+
+    <bean id="getVortexSpectrumController"
+    	class="ca.sciencestudio.vespers.service.controllers.GetVortexSpectrumController">
+    	<property name="vortexDetectorStateMap" ref="simVortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <bean id="startStopVortexDetectorController"
+    	class="ca.sciencestudio.vespers.service.controllers.StartStopVortexDetectorController">
+    	<property name="vortexDetectorStateMap" ref="simVortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <bean id="saveVortexSpectrumController"
+    	class="ca.sciencestudio.vespers.service.controllers.SaveVortexSpectrumController">
+    	<property name="vortexDetectorStateMap" ref="simVortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <bean id="updateVortexDetectorController"
+    	class="ca.sciencestudio.vespers.service.controllers.UpdateVortexDetectorController">
+    	<property name="vortexDetextorStateMap" ref="simVortexDetectorStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <!-- sampleCamera Controllers -->
+
+	<bean id="getSampleCameraQueryController"
+		class="ca.sciencestudio.vespers.service.controllers.GetSampleCameraQueryController">
+		<property name="sampleCameraStateMap" ref="simSampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="getSampleCameraImageController"
+		class="ca.sciencestudio.vespers.service.controllers.GetSampleCameraImageController">
+		<property name="sampleCameraStateMap" ref="simSampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+		<property name="sampleNotAvailableImageUrl" value="/ssvespers/img/sample_not_available.jpg"/>
+	</bean>
+
+	<bean id="updateSampleCameraScaleController"
+		class="ca.sciencestudio.vespers.service.controllers.UpdateSampleCameraScaleController">
+		<property name="sampleCameraStateMap" ref="simSampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+	</bean>
+
+	<!-- sampleStageHV Controllers -->
+
+    <bean id="updateSampleStageHVController"
+    	class="ca.sciencestudio.vespers.service.controllers.UpdateSampleStageHVController">
+    	<property name="sampleStateHVStateMap" ref="simSampleStageHVStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <!-- beamlineSession Controllers -->
+
+    <bean id="updateBeamlineSessionController"
+    	class="ca.sciencestudio.vespers.service.controllers.UpdateBeamlineSessionController">
+    	<property name="experimentDAO" ref="experimentDAO"/>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <bean id="controlBeamlineController"
+    	class="ca.sciencestudio.vespers.service.controllers.ControlBeamlineController">
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    </bean>
+
+    <!-- scan Controllers -->
+
+	<bean id="getExperimentListController"
+		class="ca.sciencestudio.vespers.service.controllers.GetExperimentListController">
+		<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+		<property name="experimentDAO" ref="experimentDAO"/>
+	</bean>
+
+    <bean id="startStopPauseScanDeviceController"
+    	class="ca.sciencestudio.vespers.service.controllers.StartStopPauseScanDeviceController">
+    	<property name="scanDeviceStateMap" ref="simScanDeviceStateMap"/>
+    	<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+    	<property name="scanDAO" ref="scanDAO"/>
+    </bean>
+    
+    <bean id="updateScanDeviceController"
+		class="ca.sciencestudio.vespers.service.controllers.UpdateScanDeviceController">
+		<property name="scanDeviceStateMap" ref="simScanDeviceStateMap"/>
+		<property name="sampleCameraStateMap" ref="simSampleCameraStateMap"/>
+		<property name="beamlineSessionStateMap" ref="simBeamlineSessionStateMap"/>
+	</bean>
+
+	<bean id="annotationMapping"
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+
+</beans>

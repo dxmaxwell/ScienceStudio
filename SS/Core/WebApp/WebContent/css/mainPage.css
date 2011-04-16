@@ -1,0 +1,75 @@
+/**	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+ *   - see license.txt for details.
+ *
+ *  Description:
+ *     mainPage css file.
+ *     
+ */
+ 
+@CHARSET "ISO-8859-1";
+* {
+	font: menu;
+	padding: 0px;
+	margin: 0px;
+	font-size: 11px;
+}
+
+TD {
+	vertical-align: top;
+}
+IFRAME {
+	width: 100%;
+	height: 480px;
+	border: 0px;
+	overflow: auto;
+}
+
+.x-filetree-nodename {
+	font-weight: bold;
+	color: red;
+}
+.x-filetree-form-item {
+	font-size: 11px;
+}
+.x-filetree-form-item input {
+	border-color: transparent;
+	font-size: 11px;
+}
+.x-menu-sep {
+	font-size: 3px;
+	color: black;
+}
+.fake-anchor {
+	cursor:pointer;
+	text-decoration:underline;
+	color:#0608EF;
+}
+.HelpBox {
+	font: menu;
+	font-size: 8pt;
+	color: infotext;
+	background: silver;
+}
+.LabelFld {
+	background:white;
+	border:none;
+	color: green;
+	font-weight:bold;
+}
+.ReadOnlyTextFld {
+	background:buttonface;
+}
+.InputFld {
+	background:white;
+}
+.ProgressMeter
+{
+ 	float:right;
+ 	border:1px solid highlight;
+ 	width: 128px;
+	overflow: hidden;
+}
+.ProgressMeterImage
+{
+	position: relative;
+}

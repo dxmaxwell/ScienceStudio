@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Application context iBATIS configuration.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	
+	<!-- ===================================================================
+  	-  Ibatis SQL Map Client
+  	-  =================================================================== -->
+	<bean id="sqlMapClient"
+		class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation" value="/WEB-INF/sqlmap-config.xml"/>
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+</beans>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Statistic" >
+	<resultMap  class="ca.sciencestudio.uso.survey.model.SurveyStatistic" id="statistic">
+		<result property="type"                       column="rec_type"/>
+		<result property="sectionId"                  column="section_id"/>
+		<result property="questionId"                 column="question_id"/>
+		<result property="choiceId"                   column="choice_id"/>
+		<result property="text"                       column="text"/>
+		<result property="description"                column="description"/>
+		<result property="count"                      column="count"/>
+	</resultMap>
+
+	<select id="getExpectedParticipantCount" resultMap="statistic">
+		SELECT
+			0 AS rec_type,
+			0 AS section_id,
+			0 AS question_id,
+			0 AS choice_id,
+			'' AS text,
+			'' AS description,
+			count(*) AS count
+		FROM ${database}.survey_participant
+		WHERE survey_id = #value#
+	</select>
+	
+	<select id="getAttendedParticipantCount" resultMap="statistic">
+		SELECT
+			0 AS rec_type,
+			0 AS section_id,
+			0 AS question_id,
+			0 AS choice_id,
+			'' AS text,
+			'' AS description,
+			Count(*) AS count
+		FROM ${database}.survey_participant
+		WHERE survey_participant.survey_id = #value#
+		  AND survey_participant.status = 2
+	</select>
+	
+	<select id="getStatisticSectionList" resultMap="statistic">
+		SELECT
+			1 AS rec_type,
+			section_id,
+			0 AS question_id,
+			-1 AS choice_id,
+			section_name AS text,
+			description,
+			0 AS count
+		FROM ${database}.survey_section
+		WHERE survey_id = #value#
+		ORDER BY section_order
+	</select>
+
+	<select id="getStatisticQuestionList" resultMap="statistic">
+		SELECT
+			question_type + 2 AS rec_type,
+			0 AS section_id,
+			question_id,
+			-1 AS choice_id,
+			question_text AS text,
+			'' AS description,
+			(SELECT Count(*)
+			   FROM ${database}.survey_feedback, ${database}.survey_participant
+			  WHERE survey_feedback.question_id = survey_question.question_id
+			    AND survey_feedback.participant_id = survey_participant.participant_id
+			    AND survey_participant.status = 2
+			) AS count
+		FROM ${database}.survey_question
+		WHERE section_id = #value#
+		ORDER BY question_order
+	</select>
+
+	<select id="getStatisticChoiceList" resultMap="statistic">
+		SELECT
+			5 AS rec_type,
+			0 AS section_id,
+			0 AS question_id,
+			choice_id AS choice_id,
+			choice_text AS text,
+			'' AS description,
+			(SELECT Count(*)
+			   FROM ${database}.survey_feedback, ${database}.survey_participant
+			  WHERE survey_feedback.choice = survey_choice.choice_id
+			    AND survey_feedback.participant_id = survey_participant.participant_id
+			    AND survey_participant.status = 2
+			) AS count
+		FROM ${database}.survey_choice
+		WHERE question_id = #value#
+		ORDER BY choice_order
+	</select>
+
+	<select id="getStatisticOtherAnswerCount" resultMap="statistic">
+		SELECT
+			6 AS rec_type,
+			0 AS section_id,
+			0 AS question_id,
+			0 AS choice_id,
+			'' AS text,
+			'' AS description,
+			(SELECT Count(*)
+			   FROM ${database}.survey_feedback, ${database}.survey_participant
+			  WHERE question_id = #value# AND choice = 0
+			    AND survey_feedback.participant_id = survey_participant.participant_id
+			    AND survey_participant.status = 2
+			) AS count
+		FROM ${database}.survey_question
+		WHERE question_id = #value#
+		  AND question_type = 1
+	</select>
+
+	<select id="getStatisticAllOtherAnswerList" resultMap="statistic">
+		SELECT
+			6 AS rec_type,
+			0 AS section_id,
+			0 AS question_id,
+			0 AS choice_id,
+			survey_feedback.answer AS text,
+			'' AS description,
+			count(survey_feedback.feedback_id) AS count
+		FROM ${database}.survey_feedback, ${database}.survey_question, ${database}.survey_participant
+		WHERE survey_feedback.question_id = #value#
+		  AND survey_question.question_id = #value#
+		  AND survey_question.question_type = 1
+		  AND survey_feedback.choice = 0
+		  AND survey_feedback.participant_id = survey_participant.participant_id
+		  AND survey_participant.status = 2
+		GROUP BY survey_feedback.answer
+		ORDER BY count DESC
+	</select>
+	
+	<select id="getStatisticAllAnswerList" resultMap="statistic">
+		SELECT
+			7 AS rec_type,
+			0 AS section_id,
+			0 AS question_id,
+			-1 AS choice_id,
+			survey_feedback.answer AS text,
+			'' AS description,
+			count(survey_feedback.feedback_id) AS count
+		FROM ${database}.survey_feedback, ${database}.survey_question, ${database}.survey_participant
+		WHERE survey_feedback.question_id = #value#
+		  AND survey_question.question_id = #value#
+		  AND survey_question.question_type = 2
+		  AND survey_feedback.participant_id = survey_participant.participant_id
+		  AND survey_participant.status = 2
+		GROUP BY survey_feedback.answer
+		ORDER BY count DESC
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Validators for model servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	
+	<!-- ===================================================================
+  	-  Validators
+  	-  =================================================================== -->
+	
+	<bean id="projectFormBackerValidator"
+		class="ca.sciencestudio.service.project.validators.ProjectFormBackerValidator">
+	</bean>
+	
+	<bean id="sampleFormBackerValidator"
+		class="ca.sciencestudio.service.sample.validators.SampleFormBackerValidator">
+	</bean>
+	
+	<bean id="sessionFormBackerValidator"
+		class="ca.sciencestudio.service.session.validators.SessionFormBackerValidator">
+	</bean>
+	
+	<bean id="experimentFormBackerValidator"
+		class="ca.sciencestudio.service.session.validators.ExperimentFormBackerValidator">
+	</bean>
+	
+	<bean id="scanFormValidator"
+		class="ca.sciencestudio.service.session.validators.ScanFormValidator">
+	</bean>
+	
+	<bean id="projectPersonFormValidator"
+		class="ca.sciencestudio.service.project.validators.ProjectPersonFormValidator">
+	</bean>
+	
+</beans>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	 - see license.txt for details.
+
+	Description:
+		simVespersSessionConfig Spring configuration file.
+ -->
+ 
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">   
+
+	<!-- JMS ActiveMQ Setup -->
+	
+	<bean id="jmsActiveMQConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://localhost:61616"/>
+		<property name="copyMessageOnSend" value="true"/>
+	</bean>
+	
+	<bean id="jmsConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="jmsActiveMQConnectionFactory"/>
+		<property name="sessionCacheSize" value="1"/>
+	</bean>
+	
+	<!-- Device Message Sender -->
+
+	<bean id="jmsDeviceMessageTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="explicitQosEnabled" value="true"/>
+		<property name="deliveryPersistent" value="false"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+
+	<bean id="jmsDeviceMessageSender" class="ca.sciencestudio.device.messaging.spring.SpringDeviceMessageSender">
+		<property name="destinationName" value="vespers.simulation.topic.device.message.send"/>
+		<property name="jmsTemplate" ref="jmsDeviceMessageTemplate"/>
+	</bean>
+
+	<bean id="jmsDeviceEventListenerMessageSender" class="ca.sciencestudio.device.control.messaging.DelegatingDeviceEventListenerMessageSender">
+		<constructor-arg>
+			<list>
+				<ref bean="jmsDeviceEventReceiverPublisher"/>
+				<ref bean="beamlineInformation"/>
+				<ref bean="beamlineSession"/>
+			</list>
+		 </constructor-arg>
+		<property name="deviceMessageSender" ref="jmsDeviceMessageSender"/>
+	</bean>
+
+	<!-- Device Message Receiver -->
+	
+	<bean id="jmsDeviceMessageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="destinationName" value="vespers.simulation.topic.device.message.receive"/>
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="messageListener" ref="jmsDeviceMessageReceiver"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+	
+	<bean id="jmsDeviceMessageReceiver" class="ca.sciencestudio.device.messaging.jms.DelegatingJmsDeviceMessageReceiver">
+		<property name="deviceMessageReceiver" ref="jmsDeviceMessageReceiverEventPublisher"/>
+	</bean>
+
+	<bean id="jmsDeviceMessageReceiverEventPublisher" class="ca.sciencestudio.device.control.messaging.SimpleDeviceMessageReceiverEventPublisher"/>	
+
+	<!-- Device Event Sender -->
+
+	<bean id="jmsDeviceEventTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="explicitQosEnabled" value="true"/>
+		<property name="deliveryPersistent" value="false"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+
+	<bean id="jmsDeviceEventSender" class="ca.sciencestudio.device.control.messaging.spring.SpringDeviceEventSender">
+		<property name="destinationName" value="vespers.simulation.topic.device.event.receive"/>
+		<property name="jmsTemplate" ref="jmsDeviceEventTemplate"/>
+	</bean>
+
+	<bean id="jmsDeviceEventListenerSender" class="ca.sciencestudio.device.control.event.impl.DelegatingDeviceEventListenerSender">
+		<constructor-arg>
+			<list>
+				<ref bean="jmsDeviceMessageReceiverEventPublisher"/>
+			</list>
+		</constructor-arg>
+		<property name="deviceEventSender" ref="jmsDeviceEventSender"/>
+	</bean>
+
+	<!-- Device Event Receiver -->
+
+	<bean id="jmsDeviceEventListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="destinationName" value="vespers.simulation.topic.device.event.send"/>
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>	
+		<property name="messageListener" ref="jmsDeviceEventReceiver"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+	
+	<bean id="jmsDeviceEventReceiver" class="ca.sciencestudio.device.control.messaging.jms.DelegatingJmsDeviceEventReceiver">
+		<property name="deviceEventReceiver" ref="jmsDeviceEventReceiverPublisher"/>
+	</bean>
+
+	<bean id="jmsDeviceEventReceiverPublisher" class="ca.sciencestudio.device.control.event.impl.SimpleDeviceEventReceiverPublisher"/>
+	
+	<!-- Device Configuration -->
+	
+	<bean id="beamlineInformation"
+		class="ca.sciencestudio.vespers.bcm.device.model.BeamlineInformation">
+		<constructor-arg value="beamlineInformation"/>
+		<constructor-arg>
+			<list><ref bean="jmsDeviceMessageReceiverEventPublisher"/></list>
+		</constructor-arg>
+		<property name="beamlineInformationProperties" value="simVespersInformation.properties"/>	
+	</bean>
+	
+	<bean id="beamlineSession" class="ca.sciencestudio.vespers.bcm.device.model.BeamlineSession">
+		<constructor-arg value="beamlineSession"/>
+		<constructor-arg>
+			<list>
+				<ref bean="jmsDeviceMessageReceiverEventPublisher"/>
+			</list>
+		</constructor-arg>
+		<property name="executable" value="java"/>
+		<property name="arguments">
+			<list>
+				<!--<value>-Dlog4j.configuration=file:/path/to/log4j/config/file.xml</value>-->
+				<value>-Dbcm.dispatcher.statistics=false</value>
+				<value>-jar</value><value>vespersBCM.jar</value>
+				<value>-w</value><value>4</value>
+				<value>./config/simVespersDeviceConfig.xml</value>
+			</list>
+		</property>
+		<property name="directory" value="/path/to/vespersBCM/directory"/>
+		<property name="processInitializeWaitSeconds" value="5"/>
+	</bean>
+	
+</beans>

@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	 - see license.txt for details.
+
+	Description:
+		simVespersDeviceConfig Spring configuration file.
+ -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<!-- JMS ActiveMQ Setup -->
+
+	<bean id="jmsActiveMQConnectionFactory" 
+		class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://localhost:61616"/>
+		<property name="copyMessageOnSend" value="true"/>
+	</bean>
+
+	<bean id="jmsConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="jmsActiveMQConnectionFactory"/>
+		<property name="sessionCacheSize" value="1"/>
+	</bean>
+	
+	<!-- Device Event Sender -->
+	
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="explicitQosEnabled" value="true"/>
+		<property name="deliveryPersistent" value="false"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+
+	<bean id="jmsDeviceEventSender" class="ca.sciencestudio.device.control.messaging.spring.SpringDeviceEventSender">
+		<property name="destinationName" value="vespers.simulation.topic.device.event.send"/>
+		<property name="jmsTemplate" ref="jmsTemplate"/>
+	</bean>
+
+	<bean id="jmsDeviceEventListenerSender" class="ca.sciencestudio.device.control.event.impl.DelegatingDeviceEventListenerSender">
+		<constructor-arg>
+			<list>
+				<ref bean="sampleStageHV"/>
+				<ref bean="sampleStageXYZ"/>
+				<ref bean="sampleCamera"/>
+				<ref bean="vortexDetector"/>
+				<ref bean="scanDevice"/>
+			</list>
+		 </constructor-arg>
+		<property name="deviceEventSender" ref="jmsDeviceEventSender"/>
+	</bean>
+
+	<!-- Device Event Receiver -->
+
+	<bean id="jmsMessageListenerContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="destinationName" value="vespers.simulation.topic.device.event.receive"/>
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="messageListener" ref="jmsDeviceEventReceiver"/>
+		<property name="pubSubDomain" value="true"/>
+	</bean>
+	
+	<bean id="jmsDeviceEventReceiver" class="ca.sciencestudio.device.control.messaging.jms.DelegatingJmsDeviceEventReceiver">
+		<property name="deviceEventReceiver" ref="jmsDeviceEventReceiverHandler"/>
+	</bean>
+	
+	<bean id="jmsDeviceEventReceiverHandler" class="ca.sciencestudio.device.control.event.impl.SimpleDeviceEventReceiverHandler"/>
+	
+	<!-- Scan Device -->
+	
+    <bean id="scanDevice"
+    	class="ca.sciencestudio.vespers.bcm.daq.AreaScanDevice">
+    	<constructor-arg value="scanDevice" />
+    	<property name="resourceManager">
+	    	<bean id="resourceManager" class="ca.sciencestudio.util.io.ResourceManager">
+				<property name="baseResource" value="file:///path/to/scan/data/"/>
+			</bean>
+    	</property>
+    	<property name="destFileName" value="scanData%03d.dat"/>
+    	<property name="destFileVersion" value="20090917A"/>
+    	<property name="executableFile" value="/path/to/acquisitionCL"/>
+    	<property name="configurationFile" value="/path/to/vespers/scan.cfg"/>
+    	<property name="scanCountEvent" value="output"/>
+    	<property name="scanNameX" value="axis1"/>
+    	<property name="scanNameY" value="axis2"/>
+    </bean>
+    
+    <!-- VortexDetector -->
+
+	<bean id="vortexDetector"
+		class="ca.sciencestudio.vespers.bcm.device.model.VortexDetector">
+		<constructor-arg value="vortexDetector"/>
+		<constructor-arg>
+			<map>
+				<entry key="data" value-ref="IOC1607-004_mca1"/>
+				<entry key="acquireStart" value-ref="IOC1607-004_mca1Start"/>
+				<entry key="acquireStop" value-ref="IOC1607-004_mca1Stop"/>
+				<entry key="acquireErase" value-ref="IOC1607-004_mca1Erase"/>
+				<entry key="acquireEraseStart" value-ref="IOC1607-004_mca1EraseStart"/>
+				<entry key="acquireState" value-ref="IOC1607-004_mca1.ACQG"/>
+				<entry key="elapsedTime" value-ref="IOC1607-004_mca1.ERTM"/>
+				<entry key="presetTime" value-ref="IOC1607-004_mca1.PRTM"/>
+				<entry key="deadTime" value-ref="IOC1607-004_mca1.IDTIM"/>
+				<entry key="peakingTime" value-ref="IOC1607-004_dxp1.PKTIM_RBV"/>
+				<entry key="peakingTimeSP" value-ref="IOC1607-004_dxp1.PKTIM"/>
+				<entry key="triggerLevel" value-ref="IOC1607-004_dxp1.SLOW_TRIG_RBV"/>
+				<entry key="triggerLevelSP" value-ref="IOC1607-004_dxp1.SLOW_TRIG"/>
+				<entry key="maxEnergy" value-ref="IOC1607-004_dxp1.EMAX_RBV"/>
+				<entry key="maxEnergySP" value-ref="IOC1607-004_dxp1.EMAX"/>
+				<entry key="counts" value-ref="IOC1607-004_dxp1.SLOW_PEAKS"/>
+				<entry key="inputCountRate" value-ref="IOC1607-004_dxp1.ICR"/>
+				<entry key="outputCountRate" value-ref="IOC1607-004_dxp1.OCR"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- VortexDetector (PVs) -->
+	
+	<bean id="IOC1607-004_mca1"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="int[]" />
+		<constructor-arg value="IOC1607-004:mca1"/>
+		<constructor-arg value="spectrum"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1Start"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="IOC1607-004:mca1Start"/>
+		<constructor-arg value="acquireStart"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1Stop"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="IOC1607-004:mca1Stop"/>
+		<constructor-arg value="acquireStop"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+
+	<bean id="IOC1607-004_mca1Erase"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="IOC1607-004:mca1Erase"/>
+		<constructor-arg value="acquireErase"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_mca1EraseStart"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="IOC1607-004:mca1EraseStart"/>
+		<constructor-arg value="acquireEraseStart"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_mca1.ACQG"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="IOC1607-004:mca1.ACQG"/>
+		<constructor-arg value="acquireState"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_mca1.ERTM"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:mca1.ERTM"/>
+		<constructor-arg value="elapsedTime"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_mca1.IDTIM"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:mca1.IDTIM"/>
+		<constructor-arg value="deadTime"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_mca1.PRTM"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:mca1.PRTM"/>
+		<constructor-arg value="presetTime"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.PKTIM_RBV"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.PKTIM_RBV"/>
+		<constructor-arg value="peakingTime"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.PKTIM"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.PKTIM"/>
+		<constructor-arg value="peakingTimeSP"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.SLOW_TRIG_RBV"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.SLOW_TRIG_RBV"/>
+		<constructor-arg value="triggerLevel"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.SLOW_TRIG"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.SLOW_TRIG"/>
+		<constructor-arg value="triggerLevelSP"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.EMAX_RBV"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.EMAX_RBV"/>
+		<constructor-arg value="maxEnergy"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.EMAX"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.EMAX"/>
+		<constructor-arg value="maxEnergySP"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.SLOW_PEAKS"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="int[]" />
+		<constructor-arg value="IOC1607-004:dxp1.SLOW_PEAKS"/>
+		<constructor-arg value="counts"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.ICR"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.ICR"/>
+		<constructor-arg value="inputCountRate"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<bean id="IOC1607-004_dxp1.OCR"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="IOC1607-004:dxp1.OCR"/>
+		<constructor-arg value="outputCountRate"/>
+		<constructor-arg ref="simulationVortexDetector"/>
+	</bean>
+	
+	<!-- SimulationVortexDetector -->
+    
+    <bean id="simulationVortexDetector"
+		class="ca.sciencestudio.vespers.bcm.simulation.model.SimulationVortexDetector">
+		<constructor-arg value="simulationVortexDetector" />
+		<constructor-arg value="24" />
+		<constructor-arg value="simulation/SP%i.dat" />
+		<constructor-arg ref="simulationSimpleMotorX" />
+		<constructor-arg ref="simulationSimpleMotorV" />
+		<property name="publishing" value="true"/>
+		<property name="inputCountRate" value="4800.0" />
+		<property name="simulationUpdateInterval" value="500" />
+    </bean>
+    
+    <!--  SampleCamera -->
+
+	<bean id="sampleCamera"
+		class="ca.sciencestudio.vespers.bcm.device.model.SampleCamera">
+		<constructor-arg value="sampleCamera"/>
+		<constructor-arg>
+			<map>
+				<entry key="data" value-ref="CCD1607-004_data"/>
+				<entry key="bpp" value-ref="CCD1607-004_bpp"/>
+				<entry key="width" value-ref="CCD1607-004_width"/>
+				<entry key="height" value-ref="CCD1607-004_height"/>			
+			</map>
+		</constructor-arg>
+		<constructor-arg ref="sampleStageHV"/>
+		<constructor-arg ref="scanDevice"/>
+		<property name="scale" value="0.0025"/>
+	</bean>
+
+	<!-- SampleCamera (PVs) -->
+	
+	<bean id="CCD1607-004_data"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="byte[]" />
+		<constructor-arg value="CCD1607-004:data"/>
+		<constructor-arg value="data"/>
+		<constructor-arg ref="simulationSampleCamera"/>
+	</bean>
+	
+	<bean id="CCD1607-004_bpp"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="CCD1607-004:bpp"/>
+		<constructor-arg value="bpp"/>
+		<constructor-arg ref="simulationSampleCamera"/>
+	</bean>
+	
+	<bean id="CCD1607-004_width"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="CCD1607-004:width"/>
+		<constructor-arg value="width"/>
+		<constructor-arg ref="simulationSampleCamera"/>
+	</bean>
+	
+	<bean id="CCD1607-004_height"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="CCD1607-004:height"/>
+		<constructor-arg value="height"/>
+		<constructor-arg ref="simulationSampleCamera"/>
+	</bean>
+    
+    <!-- simulationSampleCamera -->
+    
+    <bean id="simulationSampleCamera"
+    	class="ca.sciencestudio.vespers.bcm.simulation.model.SimulationSampleCamera">
+    	<constructor-arg value="simulatedSampleCamera" />
+    	<constructor-arg value="simulation/sample2.jpg" />
+    	<constructor-arg ref="simulationSimpleMotorX" />
+    	<constructor-arg ref="simulationSimpleMotorV" />
+    	<property name="sampleImageScale" value="0.0025" />
+    	<property name="fieldOfViewWidth" value="1.6" />
+    	<property name="fieldOfViewHeight" value="1.2" />
+    </bean>
+    
+    
+    <!-- SampleStageHV -->
+	
+	<bean id="sampleStageHV"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleStageHV">
+		<constructor-arg value="sampleStageHV"/>
+		<constructor-arg>
+			<map>
+				<entry key="motorH" value-ref="sampleStageXYZMotorX"/>
+				<entry key="motorV" value-ref="sampleStageHVMotorV"/>
+			</map>
+		</constructor-arg>	
+	</bean>
+	
+	<!-- SampleStageHV (SimpleMotors) -->
+	
+	<bean id="sampleStageHVMotorV"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageHVMotorV"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="VB2026_V_step_sp"/>
+				<entry key="setPoint" value-ref="VB2026_V_step"/>
+				<entry key="status" value-ref="VB2026_V_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+	
+	<!-- SampleStageHVMotorV (PVs) -->
+	
+	<bean id="VB2026_V_step_sp"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:V:step:sp"/>
+		<constructor-arg value="position"/>
+		<constructor-arg ref="simulationSimpleMotorV"/>
+	</bean>
+	
+	<bean id="VB2026_V_step"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:V:step"/>
+		<constructor-arg value="setpoint"/>
+		<constructor-arg ref="simulationSimpleMotorV"/>
+	</bean>
+
+    <bean id="VB2026_V_status"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="VB2026:V:status"/>
+		<constructor-arg value="status"/>
+		<constructor-arg ref="simulationSimpleMotorV"/>
+	</bean>
+    
+    <!-- SimulationSimpleMotorV -->
+    
+     <bean id="simulationSimpleMotorV"
+		class="ca.sciencestudio.vespers.bcm.simulation.model.SimulationSimpleTwoMotor">
+		<constructor-arg value="simulationSimpleMotorV"/>
+		<constructor-arg ref="simulationSimpleMotorY"/>
+		<constructor-arg ref="simulationSimpleMotorZ"/>
+		<property name="publishing" value="true"/>
+    </bean>
+	
+	<!-- SampleStageXYZ -->
+
+	<bean id="sampleStageXYZ"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleStageXYZ">
+		<constructor-arg value="sampleStageXYZ"/>
+		<constructor-arg>
+			<map>
+				<entry key="motorX" value-ref="sampleStageXYZMotorX"/>
+				<entry key="motorY" value-ref="sampleStageXYZMotorY"/>
+				<entry key="motorZ" value-ref="sampleStageXYZMotorZ"/>
+			</map>
+		</constructor-arg>
+	</bean>
+	
+	<!--  SampleStageXYZ (SimpleMotors) -->
+
+	<bean id="sampleStageXYZMotorX"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageXYZMotorX"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="VB2026_X_step_sp"/>
+				<entry key="setPoint" value-ref="VB2026_X_step"/>
+				<entry key="status" value-ref="VB2026_X_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="sampleStageXYZMotorY"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageXYZMotorY"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="VB2026_Y_step_sp"/>
+				<entry key="setPoint" value-ref="VB2026_Y_step"/>
+				<entry key="status" value-ref="VB2026_Y_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean id="sampleStageXYZMotorZ"
+		class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
+		<constructor-arg value="sampleStageXYZMotorZ"/>
+		<constructor-arg>
+			<map>
+				<entry key="position" value-ref="VB2026_Z_step_sp"/>
+				<entry key="setPoint" value-ref="VB2026_Z_step"/>
+				<entry key="status" value-ref="VB2026_Z_status"/>
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- SampleStageXYZMotorX (PVs) -->
+
+	<bean id="VB2026_X_step_sp"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:X:step:sp"/>
+		<constructor-arg value="position"/>
+		<constructor-arg ref="simulationSimpleMotorX"/>
+	</bean>
+
+	<bean id="VB2026_X_step"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:X:step"/>
+		<constructor-arg value="setpoint"/>
+		<constructor-arg ref="simulationSimpleMotorX"/>
+	</bean>
+
+    <bean id="VB2026_X_status"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="VB2026:X:status"/>
+		<constructor-arg value="status"/>
+		<constructor-arg ref="simulationSimpleMotorX"/>
+	</bean>
+    
+    <!-- SimulationSimpleMotorX -->
+    
+    <bean id="simulationSimpleMotorX"
+		class="ca.sciencestudio.vespers.bcm.simulation.model.SimulationSimpleMotor">
+		<constructor-arg value="simulationSimpleMotorX"/>	
+		<property name="publishing" value="true"/>
+		<property name="velocity" value="0.0001" />
+		<property name="simulationUpdateInterval" value="500" />
+    </bean>
+    
+    <!-- SampleStageXYZMotorY (PVs) -->
+
+	<bean id="VB2026_Y_step_sp"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:Y:step:sp"/>
+		<constructor-arg value="position"/>
+		<constructor-arg ref="simulationSimpleMotorY"/>
+	</bean>
+	
+	<bean id="VB2026_Y_step"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:Y:step"/>
+		<constructor-arg value="setpoint"/>
+		<constructor-arg ref="simulationSimpleMotorY"/>
+	</bean>
+
+    <bean id="VB2026_Y_status"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="VB2026:Y:status"/>
+		<constructor-arg value="status"/>
+		<constructor-arg ref="simulationSimpleMotorY"/>
+	</bean>
+    
+    
+    <!-- SimulationSimpleMotorY -->
+    
+    <bean id="simulationSimpleMotorY"
+    	class="ca.sciencestudio.vespers.bcm.simulation.model.SimulationSimpleMotor">
+		<constructor-arg value="simulationSimpleMotorY"/>	
+		<property name="publishing" value="true"/>
+		<property name="velocity" value="0.0001" />
+		<property name="simulationUpdateInterval" value="500" />
+    </bean>
+    
+    <!-- SampleStageXYZMotorZ (PVs) -->
+
+	<bean id="VB2026_Z_step_sp"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:Z:step:sp"/>
+		<constructor-arg value="position"/>
+		<constructor-arg ref="simulationSimpleMotorZ"/>
+	</bean>
+	
+	<bean id="VB2026_Z_step"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="double[]" />
+		<constructor-arg value="VB2026:Z:step"/>
+		<constructor-arg value="setpoint"/>
+		<constructor-arg ref="simulationSimpleMotorZ"/>
+	</bean>
+
+    <bean id="VB2026_Z_status"
+		class="ca.sciencestudio.device.control.simulation.epics.SimulationEpicsDevice">
+		<constructor-arg value="short[]" />
+		<constructor-arg value="VB2026:Z:status"/>
+		<constructor-arg value="status"/>
+		<constructor-arg ref="simulationSimpleMotorZ"/>
+	</bean>
+    
+    <!-- SimulationSimpleMotorZ -->
+    
+    <bean id="simulationSimpleMotorZ"
+    	class="ca.sciencestudio.vespers.bcm.simulation.model.SimulationSimpleMotor">
+		<constructor-arg value="simulationSimpleMotorZ"/>
+		<property name="publishing" value="true"/>
+		<property name="velocity" value="0.0001" />
+		<property name="simulationUpdateInterval" value="500" />
+    </bean>
+            
+</beans>

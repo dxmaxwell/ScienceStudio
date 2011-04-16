@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		LoginGroupMember sql map xml file.	
+ -->
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="LoginGroupMember">
+	<resultMap id="loginGroupMember" class="ca.sciencestudio.login.model.ibatis.IbatisLoginGroupMember">
+		<result property="id" column="login_group_member_id" />
+		<result property="personUid" column="person_uid" />
+		<result property="loginGroupId" column="login_group_id"/>
+	</resultMap>
+	
+	<insert id="addLoginGroupMember">
+		INSERT INTO ${database}.login_group_member (
+			person_uid,
+			login_group_id
+		)
+		VALUES (
+			#personUid:VARCHAR#,
+			#loginGroupId:INT#
+		)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="editLoginGroupMember">
+		UPDATE ${database}.login_group_member
+			SET
+				person_uid = #personUid:VARCHAR#,
+				login_group_id = #loginGroupId:INT#
+			WHERE 
+				login_group_member_id = #id:INT#
+	</update>
+	
+	<delete id="removeLoginGroupMember">
+		DELETE FROM ${database}.login_group_member
+			WHERE login_group_member_id = #value#
+	</delete>
+
+	<select id="getLoginGroupMemberById" resultMap="loginGroupMember">
+		SELECT * FROM ${database}.login_group_member
+			WHERE login_group_member_id = #value#
+	</select>
+	
+	<select id="getLoginGroupMemberList" resultMap="loginGroupMember">
+		SELECT * FROM ${database}.login_group_member
+	</select>
+	
+</sqlMap>

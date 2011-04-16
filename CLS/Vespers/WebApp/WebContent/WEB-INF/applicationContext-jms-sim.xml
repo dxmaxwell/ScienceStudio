@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+
+	Description:
+		Configuration for simulation JMS configuration.
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+           
+	<bean id="simJmsActiveMQConnectionFactory"
+		class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="${jms.simulation.url}"/>
+		<property name="copyMessageOnSend" value="true"/>
+	</bean>
+	
+	<bean id="simJmsConnectionFactory"
+		class="org.springframework.jms.connection.CachingConnectionFactory">
+		<property name="targetConnectionFactory" ref="simJmsActiveMQConnectionFactory"/>
+		<property name="sessionCacheSize" value="1"/>
+	</bean>
+	
+</beans>

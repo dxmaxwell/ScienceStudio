@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		InstrumentTechnique sql map file.	
+ -->
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="InstrumentTechnique">
+	<resultMap  id="instrumentTechnique" class="ca.sciencestudio.model.facility.ibatis.IbatisInstrumentTechnique">
+		<result property="id" column="instrument_technique_id" />
+		<result property="instrumentId" column="instrument_id" nullValue="0"/>
+		<result property="techniqueId" column="technique_id" nullValue="0"/>		
+	</resultMap>
+	
+	<insert id="addInstrumentTechnique">
+		INSERT INTO scstudio.instrument_technique (instrument_id, technique_id)
+			VALUES (#instrumentId#,#techniqueId#)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="editInstrumentTechnique">
+		UPDATE scstudio.instrument_technique
+			SET
+				instrument_id = #instrumentId:INT#,
+				technique_id = #techniqueId:INT#
+			WHERE
+				instrument_technique_id = #id#
+	</update>
+	
+	<delete id="removeInstrumentTechnique">
+		DELETE 
+			FROM scstudio.instrument_technique
+			WHERE instrument_technique_id = #value#
+	</delete>
+	
+	<select id="getInstrumentTechniqueById" resultMap="instrumentTechnique">
+		SELECT *
+			FROM scstudio.instrument_technique
+			WHERE instrument_technique_id = #value#
+	</select>
+	
+	<select id="getInstrumentTechniqueListByInstrumentId" resultMap="instrumentTechnique">
+		SELECT *
+			FROM scstudio.instrument_technique
+			WHERE instrument_id = #value#
+	</select>
+	
+	<select id="getInstrumentTechniqueListByTechniqueId" resultMap="instrumentTechnique">
+		SELECT *
+			FROM scstudio.instrument_technique
+			WHERE technique_id = #value#
+	</select>
+	
+	<select id="getInstrumentTechniqueListByLaboratoryId" resultMap="instrumentTechnique">
+		select it.instrument_technique_id, it.instrument_id, it.technique_id
+			FROM scstudio.instrument_technique AS it, scstudio.instrument AS i
+			WHERE i.laboratory_id = #value# AND i.instrument_id = it.instrument_id
+	</select>
+	
+	<select id="getInstrumentTechniqueByInstrumentIdAndTechniqueId" resultMap="instrumentTechnique">
+		SELECT *
+			FROM scstudio.instrument_technique
+			WHERE instrument_id = #param1#
+			AND technique_id = #param2#
+	</select>
+</sqlMap>

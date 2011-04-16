@@ -1,0 +1,56 @@
+@CHARSET "UTF-8";
+/**	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+ *   - see license.txt for details.
+ *
+ *  Description:
+ *     treeNodes css file.
+ *     
+ */
+
+.ss-projects-tree-node-icon {
+	/* use ext-js default */
+}
+
+.ss-project-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/project.png') !important;
+}
+
+.ss-project-persons-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/group.png') !important;
+}
+
+.ss-project-samples-tree-node-icon {
+	/* use ext-js default */
+}
+
+.ss-project-sessions-tree-node-icon {
+	/* use ext-js default */
+}
+
+.ss-project-person-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/person.png') !important;
+}
+
+.ss-sample-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/sample.png') !important;
+}
+
+.ss-session-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/session.png') !important;
+}
+
+.ss-session-experiments-tree-node-icon {
+	/* use ext-js default */
+}
+
+.ss-experiment-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/spectrum.png') !important;
+}
+
+.ss-experiment-scans-tree-node-icon {
+	/* use ext-js default */
+}
+
+.ss-scan-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/scan.png') !important;
+}

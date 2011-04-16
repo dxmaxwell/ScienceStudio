@@ -1,0 +1,26 @@
+@CHARSET "UTF-8";
+/**	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+ *   - see license.txt for details.
+ *
+ *  Description:
+ *     formFields css file.
+ *     
+ */
+
+.x-item-disabled {
+	background-color:rgb(241,241,241);
+	background-image:none;
+	font-weight:bold;
+	color:black;
+	border:none;
+	opacity:1.0;
+}
+
+.x-item-disabled * {
+	background-color:rgb(241,241,241) !important;
+	background-image:none !important;
+	font-weight:bold !important;
+	color:black !important;
+	border:none !important;
+	opacity:1.0 !important;
+}

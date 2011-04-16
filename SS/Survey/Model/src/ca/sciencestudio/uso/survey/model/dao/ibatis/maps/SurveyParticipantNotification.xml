@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Survey" >
+	<resultMap  class="ca.sciencestudio.uso.survey.model.SurveyParticipantNotification" id="notification">
+		<result property="participantId"              column="participant_id"/>
+		<result property="notificationType"           column="notification_type"/>
+	</resultMap>
+
+	<select id="getNotificationList" resultMap="notification">
+		SELECT survey_participant.participant_id, 0 AS notification_type
+			FROM ${database}.survey_participant
+			WHERE status &lt;> 2
+				AND notification_date &lt;= CURRENT_TIMESTAMP
+				AND NOT EXISTS (SELECT * FROM ${database}.survey_participant_notify_event
+								WHERE survey_participant_notify_event.participant_id = survey_participant.participant_id
+									AND survey_participant_notify_event.event = 'Notified')
+		UNION
+		SELECT survey_participant.participant_id, 1 AS notification_type
+			FROM ${database}.survey_participant
+			WHERE status &lt;> 2
+				AND remind_date1 &lt;= CURRENT_TIMESTAMP
+				AND NOT EXISTS (SELECT * FROM ${database}.survey_participant_notify_event
+								WHERE survey_participant_notify_event.participant_id = survey_participant.participant_id
+									AND survey_participant_notify_event.event = 'Reminded First Time')
+		UNION
+		SELECT survey_participant.participant_id, 2 AS notification_type
+			FROM ${database}.survey_participant
+			WHERE status &lt;> 2
+				AND remind_date2 &lt;= CURRENT_TIMESTAMP
+				AND NOT EXISTS (SELECT * FROM ${database}.survey_participant_notify_event
+								WHERE survey_participant_notify_event.participant_id = survey_participant.participant_id
+									AND survey_participant_notify_event.event = 'Reminded Second Time')
+		
+	</select>
+</sqlMap>

@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Application context iBATIS configuration.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+           
+	<bean id="delegatingConverterFactory" class="ca.sciencestudio.data.converter.factory.DelegatingConverterFactory">
+		<property name="converterFactories">
+			<list>
+				<ref bean="mapXYVespersConverterFactory"/>
+				<ref bean="cdfToCDFMLConverterFactory"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="mapXYVespersConverterFactory"
+		class="ca.sciencestudio.vespers.data.converter.factory.MapXYVespersConverterFactory">
+		<property name="customRecordParsers">
+			<list><ref bean="vespersBackgroundRecordParser"/></list>
+		</property>
+		
+		<property name="posXSetpointOptions" ref="posXSetpointOptions"/>
+		<property name="posYSetpointOptions" ref="posYSetpointOptions"/>
+		<property name="posXFeedbackOptions" ref="posXFeedbackOptions"/>
+		<property name="posYFeedbackOptions" ref="posYFeedbackOptions"/>
+		
+		<property name="srCurrentOptions" ref="srCurrentOptions"/>
+		<property name="mcsCurrentOptions" ref="mcsCurrentOptions"/>
+		
+		<property name="sedNChannelsOptions" ref="sedNChannelsOptions"/>
+		<property name="sedMaxEnergyOptions" ref="sedMaxEnergyOptions"/>
+		<property name="sedEnergyGapTimeOptions" ref="sedEnergyGapTimeOptions"/>
+		<property name="sedPresetRealTimeOptions" ref="sedPresetRealTimeOptions"/>
+		<property name="sedEnergyPeakingTimeOptions" ref="sedEnergyPeakingTimeOptions"/>
+		<property name="sedSpectrumOptions" ref="sedSpectrumOptions"/>
+		<property name="sedFastCountOptions" ref="sedFastCountOptions"/>
+		<property name="sedSlowCountOptions" ref="sedSlowCountOptions"/>
+		<property name="sedDeadTimePctOptions" ref="sedDeadTimePctOptions"/>
+		<property name="sedElapsedRealTimeOptions" ref="sedElapsedRealTimeOptions"/>
+		<property name="sedElpasedLiveTimeOptions" ref="sedElapsedLiveTimeOptions"/>
+		<property name="sedDefaultNChannels" value="2048"/>
+		
+		<property name="fedNChannelsOptions" ref="fedNChannelsOptions"/>
+		<property name="fedMaxEnergyOptions" ref="fedMaxEnergyOptions"/>
+		<property name="fedEnergyGapTimeOptions" ref="fedEnergyGapTimeOptions"/>
+		<property name="fedPresetRealTimeOptions" ref="fedPresetRealTimeOptions"/>
+		<property name="fedEnergyPeakingTimeOptions" ref="fedEnergyPeakingTimeOptions"/>
+		<property name="fedSumSpectrumOptions" ref="fedSumSpectrumOptions"/>
+		<property name="fedSpectrumOptions" ref="fedSpectrumOptions"/>
+		<property name="fedFastCountOptions" ref="fedFastCountOptions"/>
+		<property name="fedSlowCountOptions" ref="fedSlowCountOptions"/>
+		<property name="fedDeadTimePctOptions" ref="fedDeadTimePctOptions"/>
+		<property name="fedElapsedRealTimeOptions" ref="fedElapsedRealTimeOptions"/>
+		<property name="fedElpasedLiveTimeOptions" ref="fedElapsedLiveTimeOptions"/>
+		<property name="fedDefaultNChannels" value="2048"/>
+		
+		<property name="cdfSpectrumCompressionLevel" value="0"/>
+	</bean>
+	
+	<bean id="vespersBackgroundRecordParser"
+		class="ca.sciencestudio.data.daf.DAFRegexRecordParser">
+		<property name="prefixPattern" value="^#\s*"/>
+		<property name="postfixPattern" value=""/>
+		<property name="elementParsers">
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFRegexElementParser">
+					<property name="elementPattern" value="Background counts time=\s*([^,]*)\s*\(x \.1 microseconds\)|([^,]*)"/>
+					<property name="numberOfElements" value="1"/>
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFRegexElementParser">
+					<property name="elementPattern" value=",[^,]+=([^,]*)|,([^,]*)"/>
+					<!--<property name="numberOfElements" value="44"/>-->
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Parameters for the Sample Position -->
+	
+	<bean id="posXSetpointOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list>
+				<value>SVM1607-2-B21-02:mm</value>
+				<value>TS1607-2-B21-01:H:user:mm</value>
+				<value>TS1607-2-B21-03:H:user:mm</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="posYSetpointOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list>
+				<value>SVM1607-2-B21-03:mm</value>
+				<value>TS1607-2-B21-01:V:user:mm</value>
+				<value>TS1607-2-B21-03:V:user:mm</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="posXFeedbackOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list>
+				<value>SVM1607-2-B21-02:mm:fbk</value>
+				<value>TS1607-2-B21-01:H:user:mm:fbk</value>
+				<value>TS1607-2-B21-03:H:user:mm:fbk</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="posYFeedbackOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list>
+				<value>SVM1607-2-B21-03:mm:fbk</value>
+				<value>TS1607-2-B21-01:V:user:mm:fbk</value>
+				<value>TS1607-2-B21-03:V:user:mm:fbk</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Beam Current (election and x-ray) -->
+	
+	<bean id="srCurrentOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list>
+				<value>PCT1402-01:mA:fbk</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="mcsCurrentOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>BL1607-B2-1:mcs08:fbk</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>BL1607-B2-1:mcs04:fbk</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>BL1607-B2-1:mcs05:fbk</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>BL1607-B2-1:mcs06:fbk</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>BL1607-B2-1:mcs07:fbk</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>BL1607-B2-1:mcs09:fbk</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+	
+	<!-- Parameters for the Single Element Detector -->
+	
+	<bean id="sedNChannelsOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:mca1.NUSE</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedMaxEnergyOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:dxp1.EMAX_RBV</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedEnergyGapTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:dxp1.GAPTIM_RBV</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedPresetRealTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:mca1.PRTM</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedEnergyPeakingTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:dxp1.PKTIM_RBV</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedSpectrumOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:mca1.VAL</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedFastCountOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:dxp1.FAST_PEAKS</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedSlowCountOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:dxp1.SLOW_PEAKS</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedDeadTimePctOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:mca1.DTIM</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedElapsedRealTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:mca1.ERTM</value></list>
+		</property>
+	</bean>
+	
+	<bean id="sedElapsedLiveTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>IOC1607-004:mca1.ELTM</value></list>
+		</property>
+	</bean>
+	
+	<!-- Parameters for the Four Element Detector -->
+	
+	<bean id="fedNChannelsOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>dxp1607-B21-04:mcaCorrected.NUSE</value></list>
+		</property>
+	</bean>
+	
+	<bean id="fedMaxEnergyOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>dxp1607-B21-04:mcaEMax</value></list>
+		</property>
+	</bean>
+	
+	<bean id="fedEnergyGapTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>dxp1607-B21-04:dxp1.GAPTIM</value></list>
+		</property>
+	</bean>
+	
+	<bean id="fedPresetRealTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>dxp1607-B21-04:PresetReal</value></list>
+		</property>
+	</bean>
+	
+	<bean id="fedEnergyPeakingTimeOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>dxp1607-B21-04:EnergyPkTime</value></list>
+		</property>
+	</bean>
+	
+	<bean id="fedSumSpectrumOptions"
+		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+		<property name="optionsExact">
+			<list><value>dxp1607-B21-04:mcaCorrected.VAL</value></list>
+		</property>
+	</bean>
+	
+	<bean id="fedSpectrumOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca1.VAL</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca2.VAL</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca3.VAL</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca4.VAL</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="fedFastCountOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp1.FAST_PEAKS</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp2.FAST_PEAKS</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp3.FAST_PEAKS</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp4.FAST_PEAKS</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="fedSlowCountOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp1.SLOW_PEAKS</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp2.SLOW_PEAKS</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp3.SLOW_PEAKS</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp4.SLOW_PEAKS</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="fedDeadTimePctOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp1:SlowDTP</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp2:SlowDTP</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp3:SlowDTP</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:dxp4:SlowDTP</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="fedElapsedRealTimeOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca1.ERTM</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca2.ERTM</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca3.ERTM</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca4.ERTM</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="fedElapsedLiveTimeOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca1.ELTM</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca2.ELTM</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca3.ELTM</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.daf.DAFEventElementOptions">
+					<property name="optionsExact">
+						<list><value>dxp1607-B21-04:mca4.ELTM</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+           
+</beans>

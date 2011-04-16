@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Configuration for device proxies.
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	
+	<bean id="nanofabSessionStateMap"
+		class="ca.sciencestudio.nanofab.state.NanofabSessionStateMap">
+		<property name="name" value="laboratorySession"/>
+		<property name="sessionDAO" ref="sessionDAO"/>
+		<property name="projectDAO" ref="projectDAO"/>
+		<property name="tunnelManager" ref="tunnelManager"/>
+	</bean>
+	
+	<bean id="tunnelManager"
+		class="ca.sciencestudio.util.net.TunnelManager">
+		<property name="tunnelFactory" ref="tunnelFactory"/>	
+	</bean>
+	
+	<bean id="tunnelFactory"
+		class="ca.sciencestudio.util.net.TunnelFactory">
+		<property name="remoteHost" value="${vnc.tunnel.remoteHost}"/>
+		<property name="remotePort" value="${vnc.tunnel.remotePort}"/>
+		<property name="minLocalPort" value="${vnc.tunnel.minLocalPort}"/>
+		<property name="maxLocalPort" value="${vnc.tunnel.maxLocalPort}"/>
+		<property name="inactiveTimeout" value="${vnc.tunnel.inactiveTimeout}"/>
+	</bean>
+	
+</beans>
