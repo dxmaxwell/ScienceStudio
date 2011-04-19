@@ -16,7 +16,7 @@ Ext.onReady(function() {
 --%>
 	var messagePanel = new Ext.Panel({
 		title:"Message",
-		html: "Please contact the Science Studio administrator to update your personal inforamtion.",
+		html: "Please contact the Science Studio administrator to update your personal information.",
 		bodyStyle: { "padding":"5px" },
 		style: { "margin":"10px" },
 		width: 700
