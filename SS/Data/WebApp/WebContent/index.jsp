@@ -1,16 +1,17 @@
-<%@ include file="/WEB-INF/jsp/include.jsp"%>
+<%@ page language="java"  contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/jsp/include/taglibs.jsp"%>
 <%--
 	Copyright (c) Canadian Light Source, Inc. All rights reserved.
-	see license.txt for details.
+	- see license.txt for details.
 	
 	Description:
-		Index jsp page.
+		Data Web App default jsp page.
 --%>
 <html>
 <head>
-	<title>Science Studio Data Service</title>
+    <meta http-equiv="Refresh" content="0; url=<c:url value="../ss/app/main.html"/>">
 </head>
 <body>
-	Science Studio Data Service index page.
+    Please wait...
 </body>
 </html>
