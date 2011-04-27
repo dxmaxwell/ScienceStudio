@@ -26,7 +26,7 @@
 		<table style="width:100%;">
 			<tr>
 				<td style="width:33%;">
-					<img src="../../img/scstudio_small.png"/>
+					<img src="<c:url value="/img/scstudio_small.png"/>"/>
 				</td>
 				<td style="width:34%;text-align:center;">
 					<span style="font-size:x-large;font-weight:bold;">

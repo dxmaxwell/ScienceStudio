@@ -16,7 +16,8 @@
 	<http
 		entry-point-ref="loginUrlAuthenticationEntryPoint"
 		security-context-repository-ref="daoSecurityContextRepository">
-		<intercept-url pattern="/vespers/util/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/cls/vespers/util/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/img/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
 		<intercept-url pattern="/**" access="ROLE_EVERYBODY" />
 		
 		<!--<port-mappings><port-mapping http="8080" https="8443"/></port-mappings>--><!-- Used for development environments. -->
