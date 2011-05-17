@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Scan sql map file.	
+ -->
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="Scan">
+	<resultMap id="scan" class="ca.sciencestudio.model.dao.ibatis.support.IbatisScan">
+		<result property="id" column="scan_id" />
+		<result property="name" column="name" />
+		<result property="dataUrl" column="data_url" />
+		<result property="parameters" column="parameters"/>
+		<result property="startDate" column="start_date"/>
+		<result property="endDate" column="end_date"/>
+		<result property="experimentId" column="experiment_id"/>
+	</resultMap>
+	
+	<insert id="addScan">
+		INSERT INTO ${database}.scan
+		(
+			name,
+			data_url,
+			parameters,
+			start_date,
+			end_date,
+			experiment_id
+		)
+		VALUES
+		(
+			#name:VARCHAR#,
+			#dataUrl:VARCHAR#,
+			#parameters:VARCHAR#,
+			#startDate:DATETIME#,
+			#endDate:DATETIME#,
+			#experimentId:INT#
+		)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="editScan">
+		UPDATE ${database}.scan
+			SET
+				name = #name:VARCHAR#,
+				data_url = #dataUrl:VARCHAR#,
+				parameters = #parameters:VARCHAR#,
+				start_date = #startDate:DATETIME#,
+				end_date = #endDate:DATETIME#,
+				experiment_id = #experimentId:INT#
+			WHERE
+				scan_id = #id:INT#
+	</update>
+	
+	<update id="editScanInfo">
+		UPDATE ${database}.scan
+			SET
+				data_url = #dataUrl:VARCHAR#,
+				parameters = #parameters:VARCHAR#,
+				start_date = #startDate:DATETIME#,
+				end_date = #endDate:DATETIME#
+			WHERE
+				scan_id = #id#
+	</update>
+	
+	<delete id="removeScan">
+		DELETE 
+			FROM ${database}.scan
+			WHERE scan_id = #value#
+	</delete>
+	
+	<select id="getScanById" resultMap="scan">
+		SELECT *
+			FROM ${database}.scan
+			WHERE scan_id = #value#
+	</select>
+	
+	<select id="getScanListByExperimentId" resultMap="scan">
+		SELECT *
+			FROM ${database}.scan
+			WHERE experiment_id = #value#
+	</select>
+	
+	<select id="getScanList" resultMap="scan">
+		SELECT *
+			FROM ${database}.scan
+	</select>
+</sqlMap>
