@@ -14,50 +14,12 @@
 	
 	<context:annotation-config/>
 	
-	<bean id="simpleDateFactory" class="java.text.SimpleDateFormat">
-		<constructor-arg value="yyyy-MM-dd"/>
-	</bean>
-	
-	<bean id="projectDAO" class="ca.sciencestudio.rest.model.project.dao.MemoryProjectDAO">
-		<constructor-arg value="CLSI"/>
-		<constructor-arg>
-			<list>
-				<bean class="ca.sciencestudio.rest.model.project.SimpleProject">
-					<property name="name" value="Test Project #1"/>
-					<property name="description" value="Project one description."/>
-					<property name="startDate">
-						<bean factory-bean="simpleDateFactory" factory-method="parse">
-							<constructor-arg value="2010-03-30"/>
-						</bean>
-					</property>
-					<property name="endDate">
-						<bean factory-bean="simpleDateFactory" factory-method="parse">
-							<constructor-arg value="2010-04-30"/>
-						</bean>
-					</property>
-					<property name="status" value="ACTIVE"/>
-				</bean>
-				<bean class="ca.sciencestudio.rest.model.project.SimpleProject">
-					<property name="name" value="Test Project #2"/>
-					<property name="description" value="Project two description."/>
-					<property name="startDate">
-						<bean factory-bean="simpleDateFactory" factory-method="parse">
-							<constructor-arg value="2011-01-30"/>
-						</bean>
-					</property>
-					<property name="endDate">
-						<bean factory-bean="simpleDateFactory" factory-method="parse">
-							<constructor-arg value="2011-03-30"/>
-						</bean>
-					</property>
-					<property name="status" value="ACTIVE"/>
-				</bean>
-			</list>
-		</constructor-arg>
-	</bean>
-	
 	<bean class="ca.sciencestudio.rest.service.controllers.ProjectController">
 		<property name="projectDAO" ref="projectDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.controllers.ScanController">
+		<property name="scanDAO" ref="scanDAO"/>
 	</bean>
 	
 	<bean id="annotationMapping"
