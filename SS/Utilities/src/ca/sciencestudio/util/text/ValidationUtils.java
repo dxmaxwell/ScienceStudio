@@ -7,7 +7,9 @@
  */
 package ca.sciencestudio.util.text;
 
+import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 /**
  * @author maxweld
@@ -15,6 +17,52 @@ import org.springframework.validation.Errors;
  */
 public abstract class ValidationUtils extends org.springframework.validation.ValidationUtils {
 
+	public static Errors emptyErrors() {
+		return emptyErrors(new Object());
+	}
+	
+	public static Errors emptyErrors(Object obj) {
+		return emptyErrors(obj, obj.getClass().getSimpleName());
+	}
+	
+	public static Errors emptyErrors(Object obj, String objName) {
+		return new BindException(obj, objName);
+	}
+	
+	public static Errors invokeValidator(Validator validator, Object obj) {
+		Errors errors = emptyErrors(obj);
+		invokeValidator(validator, obj, errors);
+		return errors;
+	}
+	
+	public static Errors invokeValidator(Validator validator, Object obj, String objName) {
+		Errors errors = emptyErrors(obj, objName);
+		invokeValidator(validator, obj, errors);
+		return errors;
+	}
+	
+	public static void rejectIfExceedsLength(int length, Errors errors, String field, String errorCode) {
+		if(rejectIfExceedsLength(errors.getFieldValue(field), length)) {
+			errors.rejectValue(field, errorCode);
+		}
+	}
+	
+	public static void rejectIfExceedsLength(int length, Errors errors, String field, String errorCode, String defaultMessage) {
+		if(rejectIfExceedsLength(errors.getFieldValue(field), length)) {
+			errors.rejectValue(field, errorCode, defaultMessage);
+		}
+	}
+	
+	public static void rejectIfExceedsLength(int length, Errors errors, String field, String errorCode, Object[] errorArgs, String defaultMessage) {
+		if(rejectIfExceedsLength(errors.getFieldValue(field), length)) {
+			errors.rejectValue(field, errorCode, errorArgs, defaultMessage);
+		}
+	}
+	
+	protected static boolean rejectIfExceedsLength(Object obj, int length) {
+		return (obj instanceof String) && (((String)obj).length() > length);
+	}
+	
 	public static void rejectIfInvalidEmail(Errors errors, String field, String errorCode) {
 		if(rejectIfInvalidEmail(errors.getFieldValue(field))) {
 			errors.rejectValue(field, errorCode);

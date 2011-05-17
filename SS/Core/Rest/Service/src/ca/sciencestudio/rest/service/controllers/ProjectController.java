@@ -7,11 +7,7 @@
  */
 package ca.sciencestudio.rest.service.controllers;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,56 +19,60 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.rest.model.project.Project;
-import ca.sciencestudio.rest.model.project.SimpleProject;
-import ca.sciencestudio.rest.model.project.dao.MemoryProjectDAO;
+import ca.sciencestudio.model.Project;
+import ca.sciencestudio.model.dao.ProjectDAO;
+import ca.sciencestudio.rest.service.controllers.support.AbstractModelController;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class ProjectController {
+public class ProjectController extends AbstractModelController<Project, ProjectDAO> {
 
-	private MemoryProjectDAO projectDAO;
+	private static final String PROJECT_MODEL_URL = "/projects";
 	
+	@Override
+	@ResponseBody 
+	@RequestMapping(value = PROJECT_MODEL_URL + "*", method = RequestMethod.POST)
+	public List<String> add(@RequestBody Project project, HttpServletRequest request, HttpServletResponse response) throws Exception{
+		return super.add(project, request, response);
+	}
+
+	@Override
+	@RequestMapping(value = PROJECT_MODEL_URL + "/{gid}*", method = RequestMethod.PUT)
+	public void edit(@RequestBody Project project, @PathVariable String gid, HttpServletResponse response) throws Exception{
+		super.edit(project, gid, response);
+	}
+	
+	@Override
+	@RequestMapping(value = PROJECT_MODEL_URL + "/{gid}*", method = RequestMethod.DELETE)
+	public void remove(@PathVariable String gid, HttpServletResponse response) throws Exception{
+		super.remove(gid, response);
+	}
+	
+	@Override
+	@ResponseBody 
+	@RequestMapping(value = "/projects/{gid}*", method = RequestMethod.GET)
+	public Object get(@PathVariable String gid, HttpServletResponse response) throws Exception {
+		return super.get(gid, response);
+	}
+	
+	@Override
 	@RequestMapping(value = "/projects*", method = RequestMethod.GET)
-	@ResponseBody public Collection<Project> getProjectList() {
-		return projectDAO.getProjectList();
-	}
-
-	@RequestMapping(value = "/projects/{uid}*", method = RequestMethod.GET)
-	@ResponseBody public Project getProjectById(@PathVariable String uid, HttpServletResponse response) throws Exception {
-		Project project = projectDAO.getProjectByUid(uid);
-		if(project == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-		}
-		return project;
+	@ResponseBody public List<Project> getAll() {
+		return super.getAll();
 	}
 	
-	@RequestMapping(value = "/projects*", method = RequestMethod.POST)
-	@ResponseBody public Map<String,String> addProject(@RequestBody SimpleProject project, HttpServletResponse response, HttpServletRequest request) throws Exception{
-		String uid = projectDAO.addProject(project);
-		response.setStatus(HttpServletResponse.SC_CREATED);
-		response.setHeader("Location", buildLocationPath(request, "project", uid));
-		Map<String,String> responseBody = new HashMap<String,String>();
-		responseBody.put("uid", uid);
-		return responseBody;
-	}
-
-	protected String buildLocationPath(HttpServletRequest request, Object... objects) throws UnsupportedEncodingException {
-		 StringBuilder path = new StringBuilder(request.getContextPath() + request.getServletPath());
-		 for(Object o : objects) {
-			 path.append("/").append(URLEncoder.encode(o.toString(), "UTF-8"));
-		 }
-		 return path.toString();
+	@Override
+	protected String getModelUrl() {
+		return PROJECT_MODEL_URL;
 	}
 	
-	public MemoryProjectDAO getProjectDAO() {
-		return projectDAO;
+	public ProjectDAO getProjectDAO() {
+		return getModelDAO();
 	}
-
-	public void setProjectDAO(MemoryProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setProjectDAO(ProjectDAO projectDAO) {
+		setModelDAO(projectDAO);
 	}
 }
