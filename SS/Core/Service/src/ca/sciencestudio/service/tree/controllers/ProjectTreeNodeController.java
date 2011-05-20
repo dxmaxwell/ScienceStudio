@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.ProjectStatus;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.Project;
+//import ca.sciencestudio.model.project.ProjectStatus;
+import ca.sciencestudio.model.dao.ProjectDAO;
 import ca.sciencestudio.security.util.AuthorityUtil;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
@@ -40,18 +40,18 @@ public class ProjectTreeNodeController extends AbstractTreeNodeController {
 		
 		List<Project> projects;
 		if(SecurityUtil.hasAuthority(AuthorityUtil.ROLE_ADMIN_PROJECTS)) {
-			projects = projectDAO.getProjectListByStatus(ProjectStatus.ACTIVE);
+			projects = projectDAO.getAllByStatus(Project.Status.ACTIVE.name());
 		} else {
-			projects = projectDAO.getProjectListByPersonUidAndStatus(getPersonUid(), ProjectStatus.ACTIVE);
+			projects = projectDAO.getAllByPersonUidAndStatus(getPersonUid(), Project.Status.ACTIVE.name());
 		}
 		
 		TreeNodeList treeNodes = new TreeNodeList();
 		
 		for(Project project : projects) {
 			TreeNodeMap treeNode = new TreeNodeMap();
-			treeNode.put(TREE_NODE_ID, "PROJECT_" +  project.getId());
-			treeNode.put(TREE_NODE_DATA_URL, getTreePath(request) + ModelPathUtils.getProjectPath(project.getId(), ".json"));
-			treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getProjectPath(project.getId(), ".html"));
+			treeNode.put(TREE_NODE_ID, "PROJECT_" +  project.getGid());
+			treeNode.put(TREE_NODE_DATA_URL, getTreePath(request) + ModelPathUtils.getProjectPath(project.getGid(), ".json"));
+			treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getProjectPath(project.getGid(), ".html"));
 			treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-tree-node-icon");
 			treeNode.put(TREE_NODE_TEXT, project.getName());
 			treeNodes.add(treeNode);

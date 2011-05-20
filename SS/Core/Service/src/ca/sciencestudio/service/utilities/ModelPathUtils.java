@@ -35,7 +35,7 @@ public abstract class ModelPathUtils {
 		return PROJECTS + ext;
 	}
 	
-	public static String getProjectPath(int projectId, String ext) {
+	public static String getProjectPath(Object projectId, String ext) {
 		return PROJECT + "/" + projectId + ext;
 	}
 	
