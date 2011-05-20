@@ -12,12 +12,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.validation.Errors;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import ca.sciencestudio.model.Model;
 import ca.sciencestudio.model.dao.support.AbstractModelDAO;
+import ca.sciencestudio.model.dao.support.ModelAccessException;
 import ca.sciencestudio.model.utilities.GID;
 
 /**
@@ -32,68 +33,80 @@ public abstract class AbstractRestModelDAO<T extends Model, R> extends AbstractM
 	private RestTemplate restTemplate;
 	
 	@Override
-	public Errors add(T t) {
-		Errors errors = getValidator().validate(t);
-		if(errors.hasErrors()) {
-			return errors;
-		}
-		
+	public boolean add(T t) {
+		return add(t, null);
+	}
+	
+	@Override
+	public boolean add(T t, String facility) {
 		URI location;
-		try {	
-			location = getRestTemplate().postForLocation(getModelUrl(), toRestModel(t));
+		try {
+			if(facility == null) {
+				location = getRestTemplate().postForLocation(getModelUrl(), toRestModel(t));
+			} else {
+				location = getRestTemplate().postForLocation(getModelUrl("/{facility}"), toRestModel(t), facility);
+			}
+		}
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while adding Model: " + e.getMessage());
+			return false;
 		}
 		catch(RestClientException e) {
-			logger.warn("Client error while adding Model", e);
-			errors.reject(RestClientException.class.getSimpleName(), e.getMessage());
-			return errors;
+			logger.warn("Rest Client exception while adding Model: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+			
+		if(location == null) {
+			logger.warn("Rest Client response missing Location header.");
+			return false;
 		}
 		
-		String gid = getPathBaseName(location);
+		String[] splitPath = location.getPath().split("/");
+		String gid = splitPath[splitPath.length - 1];
 		if(!GID.isValid(gid)) {
-			logger.warn("Client response contains an invalid GID: " + gid);
-			errors.reject(RestClientException.class.getSimpleName(), "Location header contains invalid GID.");
-			return errors;
-		}
+			logger.warn("Rest Client response contains an invalid GID: " + gid);
+			return false;
+		}	
 		
 		t.setGid(gid);
 		if(logger.isDebugEnabled()) {
 			logger.debug("Add Model with GID: " + t.getGid());
 		}
-		return errors;
+		return true;
 	}
 	
-
 	@Override
-	public Errors edit(T t) {
-		Errors errors = getValidator().validate(t);
-		if(errors.hasErrors()) {
-			return errors;
-		}
-		
+	public boolean edit(T t) {
 		try {
 			getRestTemplate().put(getModelUrl("/{gid}"), toRestModel(t), t.getGid());
 		}
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
+			return false;
+		}
 		catch(RestClientException e) {
-			logger.warn("Client error while editing Model with GID: " + t.getGid(), e);
-			errors.reject(RestClientException.class.getSimpleName(), e.getMessage());
-			return errors;
+			logger.warn("Rest Client exception while editing Model: " + e.getMessage());
+			throw new ModelAccessException(e);
 		}
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug("Edit Model with GID: " + t.getGid());
 		}
-		return errors;
+		return true;
 	}
 	
-
 	@Override
 	public boolean remove(Object modelGid) {
 		try {
 			getRestTemplate().delete(getModelUrl("/{gid}"), modelGid);
 		}
-		catch(RestClientException e) {
-			logger.warn("Client error while removing Model with GID: " + modelGid, e);
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
 			return false;
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while removing Model: " + e.getMessage());
+			throw new ModelAccessException(e);
 		}
 		
 		if(logger.isDebugEnabled()) {
@@ -109,9 +122,13 @@ public abstract class AbstractRestModelDAO<T extends Model, R> extends AbstractM
 		try {
 			t = getRestTemplate().getForObject(getModelUrl("/{gid}"), getModelClass(), modelGid);
 		}
-		catch(RestClientException e) {
-			logger.warn("Client error while getting Model with GID: " + modelGid, e);
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
 			return null;
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Model: " + e.getMessage());
+			throw new ModelAccessException(e);
 		}	
 		
 		if(logger.isDebugEnabled()) {
@@ -127,25 +144,14 @@ public abstract class AbstractRestModelDAO<T extends Model, R> extends AbstractM
 			ts = Arrays.asList(getRestTemplate().getForObject(getModelUrl(), getModelArrayClass()));
 		}
 		catch(RestClientException e) {
-			logger.warn("Client error while getting Model list", e);
-			return Collections.emptyList();
+			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
 		}
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug("Get all Models, size: " + ts.size());
 		}
 		return Collections.unmodifiableList(ts);
-	}
-	
-	protected String getPathBaseName(URI url) {
-		if(url == null) {
-			return null;
-		}
-		int lastSlashIdx = url.getPath().lastIndexOf("/");
-		if(lastSlashIdx < 0) {
-			return null;
-		}
-		return url.getPath().substring(lastSlashIdx+1);
 	}
 	
 	protected String getModelUrl(String url) {

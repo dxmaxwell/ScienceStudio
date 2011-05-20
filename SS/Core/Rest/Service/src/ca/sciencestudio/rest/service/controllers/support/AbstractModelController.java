@@ -13,29 +13,64 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.Model;
 
 import ca.sciencestudio.model.dao.ModelDAO;
+import ca.sciencestudio.model.dao.support.ModelAccessException;
+import ca.sciencestudio.model.validators.ModelValidator;
 
 /**
  * @author maxweld
  *
  */
-public abstract class AbstractModelController<T extends Model, D extends ModelDAO<T>> {
+public abstract class AbstractModelController<T extends Model, D extends ModelDAO<T>, V extends ModelValidator<T>> {
 
 	private D modelDAO;
+	private V validator;
 	
-	public List<String> add(T t, HttpServletRequest request, HttpServletResponse response) throws Exception{
+	protected Log logger = LogFactory.getLog(getClass());
+	
+	public List<String> add(T t, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		return add(t, null, request, response);
+	}
+	
+	public List<String> add(T t, String facility, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		if(t == null) {
 			response.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
 			return Collections.emptyList();
 		}
 		
-		Errors errors = modelDAO.add(t);
+		if(validator == null) {
+			logger.warn("Validator is null. Check the application configuration.");
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyList();
+		}
+		
+		Errors errors = validator.validate(t);
 		if(errors.hasErrors()) {
 			response.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+			return Collections.emptyList();
+		}
+		
+		boolean success;
+		try {
+			if(facility == null) {
+				success = modelDAO.add(t);
+			} else {
+				success = modelDAO.add(t, facility);
+			}
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyList();
+		}
+		
+		if(!success) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return Collections.emptyList();
 		}
 		
@@ -49,21 +84,38 @@ public abstract class AbstractModelController<T extends Model, D extends ModelDA
 		return Collections.singletonList(location.toString());
 	}
 	
-	public void edit(T t, String gid, HttpServletResponse response) throws Exception{
+	public void edit(T t, String gid, HttpServletResponse response) throws Exception {
 		if(t == null) {
+			response.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+			return;
+		}
+		
+		if(validator == null) {
+			logger.warn("Validator is null. Check the application configuration.");
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return;
+		}
+		
+		Errors errors = validator.validate(t);
+		if(errors.hasErrors()) {
 			response.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
 			return;
 		}
 		
 		t.setGid(gid);
 		
-		Errors errors = modelDAO.edit(t);
-		if(errors.hasFieldErrors("gid") || errors.hasGlobalErrors()) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		boolean success;
+		try {
+			success = modelDAO.edit(t);
+		}
+		
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return;
 		}
-		else if(errors.hasErrors()) {
-			response.setStatus(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
+		
+		if(!success) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 		
@@ -72,7 +124,15 @@ public abstract class AbstractModelController<T extends Model, D extends ModelDA
 	}
 	
 	public void remove(String gid, HttpServletResponse response) throws Exception{
-		boolean success = modelDAO.remove(gid);
+		boolean success;
+		try {
+			success = modelDAO.remove(gid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return;
+		}
+		
 		if(!success) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return;
@@ -83,7 +143,15 @@ public abstract class AbstractModelController<T extends Model, D extends ModelDA
 	}
 	
 	public Object get(String gid, HttpServletResponse response) throws Exception {
-		T t = modelDAO.get(gid);
+		T t;
+		try {
+			t = modelDAO.get(gid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyMap();
+		}
+		
 		if(t == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return Collections.emptyMap();
@@ -91,16 +159,29 @@ public abstract class AbstractModelController<T extends Model, D extends ModelDA
 		return t; 
 	}
 	
-	public List<T> getAll() {
-		return modelDAO.getAll();
+	public List<T> getAll(HttpServletResponse response) {
+		try {
+			return modelDAO.getAll();
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyList();
+		}
 	}
 	
 	protected abstract String getModelUrl();
-	
+
 	public D getModelDAO() {
 		return modelDAO;
 	}
 	public void setModelDAO(D modelDAO) {
 		this.modelDAO = modelDAO;
-	}	
+	}
+
+	public V getValidator() {
+		return validator;
+	}
+	public void setValidator(V validator) {
+		this.validator = validator;
+	}
 }

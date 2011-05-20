@@ -20,7 +20,7 @@ import ca.sciencestudio.model.utilities.GID;
 public class IbatisProjectDAO extends AbstractIbatisModelDAO<Project, IbatisProject> implements ProjectDAO {
 	
 	@Override
-	public String getGidType() {
+	public String getType() {
 		return Project.GID_TYPE;
 	}
 	
@@ -42,7 +42,7 @@ public class IbatisProjectDAO extends AbstractIbatisModelDAO<Project, IbatisProj
 			return null;
 		}
 		Project project = new Project();
-		project.setGid(GID.format(getGidFacility(), ibatisProject.getId(), getGidType()));
+		project.setGid(GID.format(getFacility(), ibatisProject.getId(), getType()));
 		project.setName(ibatisProject.getName());
 		project.setDescription(ibatisProject.getDescription());
 		project.setStartDate(ibatisProject.getStartDate());

@@ -20,7 +20,7 @@ import ca.sciencestudio.model.utilities.GID;
 public class IbatisScanDAO extends AbstractIbatisModelDAO<Scan, IbatisScan> implements ScanDAO {
 
 	@Override
-	public String getGidType() {
+	public String getType() {
 		return Scan.GID_TYPE;
 	}
 	
@@ -43,7 +43,7 @@ public class IbatisScanDAO extends AbstractIbatisModelDAO<Scan, IbatisScan> impl
 			return null;
 		}
 		Scan scan = new Scan();
-		scan.setGid(GID.format(getGidFacility(), ibatisScan.getId(), getGidType()));
+		scan.setGid(GID.format(getFacility(), ibatisScan.getId(), getType()));
 		scan.setName(ibatisScan.getName());
 		scan.setDataUrl(ibatisScan.getDataUrl());
 		scan.setParameters(ibatisScan.getParameters());

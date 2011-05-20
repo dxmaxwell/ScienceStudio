@@ -2,13 +2,16 @@ package ca.sciencestudio.rest.service.test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.dao.ProjectDAO;
+import ca.sciencestudio.model.dao.delegating.DelegatingProjectDAO;
 import ca.sciencestudio.model.dao.rest.RestProjectDAO;
+import ca.sciencestudio.model.dao.support.ModelAccessException;
 import ca.sciencestudio.model.validators.ProjectValidator;
 
 public abstract class ProjectDaoTest extends ModelDaoTest {
@@ -17,12 +20,25 @@ public abstract class ProjectDaoTest extends ModelDaoTest {
 	
 	public static void main(String[] args) throws Exception {
 		
-		RestProjectDAO restProjectDAO = new RestProjectDAO();
-		restProjectDAO.setValidator(new ProjectValidator());
-		restProjectDAO.setRestTemplate(REST_TEMPLATE);
-		restProjectDAO.setBaseUrl(BASE_URL);
+		ProjectValidator validator = new ProjectValidator();
 		
-		ProjectDAO projectDAO = (ProjectDAO)restProjectDAO;
+		List<ProjectDAO> projectDAOs = new ArrayList<ProjectDAO>();
+		
+		RestProjectDAO localRestProjectDAO = new RestProjectDAO();
+		localRestProjectDAO.setRestTemplate(REST_TEMPLATE);
+		localRestProjectDAO.setBaseUrl("http://localhost:8080/ssrest/model");
+		projectDAOs.add(localRestProjectDAO);
+		
+		RestProjectDAO remoteRestProjectDAO = new RestProjectDAO();
+		remoteRestProjectDAO.setRestTemplate(REST_TEMPLATE);
+		remoteRestProjectDAO.setBaseUrl("http://remotehost:8080/ssrest/model");
+		projectDAOs.add(remoteRestProjectDAO);
+		
+		
+		DelegatingProjectDAO delProjectDAO = new DelegatingProjectDAO();
+		delProjectDAO.setProjectDAOs(projectDAOs);
+		
+		ProjectDAO projectDAO = (ProjectDAO)delProjectDAO;
 		
 		List<Project> projects = projectDAO.getAll();
 		for(Project p : projects) {
@@ -31,15 +47,15 @@ public abstract class ProjectDaoTest extends ModelDaoTest {
 		System.out.println();
 		
 		Project project = new Project();
-		project.setName("Rest Test Project");
+		project.setName("Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project Rest Test Project");
 		project.setDescription("Rest Test Project Description!!");
 		project.setStartDate(DATE_FORMATER.parse("2011-03-25"));
 		project.setEndDate(DATE_FORMATER.parse("2011-04-14"));
 		project.setStatus(Project.Status.ACTIVE.name());
-		Errors errors = projectDAO.add(project);
-	
-		if(errors.hasErrors()) {
-			System.out.println("Errors while adding Project: " + errors);
+		
+		boolean success = projectDAO.add(project);
+		if(!success) {
+			System.out.println("Errors while adding Project");
 			return;
 		}
 		
@@ -58,10 +74,10 @@ public abstract class ProjectDaoTest extends ModelDaoTest {
 		project.setStartDate(DATE_FORMATER.parse("2011-05-22"));
 		project.setEndDate(DATE_FORMATER.parse("2011-06-10"));
 		project.setStatus(Project.Status.INACTIVE.name());
-		errors = projectDAO.edit(project);
 		
-		if(errors.hasErrors()) {
-			System.out.println("Errors while editting Project: " + errors);
+		success = projectDAO.edit(project);
+		if(!success) {
+			System.out.println("Errors while editting Project");
 			return;
 		}
 		
@@ -75,7 +91,7 @@ public abstract class ProjectDaoTest extends ModelDaoTest {
 		
 		System.out.println("Get Project (again): " + project);
 		
-		boolean success = projectDAO.remove(project.getGid());
+		success = projectDAO.remove(project.getGid());
 		if(!success) {
 			System.out.println("Error while removing Project with GID: " + project.getGid());
 			return;

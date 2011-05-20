@@ -11,8 +11,6 @@ public abstract class ModelDaoTest {
 
 	protected static final String GID_FACILITY = "CLSI";
 	
-	protected static final String BASE_URL = "http://localhost:8080/ssrest/model";	
-	
 	protected static final List<HttpMessageConverter<?>> MESSAGE_CONVERTERS = new ArrayList<HttpMessageConverter<?>>();
 	
 	protected static final RestTemplate REST_TEMPLATE = new RestTemplate();

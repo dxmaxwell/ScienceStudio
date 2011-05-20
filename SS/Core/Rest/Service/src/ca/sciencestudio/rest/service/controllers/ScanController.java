@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.Scan;
 import ca.sciencestudio.model.dao.ScanDAO;
+import ca.sciencestudio.model.validators.ScanValidator;
 import ca.sciencestudio.rest.service.controllers.support.AbstractModelController;
 
 /**
@@ -28,15 +29,26 @@ import ca.sciencestudio.rest.service.controllers.support.AbstractModelController
  *
  */
 @Controller
-public class ScanController extends AbstractModelController<Scan, ScanDAO> {
+public class ScanController extends AbstractModelController<Scan, ScanDAO, ScanValidator> {
 
 	private static final String SCAN_MODEL_URL = "/scans";
+	
+	public ScanController() {
+		setValidator(new ScanValidator());
+	}
 	
 	@Override
 	@ResponseBody 
 	@RequestMapping(value = SCAN_MODEL_URL + "*", method = RequestMethod.POST)
 	public List<String> add(@RequestBody Scan scan, HttpServletRequest request, HttpServletResponse response) throws Exception{
 		return super.add(scan, request, response);
+	}
+	
+	@Override
+	@ResponseBody 
+	@RequestMapping(value = SCAN_MODEL_URL + "/{facility}*", method = RequestMethod.POST)
+	public List<String> add(@RequestBody Scan scan, @PathVariable String facility, HttpServletRequest request, HttpServletResponse response) throws Exception{
+		return super.add(scan, facility, request, response);
 	}
 	
 	@Override
@@ -61,8 +73,8 @@ public class ScanController extends AbstractModelController<Scan, ScanDAO> {
 	@Override
 	@ResponseBody 
 	@RequestMapping(value = SCAN_MODEL_URL + "*", method = RequestMethod.GET)
-	public List<Scan> getAll() {
-		return super.getAll();
+	public List<Scan> getAll(HttpServletResponse response) {
+		return super.getAll(response);
 	}
 	
 	@Override

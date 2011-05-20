@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.dao.ProjectDAO;
+import ca.sciencestudio.model.validators.ProjectValidator;
 import ca.sciencestudio.rest.service.controllers.support.AbstractModelController;
 
 /**
@@ -28,17 +29,28 @@ import ca.sciencestudio.rest.service.controllers.support.AbstractModelController
  *
  */
 @Controller
-public class ProjectController extends AbstractModelController<Project, ProjectDAO> {
+public class ProjectController extends AbstractModelController<Project, ProjectDAO, ProjectValidator> {
 
 	private static final String PROJECT_MODEL_URL = "/projects";
+
+	public ProjectController() {
+		setValidator(new ProjectValidator());
+	}
 	
 	@Override
 	@ResponseBody 
 	@RequestMapping(value = PROJECT_MODEL_URL + "*", method = RequestMethod.POST)
-	public List<String> add(@RequestBody Project project, HttpServletRequest request, HttpServletResponse response) throws Exception{
+	public List<String> add(@RequestBody Project project, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		return super.add(project, request, response);
 	}
 
+	@Override
+	@ResponseBody 
+	@RequestMapping(value = PROJECT_MODEL_URL + "/{facility}*", method = RequestMethod.POST)
+	public List<String> add(@RequestBody Project project, @PathVariable String facility, HttpServletRequest request, HttpServletResponse response) throws Exception{
+		return super.add(project, facility, request, response);
+	}
+	
 	@Override
 	@RequestMapping(value = PROJECT_MODEL_URL + "/{gid}*", method = RequestMethod.PUT)
 	public void edit(@RequestBody Project project, @PathVariable String gid, HttpServletResponse response) throws Exception{
@@ -60,15 +72,15 @@ public class ProjectController extends AbstractModelController<Project, ProjectD
 	
 	@Override
 	@RequestMapping(value = "/projects*", method = RequestMethod.GET)
-	@ResponseBody public List<Project> getAll() {
-		return super.getAll();
+	@ResponseBody public List<Project> getAll(HttpServletResponse response) {
+		return super.getAll(response);
 	}
 	
 	@Override
 	protected String getModelUrl() {
 		return PROJECT_MODEL_URL;
 	}
-	
+
 	public ProjectDAO getProjectDAO() {
 		return getModelDAO();
 	}

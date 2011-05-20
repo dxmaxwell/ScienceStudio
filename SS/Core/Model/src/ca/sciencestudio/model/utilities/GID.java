@@ -10,6 +10,7 @@ package ca.sciencestudio.model.utilities;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 /**
  * @author maxweld
  *
@@ -38,12 +39,9 @@ public class GID {
 	}
 	
 	public static GID parse(String gid) {
-		if(gid == null) {
-			return new GID();
-		}
 		Matcher m = GID_VALIDATE_PATTERN.matcher(gid);
 		if(!m.matches()) {
-			return new GID();
+			return null;
 		}
 		return new GID(m.group(1), Integer.parseInt(m.group(2)), m.group(3));
 	}
