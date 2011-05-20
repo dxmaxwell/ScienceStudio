@@ -7,6 +7,7 @@
  */
 package ca.sciencestudio.rest.service.controllers;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.dao.ProjectDAO;
+import ca.sciencestudio.model.dao.support.ModelAccessException;
 import ca.sciencestudio.model.validators.ProjectValidator;
 import ca.sciencestudio.rest.service.controllers.support.AbstractModelController;
 
@@ -74,6 +77,28 @@ public class ProjectController extends AbstractModelController<Project, ProjectD
 	@RequestMapping(value = "/projects*", method = RequestMethod.GET)
 	@ResponseBody public List<Project> getAll(HttpServletResponse response) {
 		return super.getAll(response);
+	}
+	
+	@RequestMapping(value = "/projects*", method = RequestMethod.GET, params="status")
+	@ResponseBody public List<Project> getAll(@RequestParam String status, HttpServletResponse response) {
+		try {
+			return getModelDAO().getAllByStatus(status);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyList();
+		}
+	}
+	
+	@RequestMapping(value = "/projects*", method = RequestMethod.GET, params={ "personUid", "status" })
+	@ResponseBody public List<Project> getAll(@RequestParam String personUid, @RequestParam String status, HttpServletResponse response) {
+		try {
+			return getModelDAO().getAllByPersonUidAndStatus(personUid, status);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyList();
+		}
 	}
 	
 	@Override

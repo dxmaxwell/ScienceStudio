@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.Project;
 
 /**
@@ -15,5 +17,6 @@ import ca.sciencestudio.model.Project;
  */
 public interface ProjectDAO extends ModelDAO<Project> {
 	
-	// Extra DAO methods here //
+	public List<Project> getAllByStatus(String status);
+	public List<Project> getAllByPersonUidAndStatus(String personUid, String status);
 }

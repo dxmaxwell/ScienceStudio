@@ -7,11 +7,18 @@
  */
 package ca.sciencestudio.model.dao.ibatis;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+
 import ca.sciencestudio.model.dao.ibatis.support.AbstractIbatisModelDAO;
 import ca.sciencestudio.model.dao.ibatis.support.IbatisProject;
+import ca.sciencestudio.model.dao.support.ModelAccessException;
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.dao.ProjectDAO;
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.util.sql.SqlMapParameters;
 
 /**
  * @author maxweld
@@ -24,6 +31,42 @@ public class IbatisProjectDAO extends AbstractIbatisModelDAO<Project, IbatisProj
 		return Project.GID_TYPE;
 	}
 	
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<Project> getAllByStatus(String status) {
+		List<Project> projects;
+		try {
+			projects = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByStatus"), status));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Projects by status: " + status + ", size: " + projects.size());
+		}
+		return Collections.unmodifiableList(projects);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<Project> getAllByPersonUidAndStatus(String personUid, String status) {
+		List<Project> projects;
+		try {
+			projects = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByPersonUidAndStatus"), new SqlMapParameters(personUid, status)));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Projects by status: " + status + ", size: " + projects.size());
+		}
+		return Collections.unmodifiableList(projects);
+	}
+
 	@Override
 	protected IbatisProject toIbatisModel(Project project) {
 		IbatisProject ibatisProject = new IbatisProject();
