@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		RESTful Data Access Objects configuration
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+<!---  ===================================================================
+  	-  DAOs
+  	-  =================================================================== -->
+
+	<bean id="restTempalate" class="org.springframework.web.client.RestTemplate">
+		<property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="restProjectDAO"
+		class="ca.sciencestudio.model.dao.rest.RestProjectDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="http://localhost:8080/ssrest/model"/>
+	</bean>
+
+</beans>

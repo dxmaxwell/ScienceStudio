@@ -22,19 +22,13 @@
 	<bean id="projectDAO"
 		class="ca.sciencestudio.model.dao.ibatis.IbatisProjectDAO">
 		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
-		<property name="gidFacility" value="${dao.facility}"/>
-		<property name="validator">
-			<bean class="ca.sciencestudio.model.validators.ProjectValidator"/>
-		</property>
+		<property name="facility" value="${dao.facility}"/>
 	</bean>
 	
 	<bean id="scanDAO"
 		class="ca.sciencestudio.model.dao.ibatis.IbatisScanDAO">
 		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
-		<property name="gidFacility" value="${dao.facility}"/>
-		<property name="validator">
-			<bean class="ca.sciencestudio.model.validators.ScanValidator"/>
-		</property>
+		<property name="facility" value="${dao.facility}"/>
 	</bean>
 	
 	<!--<bean id="personDAO"
