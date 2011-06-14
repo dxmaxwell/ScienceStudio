@@ -48,19 +48,16 @@ Ext.onReady(function() {
 		baseParams:{ 'role':'admin' },
 		autoDestroy: true,
 		autoLoad: false,
-		root:"response",
 		fields:[{
-			name:"id", mapping:"project.id"
+			name:"gid"
 		},{
-			name:"name", mapping:"project.name"
+			name:"name"
 		},{
-			name:"startDate", mapping:"project.startDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"startDate", type:"date", dateFormat:"c"
 		},{
-			name:"endDate", mapping:"project.endDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"endDate",	type:"date", dateFormat:"c"
 		},{
-			name:"status", mapping:"project.status"
+			name:"status"
 		}]
 	});
 
@@ -77,12 +74,12 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"id", sortable:true
+			header: "GID", width:50, dataIndex:"gid", sortable:true
 		},{
 			header: "Name", width: 180, dataIndex: 'name', sortable: true
 		},{
 			header: "Start", width: 85, dataIndex: 'startDate', sortable: true,
-			xtype:'datecolumn', format:Date.patterns.ISO8601Date 
+			xtype:'datecolumn', format:Date.patterns.ISO8601Date
 		},{
 			header: "End", width: 85, dataIndex: 'endDate', sortable: true,
 			xtype:'datecolumn', format:Date.patterns.ISO8601Date
@@ -96,9 +93,9 @@ Ext.onReady(function() {
 	projectsGridPanel.on('rowclick', function(grid, index, event) {
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var projectId = record.get("id");
-			if(projectId) {
-				loadModelViewTab(ModelPathUtils.getProjectPath(projectId) + '.html');
+			var projectGid = record.get("gid");
+			if(projectGid) {
+				loadModelViewTab(ModelPathUtils.getProjectsPath(projectGid, '.html'));
 			}
 		}
 	}, this);
@@ -163,13 +160,7 @@ Ext.onReady(function() {
 	}, this);
 
 	<c:if test="${not empty projectStatusList}">
-	var projectStatusStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="projectStatusList"/>
-		</jsp:include>
-	};
-	
-	projectFormPanel.ss.fields.status.getStore().loadData(projectStatusStoreData);
+	projectFormPanel.ss.fields.status.getStore().loadData(<hmc:write source="${projectStatusList}"/>);
 	</c:if>
 	
 	var panel = new Ext.Panel({

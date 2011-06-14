@@ -7,6 +7,7 @@
  */
 package ca.sciencestudio.service.project.controllers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,23 +19,27 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.ProjectPerson;
-import ca.sciencestudio.model.project.ProjectStatus;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
-import ca.sciencestudio.model.project.dao.ProjectPersonDAO;
+import ca.sciencestudio.model.Project;
+import ca.sciencestudio.model.ProjectPerson;
+import ca.sciencestudio.model.dao.ProjectDAO;
+import ca.sciencestudio.model.dao.ProjectPersonDAO;
 import ca.sciencestudio.model.sample.Sample;
 import ca.sciencestudio.model.sample.dao.SampleDAO;
 import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.session.dao.SessionDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.security.util.SecurityUtil.ROLE;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
 import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.GeneralResponse;
+import ca.sciencestudio.util.web.GenericResponse;
 
 /**
  * @author maxweld
@@ -60,97 +65,90 @@ public class ProjectController extends AbstractModelController {
 	@Autowired
 	private SessionDAO sessionDAO;
 	
-	@RequestMapping(value = "/projects.{format}")
-	public String getProjectList(@RequestParam(required = false) String role,
-									@RequestParam(required = false) String status,
-										@PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/projects*")
+	public Object getProjectList(@RequestParam(required = false) String role, @RequestParam(required = false) String status) {
 		
 		if((role == null) || (role.length() == 0)) {
 			role = PARAM_VALUE_ROLE_USER;
 		}
 		
 		if((status == null) || (status.length() == 0)) {
-			status = ProjectStatus.ACTIVE.name();
+			status = Project.Status.ACTIVE.name();
 		}
 		
-		ProjectStatus projectStatus = null;
+		Project.Status projectStatus = null;
 		if(!status.equalsIgnoreCase(PARAM_VALUE_STATUS_ALL)) {
 			try {
-				projectStatus = ProjectStatus.valueOf(status);
+				projectStatus = Project.Status.valueOf(status);
 			}
 			catch(IllegalArgumentException e) {
-				projectStatus = ProjectStatus.ACTIVE;
+				projectStatus = Project.Status.ACTIVE;
 			}
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		
 		List<Project> projectList;
-		if(role.equalsIgnoreCase(PARAM_VALUE_ROLE_ADMIN) && SecurityUtil.hasAuthority(admin)) {
+		if(role.equalsIgnoreCase(PARAM_VALUE_ROLE_ADMIN) && SecurityUtil.hasAuthority(ROLE.ADMIN_PROJECTS)) {
 			if(projectStatus == null) {
-				projectList = projectDAO.getProjectList();
+				projectList = projectDAO.getAll();
 			}
 			else {
-				projectList = projectDAO.getProjectListByStatus(projectStatus);
+				projectList = projectDAO.getAllByStatus(projectStatus.name());
 			}
 		}
 		else {
-			String personUid = SecurityUtil.getPerson().getUid();
+			String personUid = SecurityUtil.getPerson().getGid();
 			if(projectStatus == null) {
-				projectList = projectDAO.getProjectListByPersonUid(personUid);
+				projectList = projectDAO.getAllByPersonGid(personUid);
 			}
 			else {
-				projectList = projectDAO.getProjectListByPersonUidAndStatus(personUid, projectStatus);
+				projectList = projectDAO.getAllByPersonGidAndStatus(personUid, projectStatus);
 			}
 		}
 		
-		model.put("response", projectList);
-		return "response-" + format;
+		return projectList;
 	}
 	
-	@RequestMapping(value = "/project/{projectId}/remove.{format}")
-	public String removeProject(@PathVariable int projectId, @PathVariable String format, HttpServletRequest request, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/projects/{projectGid}/remove*")
+	public GenericResponse<?> removeProject(@PathVariable String projectGid, HttpServletRequest request) {
 		
 		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
 		
-		String responseView = "response-" + format;
-		
-		Project project = projectDAO.getProjectById(projectId);
+		Project project = projectDAO.get(projectGid);
 		if(project == null) {
 			errors.reject("project.notfound", "Project not found.");
-			return responseView;
+			return new GeneralResponse(errors);
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		
-		if(!SecurityUtil.hasAuthority(admin)) {
+		if(!SecurityUtil.hasAuthority(ROLE.ADMIN_PROJECTS)) {
 			errors.reject("permission.denied", "Not permitted to remove project.");
-			return responseView;
+			return new GeneralResponse(errors);
 		}
 		
-		List<Session> sessionList = sessionDAO.getSessionListByProjectId(projectId);
+		GID gid = GID.parse(projectGid);
+		
+		List<Session> sessionList = sessionDAO.getSessionListByProjectId(gid.getId());
 		if(!sessionList.isEmpty()) {
 			errors.reject("sessions.notempty", "Project has associated sessions.");
-			return responseView;
+			return new GeneralResponse(errors);
 		}
 		
-		List<Sample> sampleList = sampleDAO.getSampleListByProjectId(projectId);
+		List<Sample> sampleList = sampleDAO.getSampleListByProjectId(gid.getId());
 		for(Sample sample : sampleList) {
 			sampleDAO.removeSample(sample.getId());
 		}
 		
-		List<ProjectPerson> projectPersonList = projectPersonDAO.getProjectPersonListByProjectId(projectId);
+		List<ProjectPerson> projectPersonList = projectPersonDAO.getAllByProjectGid(projectGid);
 		for(ProjectPerson projectPerson : projectPersonList) {
-			projectPersonDAO.removeProjectPerson(projectPerson.getId());
+			projectPersonDAO.remove(projectPerson.getGid());
 		}
 		
-		projectDAO.removeProject(projectId);
+		projectDAO.remove(projectGid);
 		
-		Map<String,String> response = new HashMap<String,String>();
-		response.put("viewUrl", getModelPath(request) + ModelPathUtils.getProjectsPath(".html"));
-		model.put("response", response);
-		return responseView;
+		GenericResponse<Map<String,String>> response = new GenericResponse<Map<String,String>>(new HashMap<String,String>());
+		response.getResponse().put("viewUrl", getModelPath(request) + ModelPathUtils.getProjectsPath(".html"));
+		return response;
 	}
 	
 	public ProjectDAO getProjectDAO() {

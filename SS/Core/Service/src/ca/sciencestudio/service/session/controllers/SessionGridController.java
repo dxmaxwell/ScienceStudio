@@ -41,7 +41,7 @@ public class SessionGridController extends AbstractModelController {
 	@RequestMapping(value = "/sessions/grid.{format}")
 	public String sessions(@PathVariable String format, ModelMap model) {
 		
-		String personUid = SecurityUtil.getPerson().getUid();
+		String personUid = SecurityUtil.getPerson().getGid();
 		List<Project> projectList = projectDAO.getProjectListByPersonUidAndStatus(personUid, ProjectStatus.ACTIVE);
 		List<Session> sessionList = sessionDAO.getSessionListByPersonUidAndProjectStatus(personUid, ProjectStatus.ACTIVE);
 		

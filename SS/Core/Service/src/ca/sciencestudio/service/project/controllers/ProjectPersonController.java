@@ -67,7 +67,7 @@ public class ProjectPersonController extends AbstractModelController {
 		projectPersonDAO.removeProjectPerson(projectPerson.getId());
 		
 		Map<String,String> response = new HashMap<String,String>();
-		response.put("viewUrl", getModelPath(request) + ModelPathUtils.getProjectPersonsPath(projectPerson.getProjectId(), ".html"));
+		response.put("viewUrl", getModelPath(request) + ModelPathUtils.getProjectPersonsPath(String.valueOf(projectPerson.getProjectId()), ".html"));
 		model.put("response", response);
 		return responseView;
 	}

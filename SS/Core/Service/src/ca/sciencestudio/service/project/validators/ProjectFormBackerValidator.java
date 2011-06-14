@@ -2,18 +2,18 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     ProjectValidator class.
+ *     ProjectFormBackerValidator class.
  *     
  */
 package ca.sciencestudio.service.project.validators;
 
-import java.util.Date;
-
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.Validator;
 
-import ca.sciencestudio.model.project.ProjectStatus;
+import ca.sciencestudio.model.validators.ModelValidator;
+import ca.sciencestudio.model.validators.ProjectValidator;
 import ca.sciencestudio.service.project.backers.ProjectFormBacker;
 
 /**
@@ -21,15 +21,38 @@ import ca.sciencestudio.service.project.backers.ProjectFormBacker;
  *
  */
 public class ProjectFormBackerValidator implements Validator {
-
-	private static final int PROJECT_NAME_MAX_LENGTH = 80;
-	private static final int PROJECT_DESCRIPTION_MAX_LENGTH = 255;
+	
+	private ProjectValidator projectValidator;
 	
 	public boolean supports(Class<?> clazz) {
 		return ProjectFormBacker.class.isAssignableFrom(clazz);
 	}
 
-	public void validate(Object object, Errors errors) {
+	public void validate(Object obj, Errors errors) {
+		
+		if(!(obj instanceof ProjectFormBacker)) {
+			errors.reject(ModelValidator.EC_CLASS_NOT_SUPPORTED, "Validator does not support class: " + obj.getClass());
+			return;
+		}
+		
+		ProjectFormBacker projectFormBacker = (ProjectFormBacker)obj;
+		
+		Errors projectErrors = projectValidator.validate(projectFormBacker.toProject());
+		
+		if(projectErrors.hasFieldErrors()) {
+			for(FieldError fieldError : projectErrors.getFieldErrors()) {
+				errors.rejectValue(fieldError.getField(), fieldError.getCode(), fieldError.getDefaultMessage());
+			}
+		}
+		
+		if(projectErrors.hasGlobalErrors()) {
+			for(ObjectError objectError : projectErrors.getGlobalErrors()) {
+				errors.reject(objectError.getCode(), objectError.getDefaultMessage());
+			}
+		}
+		
+		
+		/*
 		ProjectFormBacker projectFormBacker = (ProjectFormBacker) object;
 		if(projectFormBacker == null) {
 			errors.rejectValue("project", "", null, "Project is required.");
@@ -75,5 +98,13 @@ public class ProjectFormBackerValidator implements Validator {
 		if(projectFormBacker.getStatus() == ProjectStatus.UNKNOWN) {
 			errors.rejectValue("status", "", "Status is required.");
 		}
+		*/
+	}
+
+	public ProjectValidator getProjectValidator() {
+		return projectValidator;
+	}
+	public void setProjectValidator(ProjectValidator projectValidator) {
+		this.projectValidator = projectValidator;
 	}
 }

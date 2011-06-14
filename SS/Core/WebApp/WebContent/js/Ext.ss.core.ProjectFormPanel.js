@@ -61,12 +61,10 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 	else {
 		statusStore = new Ext.data.JsonStore({
 			autoDestroy:true,
-			root:'response',
-			success:'success',
 			fields: [{
-				name:'name', mapping:'projectStatus.name'
+				name:'value'
 			},{
-				name:'longName', mapping:'projectStatus.longName'
+				name:'display'
 			}]
 		});
 	}
@@ -79,8 +77,8 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 		triggerAction:'all',
 		editable:false,
 		forceSelection:true,
-		valueField:'name',
-		displayField:'longName',
+		valueField:'value',
+		displayField:'display',
 		width: 150
 	}, defaults));
 	

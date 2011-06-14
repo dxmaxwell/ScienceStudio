@@ -7,7 +7,7 @@
  */
 package ca.sciencestudio.service.person.backers;
 
-import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.Person;
 
 /**
  * @author maxweld
@@ -42,8 +42,8 @@ public class PersonFormBacker {
 	}
 	
 	public PersonFormBacker(Person person) {
-		setId(person.getId());
-		setUid(person.getUid());
+		setId(0);
+		setUid(person.getGid());
 		
 		setTitle(person.getTitle());
 		setFirstName(person.getFirstName());

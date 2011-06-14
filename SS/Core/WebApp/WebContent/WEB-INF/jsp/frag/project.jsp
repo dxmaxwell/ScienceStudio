@@ -56,7 +56,7 @@ Ext.onReady(function() {
 	Edit/View Project Form
 --%>
 	var projectFormPanel = new Ext.ss.core.ProjectFormPanel({
-		url: ModelPathUtils.getProjectPath(${project.id}) + '/form/edit.json',
+		url: ModelPathUtils.getProjectsPath('${project.gid}', '/form/edit.json'),
 		method: 'POST',
 		<sec:authorize ifNotGranted="ROLE_ADMIN_PROJECTS">
 		defaults: {
@@ -76,24 +76,14 @@ Ext.onReady(function() {
 	});
 	
 	<c:if test="${not empty projectStatusList}">
-	var projectStatusStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="projectStatusList"/>
-		</jsp:include>
-	};
-	
-	projectFormPanel.ss.fields.status.getStore().loadData(projectStatusStoreData);
+	projectFormPanel.ss.fields.status.getStore().loadData(<hmc:write source="${projectStatusList}" type="application/json"/>);
 	</c:if>
 	
 	<c:if test="${not empty project}">
-	var projectFormValues = 
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="project"/>
-		</jsp:include>;
-	
-	projectFormPanel.getForm().setValues(projectFormValues.project);
+	projectFormPanel.getForm().setValues(<hmc:write source="${project}" type="application/json"/>);
 	</c:if>
 	
+
 	var linksPanel = new Ext.Panel({
 		border:false,
 		layout: 'hbox',
@@ -105,8 +95,8 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: 'a',
 				html: 'Team',
-				href:'#persons${project.id}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPersonsPath(${project.id}, '.html'));"
+				href:'#persons${project.gid}',
+				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPersonsPath('${project.gid}', '.html'));"
 			}
 		},{
 			xtype:'box',
@@ -116,8 +106,8 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: 'a',
 				html: 'Samples',
-				href:'#samples${project.id}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getSamplesPath(${project.id}, '.html'));"
+				href:'#samples${project.gid}',
+				onclick: "return loadModelViewTab(ModelPathUtils.getSamplesPath('${project.gid}', '.html'));"
 			}
 		},{
 			xtype:'box',
@@ -127,8 +117,8 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: 'a',
 				html: 'Sessions',
-				href:'#sessions${project.id}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath(${project.id}, '.html'));"
+				href:'#sessions${project.gid}',
+				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath('${project.gid}', '.html'));"
 			}
 		},{
 			xtype:'box',
@@ -141,7 +131,7 @@ Ext.onReady(function() {
 		Ext.Msg.confirm('Question', 'Do you REALLY want to remove this project?', function(ans) {
 			if(ans == 'yes') {
 				Ext.Ajax.request({
-					url:ModelPathUtils.getProjectPath(${project.id}, '/remove.json'),
+					url:ModelPathUtils.getProjectsPath('${project.gid}', '/remove.json'),
 					failure:function(response, options) {
 						Ext.Msg.alert('Error', 'Network connection problem.');
 					},
@@ -165,7 +155,7 @@ Ext.onReady(function() {
 	};
 
 	var panel = new Ext.Panel({
-		title: 'Project (Id:${project.id})',
+		title: 'Project (GID:${project.gid})',
 		<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
 		tools:[{
 			id:'close',

@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.ProjectStatus;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.Project;
+import ca.sciencestudio.model.dao.ProjectDAO;
 import ca.sciencestudio.security.util.AuthorityUtil;
 import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.security.util.SecurityUtil.ROLE;
 import ca.sciencestudio.service.controllers.AbstractModelController;
+import ca.sciencestudio.util.web.EnumToOptionUtils;
 
 /**
  * @author maxweld
@@ -40,36 +41,42 @@ public class ProjectPageController extends AbstractModelController {
 		
 		List<Project> projectList;
 		if(SecurityUtil.hasAuthority(AuthorityUtil.ROLE_ADMIN_PROJECTS)) {
-			projectList = projectDAO.getProjectListByStatus(ProjectStatus.ACTIVE);
+			projectList = projectDAO.getAllByStatus(Project.Status.ACTIVE);
 		}
 		else {
-			String personUid = SecurityUtil.getPerson().getUid();
-			projectList = projectDAO.getProjectListByPersonUidAndStatus(personUid, ProjectStatus.ACTIVE);
+			String personUid = SecurityUtil.getPerson().getGid();
+			projectList = projectDAO.getAllByPersonGidAndStatus(personUid, Project.Status.ACTIVE);
 		}
 		
-		model.put("projectStatusList", ProjectStatus.getMarshallableValues(ProjectStatus.UNKNOWN));
+		model.put("projectStatusList", EnumToOptionUtils.toList(Project.Status.values()));
 		model.put("projectList", projectList);
 		return "frag/projects";
 	}
 	
-	@RequestMapping(value = "/project/{projectId}.html",  method = RequestMethod.GET)
-	public String getProjectForm(@PathVariable int projectId, ModelMap model) {
+	@RequestMapping(value = "/projects/{projectGid}.html",  method = RequestMethod.GET)
+	public String getProjectForm(@PathVariable String projectGid, ModelMap model) {
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
 		
-		if(!SecurityUtil.hasAnyAuthority(admin, group)) {
+		
+		//Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
+		//Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
+		
+		boolean admin = SecurityUtil.hasAuthority(ROLE.ADMIN_PROJECTS);
+		boolean group = SecurityUtil.hasAnyProjectRole(projectGid);
+		
+		//if(!SecurityUtil.hasAnyAuthority(admin/*, group*/)) {
+		if(!group && !admin) {
 			model.put("error", "Permission denied.");
 			return ERROR_VIEW;
 		}
 		
-		Project project = projectDAO.getProjectById(projectId);
+		Project project = projectDAO.get(projectGid);
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
 		
-		model.put("projectStatusList", ProjectStatus.getMarshallableValues(ProjectStatus.UNKNOWN));
+		model.put("projectStatusList", EnumToOptionUtils.toList(Project.Status.values()));
 		model.put("project", project);
 		return "frag/project";
 	}

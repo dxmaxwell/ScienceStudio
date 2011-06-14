@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+		version="2.0">
+
+	<description>HTTP Message Converter JSP Tag Library</description>
+	<tlib-version>1.0</tlib-version>
+	<short-name>hmc</short-name>
+	<uri>http://sciencestudio.ca/jstl/hmc</uri>
+
+	<tag>
+		<description>
+			Converts the given source object and writes the result.
+		</description>
+		<name>write</name>
+		<tag-class>ca.sciencestudio.util.tags.HttpMessageConverterWriteTag</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<description>Source object to be converted.</description>
+			<name>source</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description>Media type to which the source object is to be converted.</description>
+			<name>type</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+</taglib>

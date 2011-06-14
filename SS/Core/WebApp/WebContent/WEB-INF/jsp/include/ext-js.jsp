@@ -31,5 +31,5 @@
 		Date.patterns.ISO8601Full + '|' +
 		Date.patterns.ISO8601Long + '|' +
 		Date.patterns.ISO8601Shrt + '|' +
-		Date.patterns.ISO8601Date;
+		Date.patterns.ISO8601Date + '|' + 'c';
 </script>

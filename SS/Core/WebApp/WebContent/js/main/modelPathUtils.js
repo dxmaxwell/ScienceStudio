@@ -30,20 +30,18 @@ var ModelPathUtils = {
     EXPERIMENT:"/experiment",
 	EXPERIMENTS:"/experiments",
 	
-	getProjectsPath: function(ext) {
+	getProjectsPath: function(gid, ext) {
 		var projectsPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.PROJECTS;
-		if(ext) {
+		if(gid && ext) {
+			projectsPath += '/' + gid + ext;	
+		}
+		else if(gid) {
+			projectsPath += gid;
+		}
+		else if(ext) {
 			projectsPath += ext;
 		}
 		return projectsPath;
-	},
-
-	getProjectPath: function(projectId, ext) {
-		var projectPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.PROJECT + '/' + projectId;
-		if(ext) {
-			projectPath += ext;
-		}
-		return projectPath;
 	},
 	
 	getProjectPersonsPath: function(projectId, ext) {

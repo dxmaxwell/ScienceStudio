@@ -10,9 +10,7 @@ package ca.sciencestudio.service.project.backers;
 import java.text.ParseException;
 import java.util.Date;
 
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.ProjectStatus;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.Project;
 import ca.sciencestudio.util.web.BindAndValidateUtils;
 
 /**
@@ -21,24 +19,24 @@ import ca.sciencestudio.util.web.BindAndValidateUtils;
  */
 public class ProjectFormBacker { 
 	
-	private int id;
+	private String gid;
 	private String name;
 	private String description;
 	private String startDate;
 	private String endDate;
-	private ProjectStatus status;
+	private String status;
 	
 	public ProjectFormBacker() {
-		setId(0);
-		setName("");
-		setDescription("");
-		setStartDate("");
-		setEndDate("");
-		setStatus(ProjectStatus.UNKNOWN);
+		setGid(Project.DEFAULT_GID);
+		setName(Project.DEFAULT_NAME);
+		setDescription(Project.DEFAULT_DESCRIPTION);
+		setRawStartDate(Project.DEFAULT_START_DATE);
+		setRawEndDate(Project.DEFAULT_END_DATE);
+		setStatus(Project.DEFAULT_STATUS);
 	}
 	
 	public ProjectFormBacker(Project project) {
-		setId(project.getId());
+		setGid(project.getGid());
 		setName(project.getName());
 		setDescription(project.getDescription());
 		setRawStartDate(project.getStartDate());
@@ -46,9 +44,9 @@ public class ProjectFormBacker {
 		setStatus(project.getStatus());
 	}
 	
-	public Project createProject(ProjectDAO projectDAO) {
-		Project project = projectDAO.createProject();
-		project.setId(getId());
+	public Project toProject() {
+		Project project = new Project();
+		project.setGid(getGid());
 		project.setName(getName());
 		project.setDescription(getDescription());
 		project.setStartDate(getRawStartDate());
@@ -62,7 +60,7 @@ public class ProjectFormBacker {
 			return BindAndValidateUtils.DATE_FORMAT_ISO8601_DATE.parse(getStartDate());
 		}
 		catch (ParseException e) {
-			return null;
+			return Project.DEFAULT_START_DATE;
 		}
 	}
 	public void setRawStartDate(Date date) {
@@ -74,18 +72,18 @@ public class ProjectFormBacker {
 			return BindAndValidateUtils.DATE_FORMAT_ISO8601_DATE.parse(getEndDate());
 		}
 		catch (ParseException e) {
-			return null;
+			return Project.DEFAULT_END_DATE;
 		}
 	}
 	public void setRawEndDate(Date date) {
 		setEndDate(BindAndValidateUtils.DATE_FORMAT_ISO8601_DATE.format(date));
 	}
-	
-	public int getId() {
-		return id;
+
+	public String getGid() {
+		return gid;
 	}
-	private void setId(int id) {
-		this.id = id;
+	public void setGid(String gid) {
+		this.gid = gid;
 	}
 
 	public String getName() {
@@ -116,10 +114,10 @@ public class ProjectFormBacker {
 		this.endDate = endDate;
 	}
 
-	public ProjectStatus getStatus() {
+	public String getStatus() {
 		return status;
 	}
-	public void setStatus(ProjectStatus status) {
+	public void setStatus(String status) {
 		this.status = status;
 	}
 }
