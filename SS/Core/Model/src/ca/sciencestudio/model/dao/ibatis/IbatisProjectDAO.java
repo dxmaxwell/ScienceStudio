@@ -16,6 +16,7 @@ import ca.sciencestudio.model.dao.ibatis.support.AbstractIbatisModelDAO;
 import ca.sciencestudio.model.dao.ibatis.support.IbatisProject;
 import ca.sciencestudio.model.dao.support.ModelAccessException;
 import ca.sciencestudio.model.Project;
+import ca.sciencestudio.model.Project.Status;
 import ca.sciencestudio.model.dao.ProjectDAO;
 import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.util.sql.SqlMapParameters;
@@ -27,10 +28,15 @@ import ca.sciencestudio.util.sql.SqlMapParameters;
 public class IbatisProjectDAO extends AbstractIbatisModelDAO<Project, IbatisProject> implements ProjectDAO {
 	
 	@Override
-	public String getType() {
+	public String getGidType() {
 		return Project.GID_TYPE;
 	}
 	
+	@Override
+	public List<Project> getAllByStatus(Status status) {
+		return getAllByStatus(status.name());
+	}
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<Project> getAllByStatus(String status) {
@@ -51,10 +57,33 @@ public class IbatisProjectDAO extends AbstractIbatisModelDAO<Project, IbatisProj
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<Project> getAllByPersonUidAndStatus(String personUid, String status) {
+	public List<Project> getAllByPersonGid(Object personGid) {
 		List<Project> projects;
 		try {
-			projects = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByPersonUidAndStatus"), new SqlMapParameters(personUid, status)));
+			projects = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByPersonUid"), personGid));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Projects by Person GID: " + personGid + ", size: " + projects.size());
+		}
+		return Collections.unmodifiableList(projects);
+	}
+
+	@Override
+	public List<Project> getAllByPersonGidAndStatus(Object personGid, Status status) {
+		return getAllByPersonGidAndStatus(personGid, status.name());
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<Project> getAllByPersonGidAndStatus(Object personGid, String status) {
+		List<Project> projects;
+		try {
+			projects = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByPersonUidAndStatus"), new SqlMapParameters(personGid, status)));
 		}
 		catch(DataAccessException e) {
 			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
@@ -70,7 +99,8 @@ public class IbatisProjectDAO extends AbstractIbatisModelDAO<Project, IbatisProj
 	@Override
 	protected IbatisProject toIbatisModel(Project project) {
 		IbatisProject ibatisProject = new IbatisProject();
-		ibatisProject.setId(GID.parse(project.getGid()).getId());
+		GID gid = GID.parse(project.getGid());
+		if(gid != null) { ibatisProject.setId(gid.getId()); }
 		ibatisProject.setName(project.getName());
 		ibatisProject.setDescription(project.getDescription());
 		ibatisProject.setStartDate(project.getStartDate());
@@ -85,7 +115,7 @@ public class IbatisProjectDAO extends AbstractIbatisModelDAO<Project, IbatisProj
 			return null;
 		}
 		Project project = new Project();
-		project.setGid(GID.format(getFacility(), ibatisProject.getId(), getType()));
+		project.setGid(GID.format(getGidFacility(), ibatisProject.getId(), getGidType()));
 		project.setName(ibatisProject.getName());
 		project.setDescription(ibatisProject.getDescription());
 		project.setStartDate(ibatisProject.getStartDate());

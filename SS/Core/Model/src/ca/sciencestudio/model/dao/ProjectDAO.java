@@ -10,6 +10,8 @@ package ca.sciencestudio.model.dao;
 import java.util.List;
 
 import ca.sciencestudio.model.Project;
+import ca.sciencestudio.model.Project.Status;
+
 
 /**
  * @author maxweld
@@ -17,6 +19,11 @@ import ca.sciencestudio.model.Project;
  */
 public interface ProjectDAO extends ModelDAO<Project> {
 	
+	public List<Project> getAllByStatus(Status status);
 	public List<Project> getAllByStatus(String status);
-	public List<Project> getAllByPersonUidAndStatus(String personUid, String status);
+	
+	public List<Project> getAllByPersonGid(Object personGid);
+	
+	public List<Project> getAllByPersonGidAndStatus(Object personGid, Status status);
+	public List<Project> getAllByPersonGidAndStatus(Object personGid, String status);
 }

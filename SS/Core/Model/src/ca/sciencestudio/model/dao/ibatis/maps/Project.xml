@@ -18,7 +18,7 @@
 	</resultMap>
 	
 	<insert id="addProject">
-		INSERT INTO ${database}.project
+		INSERT INTO ${schema}.project
 		(
 			name,
 			description,
@@ -40,7 +40,7 @@
 	</insert>
 	
 	<update id="editProject">
-		UPDATE ${database}.project
+		UPDATE ${schema}.project
 			SET
 				name = #name:VARCHAR#,
 				description = #description:VARCHAR#,
@@ -52,41 +52,41 @@
 	</update>
 	
 	<delete id="removeProject">
-		DELETE FROM ${database}.project
+		DELETE FROM ${schema}.project
 			WHERE project_id = #value#
 	</delete>
 	
 	<select id="getProjectById" resultMap="project">
-		SELECT * FROM ${database}.project 
+		SELECT * FROM ${schema}.project 
 			WHERE project_id = #value#
 	</select>
 	
 	<select id="getProjectByScanId" resultMap="project">
 		SELECT p.project_id, p.name, p.description, p.start_date, p.end_date, p.status
-			FROM ${database}.project AS p, ${database}.session AS s, ${database}.experiment AS e, ${database}.scan AS scan
+			FROM ${schema}.project AS p, ${schema}.session AS s, ${schema}.experiment AS e, ${schema}.scan AS scan
 			WHERE scan.scan_id = #value# AND scan.experiment_id = e.experiment_id
 				AND e.session_id = s.session_id AND s.project_id = p.project_id
 	</select>
 	
 	<select id="getProjectBySessionId" resultMap="project">
 		SELECT p.project_id, p.name, p.description, p.start_date, p.end_date, p.status
-			FROM ${database}.project AS p, ${database}.session AS s
+			FROM ${schema}.project AS p, ${schema}.session AS s
 			WHERE s.session_id = #value# AND s.project_id = p.project_id
 	</select>
 	
 	<select id="getProjectByExperimentId" resultMap="project">
 		SELECT p.project_id, p.name, p.description, p.start_date, p.end_date, p.status
-			FROM ${database}.project AS p, ${database}.session AS s, ${database}.experiment AS e
+			FROM ${schema}.project AS p, ${schema}.session AS s, ${schema}.experiment AS e
 			WHERE e.experiment_id = #value# AND e.session_id = s.session_id AND s.project_id = p.project_id
 	</select>
 	
 	<select id="getProjectList" resultMap="project">
-		SELECT * FROM ${database}.project
+		SELECT * FROM ${schema}.project
 	</select>
 	
 	<select id="getProjectListByPersonUid" resultMap="project">
 		SELECT p.project_id, p.project_name, p.start_date, p.end_date, p.project_status_id
-			FROM ${database}.project AS p,${database}.project_person AS pt
+			FROM ${schema}.project AS p,${schema}.project_person AS pt
 			WHERE pt.person_uid = #value#
 			AND pt.project_id = p.project_id
 			ORDER BY pt.project_id
@@ -94,14 +94,14 @@
 	
 	<select id="getProjectListByStatus" resultMap="project">
 		SELECT *
-			FROM ${database}.project
+			FROM ${schema}.project
 			WHERE status = #value#
 			ORDER BY project_id
 	</select>
 	
 	<select id="getProjectListByPersonUidAndStatus" resultMap="project">
 		SELECT p.project_id, p.name, p.description, p.start_date, p.end_date, p.status
-			FROM ${database}.project AS p, ${database}.project_person AS pt
+			FROM ${schema}.project AS p, ${schema}.project_person AS pt
 			WHERE pt.person_uid = #param1# AND pt.project_id = p.project_id
 			AND p.status = #param2# ORDER BY pt.project_id
 	</select>

@@ -68,19 +68,19 @@ public class ProjectController extends AbstractModelController<Project, ProjectD
 	
 	@Override
 	@ResponseBody 
-	@RequestMapping(value = "/projects/{gid}*", method = RequestMethod.GET)
+	@RequestMapping(value = PROJECT_MODEL_URL + "/{gid}*", method = RequestMethod.GET)
 	public Object get(@PathVariable String gid, HttpServletResponse response) throws Exception {
 		return super.get(gid, response);
 	}
 	
 	@Override
-	@RequestMapping(value = "/projects*", method = RequestMethod.GET)
+	@RequestMapping(value = PROJECT_MODEL_URL + "*", method = RequestMethod.GET)
 	@ResponseBody public List<Project> getAll(HttpServletResponse response) {
 		return super.getAll(response);
 	}
 	
-	@RequestMapping(value = "/projects*", method = RequestMethod.GET, params="status")
-	@ResponseBody public List<Project> getAll(@RequestParam String status, HttpServletResponse response) {
+	@RequestMapping(value = PROJECT_MODEL_URL + "*", method = RequestMethod.GET, params="status")
+	@ResponseBody public List<Project> getAllByStatus(@RequestParam String status, HttpServletResponse response) {
 		try {
 			return getModelDAO().getAllByStatus(status);
 		}
@@ -90,10 +90,21 @@ public class ProjectController extends AbstractModelController<Project, ProjectD
 		}
 	}
 	
-	@RequestMapping(value = "/projects*", method = RequestMethod.GET, params={ "personUid", "status" })
-	@ResponseBody public List<Project> getAll(@RequestParam String personUid, @RequestParam String status, HttpServletResponse response) {
+	@RequestMapping(value = PROJECT_MODEL_URL + "*", method = RequestMethod.GET, params="personGid")
+	@ResponseBody public List<Project> getAllByPersonGid(@RequestParam String personGid, HttpServletResponse response) {
 		try {
-			return getModelDAO().getAllByPersonUidAndStatus(personUid, status);
+			return getModelDAO().getAllByPersonGid(personGid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyList();
+		}
+	}
+	
+	@RequestMapping(value = PROJECT_MODEL_URL + "*", method = RequestMethod.GET, params={ "personGid", "status" })
+	@ResponseBody public List<Project> getAllPersonGidAndStatus(@RequestParam String personGid, @RequestParam String status, HttpServletResponse response) {
+		try {
+			return getModelDAO().getAllByPersonGidAndStatus(personGid, status);
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
