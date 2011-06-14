@@ -39,6 +39,9 @@ public class GID {
 	}
 	
 	public static GID parse(String gid) {
+		if(gid == null) {
+			return null;
+		}
 		Matcher m = GID_VALIDATE_PATTERN.matcher(gid);
 		if(!m.matches()) {
 			return null;
@@ -87,7 +90,11 @@ public class GID {
 	}
 	
 	public boolean isFacilityAndType(String facility, String type) {
-		return isFacility(facility) && isType(type);
+		return isFacilityAndType(facility, type, false, false);
+	}
+	
+	public boolean isFacilityAndType(String facility, String type, boolean allowLocal, boolean allowTypeless) {
+		return ((allowLocal && isLocal()) || isFacility(facility)) && ((allowTypeless && isTypeless()) || isType(type));
 	}
 	
 	@Override
