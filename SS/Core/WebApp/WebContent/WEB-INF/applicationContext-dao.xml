@@ -16,7 +16,7 @@
 	
 	<bean id="loginSessionDAO"
 		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginSessionDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
 	</bean>
 	
 	<bean id="projectDAO"

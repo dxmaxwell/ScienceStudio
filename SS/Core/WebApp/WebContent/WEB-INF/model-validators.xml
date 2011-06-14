@@ -16,6 +16,9 @@
 	
 	<bean id="projectFormBackerValidator"
 		class="ca.sciencestudio.service.project.validators.ProjectFormBackerValidator">
+		<property name="projectValidator">
+			<bean class="ca.sciencestudio.model.validators.ProjectValidator"/>
+		</property>
 	</bean>
 	
 	<bean id="sampleFormBackerValidator"

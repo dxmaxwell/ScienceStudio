@@ -42,4 +42,11 @@
 	<authentication-manager>
 	</authentication-manager>
 
+	<beans:bean class="ca.sciencestudio.security.util.SecurityUtilConfigBean">
+		<beans:property name="projectPersonDAO" ref="restProjectPersonDAO"/>
+		<beans:property name="securityStrategy">
+			<beans:bean class="ca.sciencestudio.security.util.SpringSecurityStrategy"/>
+		</beans:property>
+	</beans:bean>
+
 </beans:beans>

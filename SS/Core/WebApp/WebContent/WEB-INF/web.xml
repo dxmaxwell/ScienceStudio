@@ -25,6 +25,7 @@
 			/WEB-INF/applicationContext-general.xml
 			/WEB-INF/applicationContext-ibatis.xml
 			/WEB-INF/applicationContext-dao.xml
+			/WEB-INF/applicationContext-hmc.xml
 			/WEB-INF/applicationContext-dao-rest.xml
 			/WEB-INF/applicationContext-security.xml
 			/WEB-INF/applicationContext-marshal.xml

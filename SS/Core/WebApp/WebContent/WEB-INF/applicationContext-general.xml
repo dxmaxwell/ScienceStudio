@@ -28,4 +28,8 @@
 		<property name="basename" value="messages"/>
 	</bean>
 
+	<bean class="ca.sciencestudio.util.web.GeneralResponseConfigBean">
+		<property name="messageSource" ref="messageSource"/>
+	</bean>
+	
 </beans>

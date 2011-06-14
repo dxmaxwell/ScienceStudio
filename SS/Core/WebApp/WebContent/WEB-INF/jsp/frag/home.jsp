@@ -15,20 +15,17 @@ Ext.onReady(function() {
 		url: '/ss/model/projects.json',
 		autoDestroy:true,
 		autoLoad:false,
-		root:"response",
 		success: "success",
 		fields:[{
-			name:"id", mapping:"project.id"
+			name:"gid"
 		},{
-			name:"name", mapping:"project.name"
+			name:"name"
 		},{
-			name:"startDate", mapping:"project.startDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"startDate", type:"date", dateFormat:"c"
 		},{
-			name:"endDate", mapping:"project.endDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"endDate", type:"date", dateFormat:"c"
 		},{
-			name:"status", mapping:"project.status"
+			name:"status"
 		}]
 	});
 
@@ -45,7 +42,7 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"id", sortable:true
+			header: "GID", width:30, dataIndex:"gid", sortable:true
 		},{
 			header: "Name", width: 180, dataIndex: 'name', sortable: true
 		},{
@@ -69,9 +66,9 @@ Ext.onReady(function() {
 
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var projectId = record.get("id");
-			if(projectId) {
-				loadModelViewTab(ModelPathUtils.getProjectPath(projectId, '.html'));
+			var projectGid = record.get("gid");
+			if(projectGid) {
+				loadModelViewTab(ModelPathUtils.getProjectsPath(projectGid, '.html'));
 			}
 		}
 	}, this);
