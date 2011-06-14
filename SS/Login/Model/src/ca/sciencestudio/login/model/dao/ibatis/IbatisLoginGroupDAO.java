@@ -7,70 +7,42 @@
  */
 package ca.sciencestudio.login.model.dao.ibatis;
 
+import java.util.Collections;
 import java.util.List;
 
-import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
+import org.springframework.dao.DataAccessException;
 
 import ca.sciencestudio.login.model.LoginGroup;
 import ca.sciencestudio.login.model.dao.LoginGroupDAO;
-import ca.sciencestudio.login.model.ibatis.IbatisLoginGroup;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  *
  */
-public class IbatisLoginGroupDAO extends SqlMapClientDaoSupport implements LoginGroupDAO {
-
-	@Override
-	public LoginGroup createLoginGroup() {
-		return new IbatisLoginGroup();
-	}
-
-	@Override
-	public int addLoginGroup(LoginGroup loginGroup) {
-		int key = (Integer) getSqlMapClientTemplate().insert("addLoginGroup", loginGroup);
-		logger.debug("Added new login group with id: " + key);
-		return key;
-	}
-
-	@Override
-	public void editLoginGroup(LoginGroup loginGroup) {
-		int count = getSqlMapClientTemplate().update("editLoginGroup", loginGroup);
-		logger.debug("Edited login group id: " + loginGroup.getId() + ", rows affected: " + count);
-	}
-
-	@Override
-	public void removeLoginGroup(int loginGroupId) {
-		int count = getSqlMapClientTemplate().delete("removeLoginGroup", loginGroupId);
-		logger.debug("Removed login group: " + loginGroupId + ", rows affected: " + count);		
-	}
-	
-	@Override
-	public void removeLoginGroup(LoginGroup loginGroup) {
-		int count = getSqlMapClientTemplate().delete("removeLoginGroup", loginGroup.getId());
-		logger.debug("Removed login group: " + loginGroup.getId() + ", rows affected: " + count);
-	}
-
-	@Override
-	public LoginGroup getLoginGroupById(int loginGroupId) {
-		LoginGroup LoginGroup = (LoginGroup) getSqlMapClientTemplate().queryForObject("getLoginGroupById", loginGroupId);
-		logger.debug("Get login group: " + loginGroupId);
-		return LoginGroup;
-	}
+public class IbatisLoginGroupDAO extends AbstractIbatisModelDAO<LoginGroup> implements LoginGroupDAO {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<LoginGroup> getLoginGroupList() {
-		List<LoginGroup> list = getSqlMapClientTemplate().queryForList("getLoginGroupList");
-		logger.debug("Get Login group list, size: " + list.size());
-		return list;
+	public List<LoginGroup> getAllByPersonGid(Object personGid) {
+		
+		List<LoginGroup> loginGroups;
+		try {
+			loginGroups = getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByPersonGid"), personGid);
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Login Groups with Person GID: " + personGid + ", size: " + loginGroups.size());
+		}
+		return Collections.unmodifiableList(loginGroups);
 	}
-	
+
 	@Override
-	@SuppressWarnings("unchecked")
-	public List<LoginGroup> getLoginGroupListByPersonUid(String personUid) {
-		List<LoginGroup> list = getSqlMapClientTemplate().queryForList("getLoginGroupListByPersonUid", personUid);
-		logger.debug("Get Login group list with person uid: " + personUid + ", size: " + list.size());
-		return list;
+	protected String getStatementName(String prefix, String suffix) {
+		return prefix + "LoginGroup" + suffix;
 	}
 }

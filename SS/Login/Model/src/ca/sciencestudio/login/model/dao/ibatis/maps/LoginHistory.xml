@@ -22,12 +22,12 @@
 
 	<select id="getLoginHistoryById" resultMap="loginHistory">
 		SELECT * 
-		FROM ${database}.login_history
+		FROM ${schema}.login_history
 		WHERE login_history_id = #value#
 	</select>
 
 	<insert id="addLoginHistory">
-		INSERT INTO ${database}.login_history
+		INSERT INTO ${schema}.login_history
 			(
 				login_history_username, login_history_address,
 				login_history_port, login_history_agent,
@@ -45,7 +45,7 @@
 	</insert>
 		
 	<update id="editLoginHistory">
-		UPDATE  ${database}.login_history
+		UPDATE  ${schema}.login_history
 		SET
 			login_history_username = #username:VARCHAR#,
 			login_history_address = #address:VARCHAR#,
@@ -58,12 +58,12 @@
 	</update>
 	
 	<delete id="removeLoginHistory">
-		DELETE FROM ${database}.login_history
+		DELETE FROM ${schema}.login_history
 		WHERE login_history_id = #value#
 	</delete>
 
 	<select id="getLoginHistoryList" resultMap="loginHistory">
-		SELECT * FROM ${database}.login_history
+		SELECT * FROM ${schema}.login_history
 	</select>
 
 </sqlMap>

@@ -7,19 +7,14 @@
  */
 package ca.sciencestudio.login.model.dao;
 
-import java.util.List;
-
 import ca.sciencestudio.login.model.LoginSession;
+import ca.sciencestudio.login.model.dao.ModelDAO;
 
 /**
  * @author maxweld
  *  
  */
-public interface LoginSessionDAO {
-
-	public LoginSession getLoginSessionById(String loginSessionId);
-	public String addLoginSession(LoginSession loginSession);
-	public void editLoginSession(LoginSession loginSession);
-	public void removeLoginSession(String loginSessionId);
-	public List<LoginSession> getLoginSessionList();
+public interface LoginSessionDAO extends ModelDAO<LoginSession> {
+	
+	public LoginSession getByUuid(String uuid);
 }

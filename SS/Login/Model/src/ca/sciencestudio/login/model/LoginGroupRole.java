@@ -2,25 +2,47 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     LoginGroupRole interface.
+ *     LoginGroupRole class.
  *     
  */
 package ca.sciencestudio.login.model;
 
-import java.io.Serializable;
+import ca.sciencestudio.login.model.Model;
 
 /**
  * @author maxweld
  *
  */
-public interface LoginGroupRole extends Serializable {
+public final class LoginGroupRole implements Model {
 
-	public int getId();
-	public void setId(int loginGroupRoleId);
+	private static final long serialVersionUID = 1L;
 	
-	public int getLoginRoleId();
-	public void setLoginRoleId(int loginRoleId);
+	public static final int DEFAULT_ID = 0;
+	public static final int DEFAULT_LOGIN_ROLE_ID = 0;
+	public static final int DEFAULT_LOGIN_GROUP_ID = 0;
 	
-	public int getLoginGroupId();
-	public void setLoginGroupId(int loginGroupId);
+	private int id = DEFAULT_ID;
+	private int loginRoleId = DEFAULT_LOGIN_ROLE_ID;
+	private int loginGroupId = DEFAULT_LOGIN_GROUP_ID;
+	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public int getLoginRoleId() {
+		return loginRoleId;
+	}
+	public void setLoginRoleId(int loginRoleId) {
+		this.loginRoleId = loginRoleId;
+	}
+	
+	public int getLoginGroupId() {
+		return loginGroupId;
+	}
+	public void setLoginGroupId(int loginGroupId) {
+		this.loginGroupId = loginGroupId;
+	}
 }

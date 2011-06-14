@@ -11,20 +11,13 @@ import java.util.List;
 
 import ca.sciencestudio.login.model.LoginGroup;
 
+import ca.sciencestudio.login.model.dao.ModelDAO;
+
 /**
  * @author maxweld
  *
  */
-public interface LoginGroupDAO {
-	public LoginGroup createLoginGroup();
+public interface LoginGroupDAO extends ModelDAO<LoginGroup> {
 	
-	public int addLoginGroup(LoginGroup loginGroup);
-	public void editLoginGroup(LoginGroup loginGroup);
-	public void removeLoginGroup(LoginGroup loginGroup);
-	public void removeLoginGroup(int loginGroupId);
-	
-	public LoginGroup getLoginGroupById(int loginGroupId);
-	
-	public List<LoginGroup> getLoginGroupList();
-	public List<LoginGroup> getLoginGroupListByPersonUid(String personUid);
+	public List<LoginGroup> getAllByPersonGid(Object personGid);
 }

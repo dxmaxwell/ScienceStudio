@@ -8,19 +8,14 @@
  */
 package ca.sciencestudio.login.model.dao;
 
-import java.util.List;
-
 import ca.sciencestudio.login.model.LoginHistory;
+import ca.sciencestudio.login.model.dao.ModelDAO;
 
 /**
  * @author maxweld
  *
  */
-public interface LoginHistoryDAO {
+public interface LoginHistoryDAO extends ModelDAO<LoginHistory> {
 
-	public LoginHistory getLoginHistoryById(int loginHistoryId);
-	public int addLoginHistory(LoginHistory loginHistory);
-	public void editLoginHistory(LoginHistory loginHistory);
-	public void removeLoginHistory(int loginHistoryId);
-	public List<LoginHistory> getLoginHistoryList();
+	// Extra data access methods here. //
 }

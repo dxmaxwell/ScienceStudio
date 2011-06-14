@@ -2,22 +2,38 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     LoginGroup interface.
+ *     LoginGroup class.
  *     
  */
 package ca.sciencestudio.login.model;
 
-import java.io.Serializable;
+import ca.sciencestudio.login.model.Model;
 
 /**
  * @author maxweld
  *
  */
-public interface LoginGroup extends Serializable {
+public final class LoginGroup implements Model {
 
-	public int getId();
-	public void setId(int id);
+	private static final long serialVersionUID = 1L;
 	
-	public String getName();
-	public void setName(String name);
+	public static final int DEFAULT_ID = 0;
+	public static final String DEFAULT_NAME = "";
+	
+	private int id = DEFAULT_ID;
+	private String name = DEFAULT_NAME;
+	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 }

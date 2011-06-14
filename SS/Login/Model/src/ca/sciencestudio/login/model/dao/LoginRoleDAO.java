@@ -10,22 +10,15 @@ package ca.sciencestudio.login.model.dao;
 import java.util.List;
 
 import ca.sciencestudio.login.model.LoginRole;
+import ca.sciencestudio.login.model.dao.ModelDAO;
 
 /**
  * @author maxweld
  *
  */
-public interface LoginRoleDAO {
-	public LoginRole createLoginRole();
+public interface LoginRoleDAO extends ModelDAO<LoginRole> {
 	
-	public int addLoginRole(LoginRole loginRole);
-	public void editLoginRole(LoginRole loginRole);
-	public void removeLoginRole(LoginRole loginRole);
-	public void removeLoginRole(int loginRoleId);
+	public LoginRole getByName(String name);
 	
-	public LoginRole getLoginRoleById(int loginRoleId);
-	public LoginRole getLoginRoleByName(String name);
-	
-	public List<LoginRole> getLoginRoleList();
-	public List<LoginRole> getLoginRoleListByPersonUid(String personUid);
+	public List<LoginRole> getAllByPersonGid(Object personGid);
 }

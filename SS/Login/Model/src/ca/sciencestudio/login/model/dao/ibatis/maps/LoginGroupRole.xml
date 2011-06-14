@@ -8,14 +8,14 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="LoginGroupRole">
-	<resultMap id="loginGroupRole" class="ca.sciencestudio.login.model.ibatis.IbatisLoginGroupRole">
+	<resultMap id="loginGroupRole" class="ca.sciencestudio.login.model.LoginGroupRole">
 		<result property="id" column="login_group_role_id" />
 		<result property="loginRoleId" column="login_role_id"/>
 		<result property="loginGroupId" column="login_group_id" />
 	</resultMap>
 	
 	<insert id="addLoginGroupRole">
-		INSERT INTO ${database}.login_group_role (
+		INSERT INTO ${schema}.login_group_role (
 			login_role_id,
 			login_group_id
 		)
@@ -29,7 +29,7 @@
 	</insert>
 	
 	<update id="editLoginGroupRole">
-		UPDATE ${database}.login_group_role
+		UPDATE ${schema}.login_group_role
 			SET
 				login_role_id = #loginRoleId:INT#,
 				login_group_id = #loginGroupId:INT#
@@ -38,17 +38,17 @@
 	</update>
 	
 	<delete id="removeLoginGroupRole">
-		DELETE FROM ${database}.login_group_role
+		DELETE FROM ${schema}.login_group_role
 			WHERE login_group_role_id = #value#
 	</delete>
 
 	<select id="getLoginGroupRoleById" resultMap="loginGroupRole">
-		SELECT * FROM ${database}.login_group_role
+		SELECT * FROM ${schema}.login_group_role
 			WHERE login_group_role_id = #value#
 	</select>
 	
 	<select id="getLoginGroupRoleList" resultMap="loginGroupRole">
-		SELECT * FROM ${database}.login_group_role
+		SELECT * FROM ${schema}.login_group_role
 	</select>
 	
 </sqlMap>

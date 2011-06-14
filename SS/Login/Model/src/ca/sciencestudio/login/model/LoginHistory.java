@@ -9,28 +9,24 @@
  */
 package ca.sciencestudio.login.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
+
+import ca.sciencestudio.login.model.Model;
 
 /**
  * @author maxweld
  *
  */
-public class LoginHistory  implements Serializable {
+public final class LoginHistory implements Model {
 
 	private static final long serialVersionUID = 1L;
 	
 	private static final String HEADER_KEY_USER_AGENT = "user-agent";
 	private static final String UNKNOWN_USER_AGENT = "Unknown User Agent";
 	
-	public enum Status {
-		LOGIN_SUCCESS,
-		LOGIN_FAILURE,
-		LOGOUT_SUCCESS,
-		LOGOUT_FAILURE
-	}
+	public enum Status { LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT_SUCCESS, LOGOUT_FAILURE }
 	
 	public int id;
 	public String username;
@@ -38,7 +34,7 @@ public class LoginHistory  implements Serializable {
 	public int port;
 	public String agent; 
 	public Date timestamp;
-	public Status status;
+	public String status;
 	
 	public LoginHistory() {}
 	
@@ -49,9 +45,9 @@ public class LoginHistory  implements Serializable {
 		this.agent = request.getHeader(HEADER_KEY_USER_AGENT);
 		if(this.agent == null) { this.agent = UNKNOWN_USER_AGENT; }
 		this.timestamp = new Date();
-		setStatus(status);
+		this.status = status.name();
 	}
-	
+
 	public int getId() {
 		return id;
 	}
@@ -94,18 +90,10 @@ public class LoginHistory  implements Serializable {
 		this.timestamp = timestamp;
 	}
 
-	public Status getStatus() {
+	public String getStatus() {
 		return status;
 	}
-	
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-	
-	public String getStatusString() {
-		return status.name();
-	}
 	public void setStatus(String status) {
-		this.status = Status.valueOf(status);
+		this.status = status;
 	}
 }

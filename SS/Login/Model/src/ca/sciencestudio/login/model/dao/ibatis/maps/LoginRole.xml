@@ -8,13 +8,13 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="LoginRole">
-	<resultMap id="loginRole" class="ca.sciencestudio.login.model.ibatis.IbatisLoginRole">
+	<resultMap id="loginRole" class="ca.sciencestudio.login.model.LoginRole">
 		<result property="id" column="login_role_id" />
 		<result property="name" column="name"/>
 	</resultMap>
 	
 	<insert id="addLoginRole">
-		INSERT INTO ${database}.login_role (
+		INSERT INTO ${schema}.login_role (
 			name
 		)
 		VALUES (
@@ -26,7 +26,7 @@
 	</insert>
 	
 	<update id="editLoginRole">
-		UPDATE ${database}.login_role
+		UPDATE ${schema}.login_role
 			SET 
 				name = #name:VARCHAR#,
 			WHERE 
@@ -34,28 +34,28 @@
 	</update>
 	
 	<delete id="removeLoginRole">
-		DELETE FROM ${database}.login_role
+		DELETE FROM ${schema}.login_role
 			WHERE login_role_id = #value#
 	</delete>
 
 	<select id="getLoginRoleById" resultMap="loginRole">
-		SELECT * FROM ${database}.login_role
+		SELECT * FROM ${schema}.login_role
 			WHERE login_role_id = #value#
 	</select>
 	
 	<select id="getLoginRoleByName" resultMap="loginRole">
-		SELECT * FROM ${database}.login_role
+		SELECT * FROM ${schema}.login_role
 			WHERE name = #value#
 	</select>
 	
 	<select id="getLoginRoleList" resultMap="loginRole">
-		SELECT * FROM ${database}.login_role
+		SELECT * FROM ${schema}.login_role
 	</select>
 	
-	<select id="getLoginRoleListByPersonUid" resultMap="loginRole">
+	<select id="getLoginRoleListByPersonGid" resultMap="loginRole">
 		SELECT r.login_role_id, r.name 
-			FROM ${database}.login_role AS r, ${database}.login_group_role AS gr, ${database}.login_group_member AS gm
-			WHERE gm.person_uid = #value# AND gm.login_group_id = gr.login_group_id  AND gr.login_role_id = r.login_role_id
+			FROM ${schema}.login_role AS r, ${schema}.login_group_role AS gr, ${schema}.login_group_member AS gm
+			WHERE gm.person_gid = #value# AND gm.login_group_id = gr.login_group_id  AND gr.login_role_id = r.login_role_id
 	</select>
 	
 </sqlMap>

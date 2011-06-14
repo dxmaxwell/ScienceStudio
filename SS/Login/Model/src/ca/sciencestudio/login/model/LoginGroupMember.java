@@ -2,25 +2,47 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     LoginGroupMember interface.
+ *     LoginGroupMember class.
  *     
  */
 package ca.sciencestudio.login.model;
 
-import java.io.Serializable;
+import ca.sciencestudio.login.model.Model;
 
 /**
  * @author maxweld
  *
  */
-public interface LoginGroupMember extends Serializable {
+public final class LoginGroupMember implements Model {
 
-	public int getId();
-	public void setId(int id);
- 
-	public String getPersonUid();
-	public void setPersonUid(String personUid);
+	private static final long serialVersionUID = 1L;
 	
-	public int getLoginGroupId();
-	public void setLoginGroupId(int loginGroupId);
+	public static final int DEFAULT_ID = 0;
+	public static final int DEFAULT_LOGIN_GROUP_ID = 0;
+	public static final String DEFAULT_PERSON_GID = "";
+	
+	private int id = DEFAULT_ID;
+	private int LoginGroupId = DEFAULT_LOGIN_GROUP_ID;
+	private String personGid = DEFAULT_PERSON_GID;
+	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public int getLoginGroupId() {
+		return LoginGroupId;
+	}
+	public void setLoginGroupId(int loginGroupId) {
+		LoginGroupId = loginGroupId;
+	}
+	
+	public String getPersonGid() {
+		return personGid;
+	}
+	public void setPersonGid(String personGid) {
+		this.personGid = personGid;
+	}
 }

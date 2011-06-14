@@ -8,13 +8,13 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="LoginGroup">
-	<resultMap id="loginGroup" class="ca.sciencestudio.login.model.ibatis.IbatisLoginGroup">
+	<resultMap id="loginGroup" class="ca.sciencestudio.login.model.LoginGroup">
 		<result property="id" column="login_group_id" />
 		<result property="name" column="name"/>
 	</resultMap>
 	
 	<insert id="addLoginGroup">
-		INSERT INTO ${database}.login_group (
+		INSERT INTO ${schema}.login_group (
 			name
 		)
 		VALUES (
@@ -26,7 +26,7 @@
 	</insert>
 	
 	<update id="editLoginGroup">
-		UPDATE ${database}.login_group
+		UPDATE ${schema}.login_group
 			SET 
 				name = #name:VARCHAR#
 			WHERE 
@@ -34,23 +34,23 @@
 	</update>
 	
 	<delete id="removeLoginGroup">
-		DELETE FROM ${database}.login_group
+		DELETE FROM ${schema}.login_group
 			WHERE login_group_id = #value#
 	</delete>
 
 	<select id="getLoginGroupById" resultMap="loginGroup">
-		SELECT * FROM ${database}.login_group
+		SELECT * FROM ${schema}.login_group
 			WHERE login_group_id = #value#
 	</select>
 	
 	<select id="getLoginGroupList" resultMap="loginGroup">
-		SELECT * FROM ${database}.login_group
+		SELECT * FROM ${schema}.login_group
 	</select>
 	
-	<select id="getLoginGroupListByPersonUid" resultMap="loginGroup">
+	<select id="getLoginGroupListByPersonGid" resultMap="loginGroup">
 		SELECT g.login_group_id, g.name 
-			FROM ${database}.login_group AS g, ${database}.login_group_member AS m
-			WHERE m.person_uid = #value# AND m.login_group_id = g.login_group_id
+			FROM ${schema}.login_group AS g, ${schema}.login_group_member AS m
+			WHERE m.person_gid = #value# AND m.login_group_id = g.login_group_id
 	</select>
 	
 </sqlMap>

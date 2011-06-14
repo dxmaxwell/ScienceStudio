@@ -8,29 +8,29 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Account">
-	<resultMap id="account" class="ca.sciencestudio.login.model.ibatis.IbatisAccount">
+	<resultMap id="account" class="ca.sciencestudio.login.model.Account">
 		<result property="id" column="account_id" />
 		<result property="username" column="username"/>
 		<result property="password" column="password"/>
-		<result property="personUid" column="person_uid"/>
+		<result property="personGid" column="person_gid"/>
 		<result property="creationDate" column="creation_date"/>
-		<result property="statusString" column="status"/>
+		<result property="status" column="status"/>
 	</resultMap>
 	
 	<insert id="addAccount">
-		INSERT INTO ${database}.account (
+		INSERT INTO ${schema}.account (
 			username,
 			password,
-			person_uid,
+			person_gid,
 			creation_date,
 			status
 		)
 		VALUES (
 			#username:VARCHAR#,
 			#password:VARCHAR#,
-			#personUid:VARCHAR#,
+			#personGid:VARCHAR#,
 			${date.current.function},
-			#statusString:VARCHAR#
+			#status:VARCHAR#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
 			${identity.function}
@@ -38,37 +38,37 @@
 	</insert>
 	
 	<update id="editAccount">
-		UPDATE ${database}.account
+		UPDATE ${schema}.account
 			SET 
 				username = #username:VARCHAR#,
 				password = #password:VARCHAR#,
-				person_uid = #personUid:VARCHAR#,
-				status = #statusString:VARCHAR#
+				person_gid = #personGid:VARCHAR#,
+				status = #status:VARCHAR#
 			WHERE 
 				account_id = #id#
 	</update>
 	
 	<delete id="removeAccount">
-		DELETE FROM ${database}.account
+		DELETE FROM ${schema}.account
 			WHERE account_id = #value#
 	</delete>
 
 	<select id="getAccountById" resultMap="account">
-		SELECT * FROM ${database}.account
+		SELECT * FROM ${schema}.account
 			WHERE account_id = #value#
 	</select>
 	
 	<select id="getAccountByUsername" resultMap="account">
-		SELECT * FROM ${database}.account
+		SELECT * FROM ${schema}.account
 			WHERE username = #value#
 	</select>
 	
 	<select id="getAccountList" resultMap="account">
-		SELECT * FROM ${database}.account
+		SELECT * FROM ${schema}.account
 	</select>
 	
 	<select id="getAccountUsernameList" resultClass="java.lang.String">
-		SELECT username FROM ${database}.account
+		SELECT username FROM ${schema}.account
 	</select>
 	
 </sqlMap>

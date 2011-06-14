@@ -7,58 +7,38 @@
  */
 package ca.sciencestudio.login.model.dao.ibatis;
 
-import java.util.List;
-
-import org.springframework.orm.ibatis.SqlMapClientTemplate;
-import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;
+import org.springframework.dao.DataAccessException;
 
 import ca.sciencestudio.login.model.LoginSession;
 import ca.sciencestudio.login.model.dao.LoginSessionDAO;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  *  
  */
-public class IbatisLoginSessionDAO extends SqlMapClientDaoSupport implements LoginSessionDAO {
+public class IbatisLoginSessionDAO extends AbstractIbatisModelDAO<LoginSession> implements LoginSessionDAO {
 
-	private SqlMapClientTemplate sqlMapClient = getSqlMapClientTemplate();
+	@Override
+	public LoginSession getByUuid(String uuid) {
+		
+		LoginSession t;
+		try {
+			t = (LoginSession)getSqlMapClientTemplate().queryForObject(getStatementName("get", "ByUuid"), uuid);
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get Login Sesion with UUID: " + uuid);
+		}
+		return t;
+	}
 	
-	public String addLoginSession(LoginSession loginSession) {
-		sqlMapClient.insert("addLoginSession", loginSession);
-		if(logger.isTraceEnabled()) {
-			logger.trace("Add new LoginSession with id: " + loginSession.getId());
-		}
-		return loginSession.getId();
-	}
-
-	public void editLoginSession(LoginSession loginSession) {
-		sqlMapClient.update("editLoginSession", loginSession);
-		if(logger.isTraceEnabled()) {
-			logger.trace("Edit LoginSession with id: " + loginSession.getId());
-		}
-	}
-
-	public LoginSession getLoginSessionById(String loginSessionId) {
-		LoginSession loginSession = (LoginSession) sqlMapClient.queryForObject("getLoginSessionById", loginSessionId);
-		if(loginSession != null && logger.isTraceEnabled()) {
-			logger.trace("Get loginSession with id: " + loginSession.getId());
-		}
-		return loginSession;
-	}
-
-	public void removeLoginSession(String loginSessionId) {
-		sqlMapClient.delete("removeLoginSession", loginSessionId);
-		if(logger.isTraceEnabled()) {
-			logger.trace("Remove LoginSession with id: " + loginSessionId);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<LoginSession> getLoginSessionList() {
-		List<?> list = sqlMapClient.queryForList("getLoginSessionList");
-		if(logger.isTraceEnabled()) {
-			logger.trace("Get LoginSession list, size: " + list.size());
-		}
-		return (List<LoginSession>) list;
+	@Override
+	protected String getStatementName(String prefix, String suffix) {
+		return prefix + "LoginSession" + suffix;
 	}
 }

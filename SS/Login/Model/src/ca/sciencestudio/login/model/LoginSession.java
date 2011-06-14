@@ -10,32 +10,47 @@ package ca.sciencestudio.login.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import ca.sciencestudio.login.model.Model;
+
 /**
  * @author maxweld
  *  
  */
-public class LoginSession implements Serializable {
+public final class LoginSession implements Model {
 
 	private static final long serialVersionUID = 1L;
 	
-	private String id;
-	private Object session;
-	private Date timestamp;
-
-	public String getId() {
+	public static final int DEFAULT_ID = 0;
+	public static final String DEFAULT_SESSION_UUID = "00000000-0000-0000-0000-000000000000";
+	public static final String DEFAULT_SESSION_DATA = "THE SESSION DATA HAS NOT BEEN INITIALIZED";
+	public static final Date DEFAULT_TIMESTAMP = new Date(0);
+	
+	private int id = DEFAULT_ID;
+	private String sessionUuid = DEFAULT_SESSION_UUID;
+	private Serializable sessionData = DEFAULT_SESSION_DATA;
+	private Date timestamp = DEFAULT_TIMESTAMP;
+	
+	public int getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 	
-	public Object getSession() {
-		return session;
+	public String getSessionUuid() {
+		return sessionUuid;
 	}
-	public void setSession(Object session) {
-		this.session = session;
+	public void setSessionUuid(String sessionUuid) {
+		this.sessionUuid = sessionUuid;
 	}
-
+	
+	public Serializable getSessionData() {
+		return sessionData;
+	}
+	public void setSessionData(Serializable sessionData) {
+		this.sessionData = sessionData;
+	}
+	
 	public Date getTimestamp() {
 		return timestamp;
 	}

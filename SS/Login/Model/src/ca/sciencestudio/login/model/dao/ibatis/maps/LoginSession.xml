@@ -10,36 +10,40 @@
 
 <sqlMap namespace="LoginSession">
 
-	<resultMap class="ca.sciencestudio.login.model.LoginSession" id="loginSession">
+	<resultMap id="loginSession" class="ca.sciencestudio.login.model.LoginSession">
 		<result property="id" column="login_session_id"/>
-		<result property="session" column="login_session_data" jdbcType="BLOB" javaType="java.lang.Object"/>
+		<result property="sessionUuid" column="login_session_uuid"/>
+		<result property="sessionData" column="login_session_data" jdbcType="BLOB" javaType="java.lang.Object"/>
 		<result property="timestamp" column="login_session_timestamp" jdbcType="TIMESTAMP"/>
 	</resultMap>
 	
 	<parameterMap class="ca.sciencestudio.login.model.LoginSession" id="insertLoginSession">
-		<parameter property="id" jdbcType="VARCHAR"/>
-		<parameter property="session" jdbcType="BLOB" javaType="java.lang.Object"/>
+		<parameter property="sessionUuid" jdbcType="VARCHAR"/>
+		<parameter property="sessionData" jdbcType="BLOB" javaType="java.lang.Object"/>
 		<parameter property="timestamp" jdbcType="TIMESTAMP"/>
 	</parameterMap>
 	
 	<parameterMap class="ca.sciencestudio.login.model.LoginSession" id="updateLoginSession">
-		<parameter property="id" jdbcType="VARCHAR"/>
-		<parameter property="session" jdbcType="BLOB" javaType="java.lang.Object"/>
+		<parameter property="sessionUuid" jdbcType="VARCHAR"/>
+		<parameter property="sessionData" jdbcType="BLOB" javaType="java.lang.Object"/>
 		<parameter property="timestamp" jdbcType="TIMESTAMP"/>
-		<parameter property="id" jdbcType="VARCHAR"/>
+		<parameter property="id" jdbcType="INT"/>
 	</parameterMap>
 	
 	<insert id="addLoginSession" parameterMap="insertLoginSession">
-		INSERT INTO ${database}.login_session
-			(login_session_id, login_session_data, login_session_timestamp)
+		INSERT INTO ${schema}.login_session
+			(login_session_uuid, login_session_data, login_session_timestamp)
 		VALUES 
 			(?,?,?)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
 	</insert>
 	
 	<update id="editLoginSession" parameterMap="updateLoginSession">
-		UPDATE ${database}.login_session
+		UPDATE ${schema}.login_session
 		SET 
-			login_session_id = ?,
+			login_session_uuid = ?,
 			login_session_data = ?,
 			login_session_timestamp = ?
 		WHERE 
@@ -48,19 +52,25 @@
 	
 	<delete id="removeLoginSession">
 		DELETE 
-			FROM ${database}.login_session
+			FROM ${schema}.login_session
 			WHERE login_session_id = #value#
 	</delete>
 	
 	<select id="getLoginSessionById" resultMap="loginSession">
 		SELECT * 
-			FROM ${database}.login_session
+			FROM ${schema}.login_session
 			WHERE login_session_id = #value#
+	</select>
+	
+	<select id="getLoginSessionByUuid" resultMap="loginSession">
+		SELECT * 
+			FROM ${schema}.login_session
+			WHERE login_session_uuid = #value#
 	</select>
 	
 	<select id="getLoginSessionList" resultMap="loginSession">
 		SELECT * 
-			FROM ${database}.login_session
+			FROM ${schema}.login_session
 	</select>
 	
 </sqlMap>
