@@ -20,6 +20,7 @@ import ca.sciencestudio.model.project.ProjectRole;
  * @author maxweld
  *
  */
+@Deprecated
 public abstract class AuthorityUtil {
 	
 	public static final String FALLBACK_SANITIZED_AUTHORITY = "";

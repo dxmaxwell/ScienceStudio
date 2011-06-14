@@ -22,21 +22,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import ca.sciencestudio.model.Person;
+import ca.sciencestudio.model.dao.PersonDAO;
 import ca.sciencestudio.login.model.Account;
 import ca.sciencestudio.login.model.LoginGroup;
 import ca.sciencestudio.login.model.LoginRole;
 import ca.sciencestudio.login.model.dao.AccountDAO;
 import ca.sciencestudio.login.model.dao.LoginGroupDAO;
 import ca.sciencestudio.login.model.dao.LoginRoleDAO;
-import ca.sciencestudio.model.person.Person;
-import ca.sciencestudio.model.person.dao.PersonDAO;
-import ca.sciencestudio.model.project.ProjectPerson;
-import ca.sciencestudio.model.project.dao.ProjectPersonDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.UnknownPerson;
 
 import ca.sciencestudio.security.spring.core.userdetails.PersonNotFoundException;
 import ca.sciencestudio.security.spring.core.userdetails.AccountNotFoundException;
+import ca.sciencestudio.security.util.SecurityUtil;
 
 /**
  * @author maxweld
@@ -49,7 +46,6 @@ public class ScienceStudioUserDetailsService implements UserDetailsService, Auth
 	private LoginGroupDAO loginGroupDAO;
 	
 	private PersonDAO personDAO;
-	private ProjectPersonDAO projectPersonDAO;
 	
 	protected Log logger = LogFactory.getLog(getClass());
 	
@@ -61,39 +57,33 @@ public class ScienceStudioUserDetailsService implements UserDetailsService, Auth
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
-		Account account = accountDAO.getAccountByUsername(username);		
+		Account account = accountDAO.getByUsername(username);
 		
 		if(account == null) {
 			throw new AccountNotFoundException("Account with username '" + username + "' not found.");
 		}
 		
-		String personUid = account.getPersonUid();
+		String personGid = account.getPersonGid();
 		
 		Set<GrantedAuthority> grantedAuthoritySet =  new HashSet<GrantedAuthority>();
 		
-		List<LoginRole> loginRoleList = loginRoleDAO.getLoginRoleListByPersonUid(personUid);
+		List<LoginRole> loginRoleList = loginRoleDAO.getAllByPersonGid(personGid);
 		for(LoginRole loginRole : loginRoleList) {
 			addGrantedAuthorities(grantedAuthoritySet, loginRole);
 		}
 		
-		List<LoginGroup> loginGroupList = loginGroupDAO.getLoginGroupListByPersonUid(personUid);
+		List<LoginGroup> loginGroupList = loginGroupDAO.getAllByPersonGid(personGid);
 		for(LoginGroup loginGroup : loginGroupList) {
 			addGrantedAuthorities(grantedAuthoritySet, loginGroup);
 		}
 		
-		List<ProjectPerson> projectPersonList = projectPersonDAO.getProjectPersonListByPersonUid(personUid);
-		for(ProjectPerson projectPerson : projectPersonList) {
-			addGrantedAuthorities(grantedAuthoritySet, projectPerson);
-		}
-		
 		if(logger.isDebugEnabled()) {
-			logger.debug("Granted authorities for: " + personUid + ", are: " + grantedAuthoritySet);
+			logger.debug("Granted authorities for: " + personGid + ", are: " + grantedAuthoritySet);
 		}
 		
-		Person person = personDAO.getPersonByUid(personUid);
+		Person person = personDAO.get(personGid);
 		if(person == null) {
-			ScienceStudioUserDetails userDetails = new ScienceStudioUserDetails(account, new UnknownPerson(personUid), grantedAuthoritySet);
-			throw new PersonNotFoundException("Person with UID '" + personUid + "' not found.", userDetails);
+			throw new PersonNotFoundException("Person with GID '" + personGid + "' not found.", account);
 		}
 		
 		return new ScienceStudioUserDetails(account, person, grantedAuthoritySet);
@@ -101,16 +91,11 @@ public class ScienceStudioUserDetailsService implements UserDetailsService, Auth
 
 	
 	protected void addGrantedAuthorities(Collection<GrantedAuthority> grantedAuthorities, LoginRole loginRole) {
-		grantedAuthorities.add(new GrantedAuthorityImpl(AuthorityUtil.buildRoleAuthority(loginRole).toString()));
+		grantedAuthorities.add(new GrantedAuthorityImpl(SecurityUtil.buildRoleAuthority(loginRole).toString()));
 	}
 	
 	protected void addGrantedAuthorities(Collection<GrantedAuthority> grantedAuthorities, LoginGroup loginGroup) {
-		grantedAuthorities.add(new GrantedAuthorityImpl(AuthorityUtil.buildGroupAuthority(loginGroup).toString()));
-	}
-	
-	protected void addGrantedAuthorities(Collection<GrantedAuthority> grantedAuthorities, ProjectPerson projectPerson) {
-		grantedAuthorities.add(new GrantedAuthorityImpl(AuthorityUtil.buildProjectRoleAuthority(projectPerson).toString()));
-		grantedAuthorities.add(new GrantedAuthorityImpl(AuthorityUtil.buildProjectGroupAuthority(projectPerson).toString()));
+		grantedAuthorities.add(new GrantedAuthorityImpl(SecurityUtil.buildGroupAuthority(loginGroup).toString()));
 	}
 	
 	public AccountDAO getAccountDAO() {
@@ -139,12 +124,5 @@ public class ScienceStudioUserDetailsService implements UserDetailsService, Auth
 	}
 	public void setPersonDAO(PersonDAO personDAO) {
 		this.personDAO = personDAO;
-	}
-
-	public ProjectPersonDAO getProjectPersonDAO() {
-		return projectPersonDAO;
-	}
-	public void setProjectPersonDAO(ProjectPersonDAO projectPersonDAO) {
-		this.projectPersonDAO = projectPersonDAO;
 	}
 }

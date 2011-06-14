@@ -9,7 +9,7 @@ package ca.sciencestudio.security.util;
 
 import java.util.Collection;
 
-import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.Person;
 
 /**
  * @author maxweld

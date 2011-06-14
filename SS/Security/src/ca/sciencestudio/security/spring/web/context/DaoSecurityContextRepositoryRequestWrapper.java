@@ -10,38 +10,36 @@ package ca.sciencestudio.security.spring.web.context;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+import ca.sciencestudio.login.model.LoginSession;
+
 /**
  * @author maxweld
  *
  */
 public class DaoSecurityContextRepositoryRequestWrapper extends HttpServletRequestWrapper {
 
-	private String loginSessionId = "";
-	private boolean newSecurityContext = false;
-	private boolean loginSessionIdFromParameter = false;
+	private LoginSession loginSession = null;
+	private boolean loginSessionUuidFromParameter = false;
 	
 	public DaoSecurityContextRepositoryRequestWrapper(HttpServletRequest request) {
 		super(request);
 	}
 
-	public String getLoginSessionId() {
-		return loginSessionId;
+	public boolean isNewLoginSesion() {
+		return (loginSession == null);
 	}
-	public void setLoginSessionId(String loginSessionId) {
-		this.loginSessionId = loginSessionId;
+	
+	public LoginSession getLoginSession() {
+		return loginSession;
 	}
-
-	public boolean isNewSecurityContext() {
-		return newSecurityContext;
-	}
-	public void setNewSecurityContext(boolean newSecurityContext) {
-		this.newSecurityContext = newSecurityContext;
+	public void setLoginSession(LoginSession loginSession) {
+		this.loginSession = loginSession;
 	}
 
-	public boolean isLoginSessionIdFromParameter() {
-		return loginSessionIdFromParameter;
+	public boolean isLoginSessionUuidFromParameter() {
+		return loginSessionUuidFromParameter;
 	}
-	public void setLoginSessionIdFromParameter(boolean loginSessionIdFromParameter) {
-		this.loginSessionIdFromParameter = loginSessionIdFromParameter;
+	public void setLoginSessionUuidFromParameter(boolean loginSessionUuidFromParameter) {
+		this.loginSessionUuidFromParameter = loginSessionUuidFromParameter;
 	}
 }

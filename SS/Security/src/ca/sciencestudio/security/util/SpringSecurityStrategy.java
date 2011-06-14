@@ -10,6 +10,7 @@ package ca.sciencestudio.security.util;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.Person;
 import ca.sciencestudio.security.spring.core.userdetails.ScienceStudioUserDetails;
 
 /**
@@ -48,13 +49,13 @@ public class SpringSecurityStrategy implements SecurityStrategy {
 	public Person getPerson() {
 		Authentication auth = getAuthentication();
 		if(auth == null) {
-			return new UnknownPerson();
+			return buildUnknownPerson();
 		}
 		
 		Object principal = auth.getPrincipal();
 		if(!(principal instanceof ScienceStudioUserDetails)) {
 			logger.error("Authentication object contains principle that is not ScienceStudioUserDetails");
-			return new UnknownPerson();
+			return buildUnknownPerson();
 		}
 		
 		return ((ScienceStudioUserDetails)principal).getPerson();
@@ -138,5 +139,16 @@ public class SpringSecurityStrategy implements SecurityStrategy {
 		}
 		
 		return grantedAuthorities;
+	}
+	
+	protected Person buildUnknownPerson() {
+		Person person = new Person();
+		person.setFirstName("unknown");
+		person.setLastName("unknown");
+		person.setPhoneNumber("555-555-1234");
+		person.setMobileNumber("555-555-4321");
+		person.setEmailAddress("unknown@fake.za");
+		person.setModificationDate(new Date());
+		return person;
 	}
 }

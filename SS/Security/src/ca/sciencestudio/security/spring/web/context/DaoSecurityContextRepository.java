@@ -50,9 +50,7 @@ public class DaoSecurityContextRepository implements SecurityContextRepository {
 			logger.debug("Contains security context: " + request.getRequestURL());
 		}
 		
-		DaoSecurityContextRepositoryRequestWrapper req = buildRequestWrapper(request);
-		LoginSession loginSession = loginSessionDAO.getLoginSessionById(req.getLoginSessionId());
-		return (loginSession != null);
+		return !buildRequestWrapper(request).isNewLoginSesion();
 	}
 
 	@Override
@@ -70,25 +68,16 @@ public class DaoSecurityContextRepository implements SecurityContextRepository {
 		requestResponseHolder.setRequest(request);
 		requestResponseHolder.setResponse(response);
 		
-		if(logger.isDebugEnabled()) {
-			logger.debug("Load security context from LoginSession with id: " + request.getLoginSessionId());
-		}
-		
-		LoginSession loginSession = loginSessionDAO.getLoginSessionById(request.getLoginSessionId());
-		if(loginSession == null) {
-			if(logger.isDebugEnabled()) {
-				logger.debug("LoginSession not found with id: " + request.getLoginSessionId() + ", creating empty context.");
-			}
-			request.setNewSecurityContext(true);
+		if(request.isNewLoginSesion()) {
 			return SecurityContextHolder.createEmptyContext();
 		}
 		
-		Object securityContext = loginSession.getSession();
+		Object securityContext = request.getLoginSession().getSessionData();
 		if(!(securityContext instanceof SecurityContext)) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("LoginSession does not contain a SecurityContext object, creating empty context.");
 			}
-			request.setNewSecurityContext(true);
+			request.setLoginSession(null);
 			return SecurityContextHolder.createEmptyContext();
 		}
 		
@@ -129,40 +118,37 @@ public class DaoSecurityContextRepository implements SecurityContextRepository {
 			return;
 		}
 		
-		String loginSessionId;
 		LoginSession loginSession;
 		
-		if(req.isNewSecurityContext()) {
-			loginSessionId = buildLoginSessionId();
+		if(req.isNewLoginSesion()) {
+			String loginSessionUuid = buildLoginSessionUuid();
 			loginSession = new LoginSession();
-			loginSession.setId(loginSessionId);
+			loginSession.setSessionUuid(loginSessionUuid);
+			loginSession.setSessionData(securityContext);
 			loginSession.setTimestamp(new Date());
-			loginSession.setSession(securityContext);
-			loginSessionDAO.addLoginSession(loginSession);
+			loginSessionDAO.add(loginSession);
 			
-			req.setNewSecurityContext(false);
-			req.setLoginSessionId(loginSessionId);
-			req.setLoginSessionIdFromParameter(false);
-			resp.addCookie(buildCookie(loginSessionId));
+			req.setLoginSession(loginSession);
+			req.setLoginSessionUuidFromParameter(false);
+			resp.addCookie(buildCookie(loginSessionUuid));
 			
 			if(logger.isDebugEnabled()) {
-				logger.debug("LoginSession cookie added to response with id: " + loginSessionId);
+				logger.debug("LoginSession cookie added to response with uuid: " + loginSessionUuid);
 			}
 		}
 		else {
-			loginSessionId = req.getLoginSessionId();
-			loginSession = new LoginSession();
-			loginSession.setId(loginSessionId);
+			loginSession = req.getLoginSession();
+			loginSession.setSessionData(securityContext);
 			loginSession.setTimestamp(new Date());
-			loginSession.setSession(securityContext);
-			loginSessionDAO.editLoginSession(loginSession);
+			loginSessionDAO.edit(loginSession);
 			
-			if(req.isLoginSessionIdFromParameter()) {
-				req.setLoginSessionIdFromParameter(false);
-				resp.addCookie(buildCookie(loginSessionId));
+			if(req.isLoginSessionUuidFromParameter()) {
+				String loginSessionUuid = loginSession.getSessionUuid();
+				resp.addCookie(buildCookie(loginSession.getSessionUuid()));
+				req.setLoginSessionUuidFromParameter(false);
 				
 				if(logger.isDebugEnabled()) {
-					logger.debug("LoginSession cookie added to response with id: " + loginSessionId);
+					logger.debug("LoginSession cookie added to response with uuid: " + loginSessionUuid);
 				}
 			}
 		}
@@ -176,39 +162,51 @@ public class DaoSecurityContextRepository implements SecurityContextRepository {
 		DaoSecurityContextRepositoryRequestWrapper req = 
 				new DaoSecurityContextRepositoryRequestWrapper(request);
 		
-		String loginSessionId = getLoginSessionIdFromCookie(request);
-		if(loginSessionId != null) {
+		String loginSessionUuid = getLoginSessionUuidFromCookie(request);
+		if(loginSessionUuid != null) {
 			if(logger.isDebugEnabled()) {
-				logger.debug("LoginSessionId found from cookie: " + loginSessionId);
+				logger.debug("LoginSessionUuid found from cookie: " + loginSessionUuid);
 			}
-			req.setLoginSessionId(loginSessionId);
-		}
+		}		
 		else {
-			loginSessionId = getLoginSessionIdFromParamters(request);
-			if(loginSessionId != null) {
+			loginSessionUuid = getLoginSessionUuidFromParamters(request);
+			if(loginSessionUuid != null) {
 				if(logger.isDebugEnabled()) {
-					logger.debug("LoginSessionId found from parameters: " + loginSessionId);
+					logger.debug("LoginSessionUuid found from parameters: " + loginSessionUuid);
 				}
-				req.setLoginSessionId(loginSessionId);
-				req.setLoginSessionIdFromParameter(true);
+				req.setLoginSessionUuidFromParameter(true);
 			}	
 		}
 
+		if(loginSessionUuid != null) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("Load security context from LoginSession with uuid: " + loginSessionUuid);
+			}
+			
+			LoginSession loginSession = loginSessionDAO.getByUuid(loginSessionUuid);
+			if(loginSession != null) {
+				req.setLoginSession(loginSession);
+			}
+			else if(logger.isDebugEnabled()) {
+				logger.debug("LoginSession not found with uuid: " + loginSessionUuid + ", creating empty context.");
+			}
+		}
+		
 		return req;
 	}
 	
-	protected String buildLoginSessionId() {
+	protected String buildLoginSessionUuid() {
 		return UUID.randomUUID().toString().toUpperCase();
 	}
 	
-	protected Cookie buildCookie(String loginSessionId) {
-		Cookie cookie = new Cookie(cookieName, loginSessionId);
+	protected Cookie buildCookie(String loginSessionUuid) {
+		Cookie cookie = new Cookie(cookieName, loginSessionUuid);
 		cookie.setMaxAge(cookieMaxAge);
 		cookie.setPath(cookiePath);
 		return cookie;
 	}
 	
-	protected String getLoginSessionIdFromCookie(HttpServletRequest request) {
+	protected String getLoginSessionUuidFromCookie(HttpServletRequest request) {
 		Cookie cookie = WebUtils.getCookie(request, cookieName);
 		if(cookie == null) {
 			return null;
@@ -217,7 +215,7 @@ public class DaoSecurityContextRepository implements SecurityContextRepository {
 		return cookie.getValue(); 
 	}
 	
-	protected String getLoginSessionIdFromParamters(HttpServletRequest request) {
+	protected String getLoginSessionUuidFromParamters(HttpServletRequest request) {
 		for(Object name : request.getParameterMap().keySet()) {
 			if(cookieName.equalsIgnoreCase(name.toString())) {
 				return request.getParameter(name.toString());

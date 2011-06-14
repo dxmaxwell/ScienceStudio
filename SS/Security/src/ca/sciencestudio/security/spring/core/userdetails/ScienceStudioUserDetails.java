@@ -16,10 +16,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import ca.sciencestudio.login.model.Account;
-import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.Person;
 
 /**
- * @author maxweld
+ * @author maxweldd
  *
  */
 public class ScienceStudioUserDetails implements UserDetails, CredentialsContainer, Serializable {
@@ -51,7 +51,15 @@ public class ScienceStudioUserDetails implements UserDetails, CredentialsContain
 		username = account.getUsername();
 		password = account.getPassword();
 		
-		switch(account.getStatus()) {
+		Account.Status status;
+		try {
+			status = Account.Status.valueOf(account.getStatus());
+		}
+		catch(IllegalArgumentException e) {
+			status = Account.Status.DISABLED;
+		}
+			
+		switch(status) {
 			case ACTIVE:
 				enabled = true;
 				accountNonLocked = true;
@@ -59,9 +67,7 @@ public class ScienceStudioUserDetails implements UserDetails, CredentialsContain
 				credentialsNonExpired = true;
 				break;
 				
-			case UNKNOWN:
 			case DISABLED:
-			
 				enabled = false;
 				accountNonLocked = true;
 				accountNonExpired = true;
