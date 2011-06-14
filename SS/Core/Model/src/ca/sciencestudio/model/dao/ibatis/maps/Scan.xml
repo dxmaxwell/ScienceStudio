@@ -19,7 +19,7 @@
 	</resultMap>
 	
 	<insert id="addScan">
-		INSERT INTO ${database}.scan
+		INSERT INTO ${schema}.scan
 		(
 			name,
 			data_url,
@@ -43,7 +43,7 @@
 	</insert>
 	
 	<update id="editScan">
-		UPDATE ${database}.scan
+		UPDATE ${schema}.scan
 			SET
 				name = #name:VARCHAR#,
 				data_url = #dataUrl:VARCHAR#,
@@ -56,7 +56,7 @@
 	</update>
 	
 	<update id="editScanInfo">
-		UPDATE ${database}.scan
+		UPDATE ${schema}.scan
 			SET
 				data_url = #dataUrl:VARCHAR#,
 				parameters = #parameters:VARCHAR#,
@@ -68,24 +68,24 @@
 	
 	<delete id="removeScan">
 		DELETE 
-			FROM ${database}.scan
+			FROM ${schema}.scan
 			WHERE scan_id = #value#
 	</delete>
 	
 	<select id="getScanById" resultMap="scan">
 		SELECT *
-			FROM ${database}.scan
+			FROM ${schema}.scan
 			WHERE scan_id = #value#
 	</select>
 	
 	<select id="getScanListByExperimentId" resultMap="scan">
 		SELECT *
-			FROM ${database}.scan
+			FROM ${schema}.scan
 			WHERE experiment_id = #value#
 	</select>
 	
 	<select id="getScanList" resultMap="scan">
 		SELECT *
-			FROM ${database}.scan
+			FROM ${schema}.scan
 	</select>
 </sqlMap>
