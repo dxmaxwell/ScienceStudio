@@ -15,8 +15,7 @@ public abstract class ModelPathUtils {
 
 	public static final String SCAN = "/scan";
 	public static final String SCANS = "/scans";
-	
-	public static final String PROJECT = "/project";
+
 	public static final String PROJECTS = "/projects";
 	
 	public static final String PROJECT_PERSON = "/project/person";
@@ -35,28 +34,28 @@ public abstract class ModelPathUtils {
 		return PROJECTS + ext;
 	}
 	
-	public static String getProjectPath(Object projectId, String ext) {
-		return PROJECT + "/" + projectId + ext;
+	public static String getProjectsPath(Object projectGid, String ext) {
+		return getProjectsPath("/" + projectGid + ext);
 	}
 	
-	public static String getProjectPersonsPath(int projectId, String ext) {
-		return getProjectPath(projectId, PROJECT_PERSONS + ext);
+	public static String getProjectPersonsPath(String projectGid, String ext) {
+		return getProjectsPath(projectGid, PROJECT_PERSONS + ext);
 	}
 	
 	public static String getProjectPersonPath(int projectPersonId, String ext) {
 		return PROJECT_PERSON + "/" + projectPersonId + ext;
 	}
 	
-	public static String getSamplesPath(int projectId, String ext) {
-		return getProjectPath(projectId, SAMPLES + ext);
+	public static String getSamplesPath(Object projectGid, String ext) {
+		return getProjectsPath(projectGid, SAMPLES + ext);
 	}
 	
 	public static String getSamplePath(int sampleId, String ext) {
 		return SAMPLE + "/" + sampleId + ext;
 	}
 	
-	public static String getSessionsPath(int projectId, String ext) {
-		return getProjectPath(projectId, SESSIONS + ext);
+	public static String getSessionsPath(Object projectGid, String ext) {
+		return getProjectsPath(projectGid, SESSIONS + ext);
 	}
 	
 	public static String getSessionPath(int sessionId, String ext) {

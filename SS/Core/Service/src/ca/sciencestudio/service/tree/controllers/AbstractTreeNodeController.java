@@ -34,7 +34,7 @@ public abstract class AbstractTreeNodeController {
 	private String modelServletPath;
 	
 	protected String getPersonUid() {
-		return SecurityUtil.getPerson().getUid();
+		return SecurityUtil.getPerson().getGid();
 	}
 	
 	protected String getResponseView(String format) {

@@ -9,7 +9,7 @@
 function westPanel() {
 	
 	var treeRoot =  new Ext.tree.AsyncTreeNode({
-		dataUrl:'/ss/tree/root.json'
+		dataUrl:'/ss/tree/root'
 	});
 	
 	var treeLoader = new Ext.tree.TreeLoader({
