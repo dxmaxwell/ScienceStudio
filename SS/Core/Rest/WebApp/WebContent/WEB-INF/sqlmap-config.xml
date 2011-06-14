@@ -9,12 +9,14 @@
 	
 	<!--<sqlMap resource="ca/sciencestudio/login/model/dao/ibatis/maps/LoginSession.xml"/>-->
 	
-<!-- 	<sqlMap resource="ca/sciencestudio/model/person/dao/ibatis/maps/Person.xml"/> -->
+	<sqlMap resource="ca/sciencestudio/model/dao/ibatis/maps/Person.xml"/>
 	
 	<sqlMap resource="ca/sciencestudio/model/dao/ibatis/maps/Project.xml"/>
+	<sqlMap resource="ca/sciencestudio/model/dao/ibatis/maps/ProjectPerson.xml"/>
+	
 	<sqlMap resource="ca/sciencestudio/model/dao/ibatis/maps/Scan.xml"/>
 	
-	<!--<sqlMap resource="ca/sciencestudio/model/project/dao/ibatis/maps/ProjectPerson.xml"/>-->
+	
 	
 <!-- 	<sqlMap resource="ca/sciencestudio/model/sample/dao/ibatis/maps/Sample.xml"/> -->
 <!-- 	<sqlMap resource="ca/sciencestudio/model/session/dao/ibatis/maps/Session.xml"/> -->
