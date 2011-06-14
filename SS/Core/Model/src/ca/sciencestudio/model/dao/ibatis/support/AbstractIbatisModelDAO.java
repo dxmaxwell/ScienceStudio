@@ -26,18 +26,18 @@ import ca.sciencestudio.model.utilities.GID;
  */
 public abstract class AbstractIbatisModelDAO<T extends Model, I> extends AbstractModelDAO<T> {
 
-	private String facility = GID.DEFAULT_FACILITY;
+	private String gidFacility = GID.DEFAULT_FACILITY;
 	
 	private SqlMapClientTemplate sqlMapClientTemplate;
 
 	@Override
 	public boolean add(T t) {
-		return add(t, getFacility());
+		return add(t, getGidFacility());
 	}
 	
 	@Override
 	public boolean add(T t, String facility) {
-		if((facility == null) || !facility.equalsIgnoreCase(getFacility())) {
+		if((facility == null) || !facility.equalsIgnoreCase(getGidFacility())) {
 			return false;
 		}
 		
@@ -51,7 +51,7 @@ public abstract class AbstractIbatisModelDAO<T extends Model, I> extends Abstrac
 			throw new ModelAccessException(e);
 		}
 		
-		t.setGid(GID.format(getFacility(), id, getType()));
+		t.setGid(GID.format(getGidFacility(), id, getGidType()));
 		if(logger.isDebugEnabled()) {
 			logger.debug("Add Model with GID: " + t.getGid());
 		}
@@ -60,7 +60,7 @@ public abstract class AbstractIbatisModelDAO<T extends Model, I> extends Abstrac
 	
 	@Override
 	public boolean edit(T t) {
-		GID gid = parseAndCheck(t.getGid());
+		GID gid = parseAndCheckGid(t.getGid());
 		if(gid == null) {
 			return false;
 		}
@@ -85,7 +85,7 @@ public abstract class AbstractIbatisModelDAO<T extends Model, I> extends Abstrac
 	
 	@Override
 	public boolean remove(Object modelGid){
-		GID gid = parseAndCheck(modelGid);
+		GID gid = parseAndCheckGid(modelGid);
 		if(gid == null) {
 			return false;
 		}
@@ -111,7 +111,7 @@ public abstract class AbstractIbatisModelDAO<T extends Model, I> extends Abstrac
 	@Override
 	@SuppressWarnings("unchecked")
 	public T get(Object modelGid) {
-		GID gid = parseAndCheck(modelGid);
+		GID gid = parseAndCheckGid(modelGid);
 		if(gid == null) {
 			return null;
 		}
@@ -147,9 +147,13 @@ public abstract class AbstractIbatisModelDAO<T extends Model, I> extends Abstrac
 			logger.debug("Get all Models, size: " + ts.size());
 		}
 		return Collections.unmodifiableList(ts);
-	} 
+	}
 	
-	protected GID parseAndCheck(Object obj) {
+	protected GID parseAndCheckGid(Object obj) {
+		return parseAndCheckGid(obj, getGidFacility(), getGidType());
+	}
+	
+	protected GID parseAndCheckGid(Object obj, String facility, String type) {
 		if(obj == null) {
 			logger.debug("GID format exception: Source object is null.");
 			return null;
@@ -159,16 +163,16 @@ public abstract class AbstractIbatisModelDAO<T extends Model, I> extends Abstrac
 			logger.debug("GID format exception: Source string is invalid.");
 			return null;
 		}
-		if(!gid.isTypeless() && !gid.isType(getType())) {
+		if(!gid.isTypeless() && !gid.isType(type)) {
 			if(logger.isDebugEnabled()) {
-				logger.debug("Type is not supported. (" + gid.getType() + " != " + getType() + ")");
+				logger.debug("Type is not supported. (" + gid.getType() + " != " + type + ")");
 			}
 			return null;
 		}
-		if(!gid.isLocal() && !gid.isFacility(getFacility())) {
+		if(!gid.isLocal() && !gid.isFacility(facility)) {
 			if(logger.isDebugEnabled()) {
 				
-				logger.debug("Facility is not supported. (" + gid.getFacility() + " != " + getFacility() + ")");
+				logger.debug("Facility is not supported. (" + gid.getFacility() + " != " + facility + ")");
 			}
 			return null;
 		}
@@ -193,15 +197,15 @@ public abstract class AbstractIbatisModelDAO<T extends Model, I> extends Abstrac
 	
 	protected abstract I toIbatisModel(T t);
 	
-	public abstract String getType();
+	public abstract String getGidType();
 	
-	public String getFacility() {
-		return facility;
+	public String getGidFacility() {
+		return gidFacility;
 	}
-	public void setFacility(String facility) {
-		this.facility = facility;
+	public void setGidFacility(String gidFacility) {
+		this.gidFacility = gidFacility;
 	}
-	
+
 	public SqlMapClientTemplate getSqlMapClientTemplate() {
 		return sqlMapClientTemplate;
 	}
