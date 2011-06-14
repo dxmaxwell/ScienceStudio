@@ -57,7 +57,6 @@
   
 	<authentication-manager alias="authenticationManager">
 		<authentication-provider ref="casAuthenticationProvider"/>
-		<authentication-provider ref="domainLdapAuthenticationProvider"/>
 	</authentication-manager >
 	
 	<!-- #### Common Science Studio user details service #### -->
@@ -68,7 +67,6 @@
 		<beans:property name="accountDAO" ref="accountDAO"/>
 		<beans:property name="loginRoleDAO" ref="loginRoleDAO"/>
 		<beans:property name="loginGroupDAO" ref="loginGroupDAO"/>
-		<beans:property name="projectPersonDAO" ref="projectPersonDAO"/>
 	</beans:bean>
 	
 	<!-- #### Common authentication success and failure handlers #### -->
