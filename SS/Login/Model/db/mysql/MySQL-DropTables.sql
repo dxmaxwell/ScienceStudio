@@ -6,12 +6,10 @@
 --		DropTable sql file.
 --
 
-USE scstudio;
-
-DROP TABLE scstudio.account;
-DROP TABLE scstudio.login_role;
-DROP TABLE scstudio.login_group_role;
-DROP TABLE scstudio.login_group;
-DROP TABLE scstudio.login_group_member;
-DROP TABLE scstudio.login_session;
-DROP TABLE scstudio.login_history;
+DROP TABLE account;
+DROP TABLE login_role;
+DROP TABLE login_group_role;
+DROP TABLE login_group;
+DROP TABLE login_group_member;
+DROP TABLE login_session;
+DROP TABLE login_history;
