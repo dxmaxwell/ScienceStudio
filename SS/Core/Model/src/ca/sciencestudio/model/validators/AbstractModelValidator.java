@@ -5,12 +5,11 @@
  *     AbstractModelValidator abstract class.
  *     
  */
-package ca.sciencestudio.model.validators.support;
+package ca.sciencestudio.model.validators;
 
 import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.validators.ModelValidator;
 import ca.sciencestudio.util.text.ValidationUtils;
 
 /**

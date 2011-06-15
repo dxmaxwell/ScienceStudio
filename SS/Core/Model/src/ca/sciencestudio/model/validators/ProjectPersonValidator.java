@@ -12,7 +12,6 @@ import java.util.Arrays;
 import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.ProjectPerson;
-import ca.sciencestudio.model.validators.support.AbstractModelValidator;
 
 /**
  * @author maxweld

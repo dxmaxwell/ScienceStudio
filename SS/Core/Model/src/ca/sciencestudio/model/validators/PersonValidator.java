@@ -10,7 +10,6 @@ package ca.sciencestudio.model.validators;
 import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.Person;
-import ca.sciencestudio.model.validators.support.AbstractModelValidator;
 
 /**
  * @author maxweld

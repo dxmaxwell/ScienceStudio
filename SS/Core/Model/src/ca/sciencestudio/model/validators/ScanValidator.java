@@ -12,7 +12,6 @@ import java.net.URI;
 import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.Scan;
-import ca.sciencestudio.model.validators.support.AbstractModelValidator;
 
 /**
  * @author maxweld
