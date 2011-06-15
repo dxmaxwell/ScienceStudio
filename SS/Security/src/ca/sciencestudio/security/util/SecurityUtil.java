@@ -54,17 +54,6 @@ public abstract class SecurityUtil {
 		}
 	}
 	
-	
-//	static {	
-//		try {
-//			SECURITY_STRATEGY = new SpringSecurityStrategy();
-//		}
-//		catch(Exception e) {
-//			LOGGER.warn("Cannot instantiate new SpringSecurityStategy", e);
-//		}
-//	}
-	
-	
 	// Utilities for building role authorities. //
 	public static Object buildRoleAuthority(Object roleName) {
 		return ROLE_AUTHORITY_PREFIX + sanitize(roleName);
