@@ -16,7 +16,6 @@ import java.util.Collection;
  */
 import ca.sciencestudio.model.Scan;
 import ca.sciencestudio.model.dao.ScanDAO;
-import ca.sciencestudio.model.dao.delegating.support.AbstractDelegratingModelDAO;
 
 public class DelegatingScanDAO extends AbstractDelegratingModelDAO<Scan, ScanDAO> implements ScanDAO {
 

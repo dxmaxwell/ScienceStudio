@@ -14,7 +14,6 @@ import java.util.List;
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.Project.Status;
 import ca.sciencestudio.model.dao.ProjectDAO;
-import ca.sciencestudio.model.dao.delegating.support.AbstractDelegratingModelDAO;
 import ca.sciencestudio.model.dao.support.ModelAccessException;
 
 /**

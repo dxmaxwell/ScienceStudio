@@ -5,7 +5,7 @@
  *     AbstractDelegratingModelDAO abstract class.
  *     
  */
-package ca.sciencestudio.model.dao.delegating.support;
+package ca.sciencestudio.model.dao.delegating;
 
 import java.util.ArrayList;
 import java.util.Collection;

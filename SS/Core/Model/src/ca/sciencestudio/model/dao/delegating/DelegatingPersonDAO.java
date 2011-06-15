@@ -11,7 +11,6 @@ import java.util.Collection;
 
 import ca.sciencestudio.model.Person;
 import ca.sciencestudio.model.dao.PersonDAO;
-import ca.sciencestudio.model.dao.delegating.support.AbstractDelegratingModelDAO;
 
 /**
  * @author maxweld

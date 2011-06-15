@@ -13,7 +13,6 @@ import java.util.List;
 
 import ca.sciencestudio.model.ProjectPerson;
 import ca.sciencestudio.model.dao.ProjectPersonDAO;
-import ca.sciencestudio.model.dao.delegating.support.AbstractDelegratingModelDAO;
 import ca.sciencestudio.model.dao.support.ModelAccessException;
 
 /**
