@@ -17,7 +17,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.dao.support.AbstractModelDAO;
+import ca.sciencestudio.model.dao.AbstractModelDAO;
 import ca.sciencestudio.model.dao.support.ModelAccessException;
 import ca.sciencestudio.model.utilities.GID;
 

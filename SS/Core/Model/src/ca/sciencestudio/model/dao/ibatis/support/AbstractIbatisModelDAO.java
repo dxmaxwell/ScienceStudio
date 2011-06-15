@@ -16,7 +16,7 @@ import org.springframework.jdbc.JdbcUpdateAffectedIncorrectNumberOfRowsException
 import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.dao.support.AbstractModelDAO;
+import ca.sciencestudio.model.dao.AbstractModelDAO;
 import ca.sciencestudio.model.dao.support.ModelAccessException;
 import ca.sciencestudio.model.utilities.GID;
 

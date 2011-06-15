@@ -12,8 +12,8 @@ import java.util.Collection;
 import java.util.List;
 
 import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.dao.AbstractModelDAO;
 import ca.sciencestudio.model.dao.ModelDAO;
-import ca.sciencestudio.model.dao.support.AbstractModelDAO;
 import ca.sciencestudio.model.dao.support.ModelAccessException;
 
 /**
