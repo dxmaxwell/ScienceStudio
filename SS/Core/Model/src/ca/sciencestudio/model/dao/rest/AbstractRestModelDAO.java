@@ -5,7 +5,7 @@
  *     AbstractRestModelDAO abstract class.
  *     
  */
-package ca.sciencestudio.model.dao.rest.support;
+package ca.sciencestudio.model.dao.rest;
 
 import java.net.URI;
 import java.util.Arrays;

@@ -16,7 +16,6 @@ import org.springframework.web.client.RestClientException;
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.Project.Status;
 import ca.sciencestudio.model.dao.ProjectDAO;
-import ca.sciencestudio.model.dao.rest.support.AbstractRestModelDAO;
 import ca.sciencestudio.model.dao.rest.support.RestProject;
 import ca.sciencestudio.model.dao.support.ModelAccessException;
 

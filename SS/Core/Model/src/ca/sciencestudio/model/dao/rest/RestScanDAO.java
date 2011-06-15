@@ -9,7 +9,6 @@ package ca.sciencestudio.model.dao.rest;
 
 import ca.sciencestudio.model.Scan;
 import ca.sciencestudio.model.dao.ScanDAO;
-import ca.sciencestudio.model.dao.rest.support.AbstractRestModelDAO;
 import ca.sciencestudio.model.dao.rest.support.RestScan;
 
 /**

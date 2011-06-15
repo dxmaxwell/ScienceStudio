@@ -9,7 +9,6 @@ package ca.sciencestudio.model.dao.rest;
 
 import ca.sciencestudio.model.Person;
 import ca.sciencestudio.model.dao.PersonDAO;
-import ca.sciencestudio.model.dao.rest.support.AbstractRestModelDAO;
 import ca.sciencestudio.model.dao.rest.support.RestPerson;
 
 /**
