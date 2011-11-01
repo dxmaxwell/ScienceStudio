@@ -9,9 +9,8 @@
 -->
 
 <sqlMap namespace="Person">
-	<resultMap  id="person" class="ca.sciencestudio.model.person.ibatis.IbatisPerson">
+	<resultMap  id="person" class="ca.sciencestudio.model.person.dao.ibatis.support.IbatisPerson">
 		<result property="id" column="person_id"/>
-		<result property="uid" column="person_uid"/>
 		<result property="title" column="title"/>
 		<result property="firstName" column="first_name"/>
 		<result property="middleName" column="middle_name"/>
@@ -23,9 +22,8 @@
 	</resultMap>
 	
 	<insert id="addPerson">
-		INSERT INTO scstudio.person
+		INSERT INTO ${schema}.person
 		(
-			person_uid,
 			title,
 			first_name,
 			middle_name,
@@ -37,7 +35,6 @@
 		)
 		VALUES 
 		(
-			#uid:VARCHAR#,
 			#title:VARCHAR#,
 			#firstName:VARCHAR#,
 			#middleName:VARCHAR#,
@@ -45,7 +42,7 @@
 			#phoneNumber:VARCHAR#,
 			#mobileNumber:VARCHAR#,
 			#emailAddress:VARCHAR#,
-			#modificationDate:DATE#
+			#modificationDate:DATETIME#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
 			 ${identity.function}
@@ -53,9 +50,8 @@
 	</insert>
 	
 	<update id="editPerson">
-		UPDATE scstudio.person
+		UPDATE ${schema}.person
 		SET 
-			person_uid = #uid:VARCHAR#,
 			title = #title:VARCHAR#,
 			first_name = #firstName:VARCHAR#,
 			middle_name = #middleName:VARCHAR#,
@@ -63,28 +59,23 @@
 			phone_number = #phoneNumber:VARCHAR#,
 			mobile_number = #mobileNumber:VARCHAR#,
 			email_address = #emailAddress:VARCHAR#,
-			modification_date = #modificationDate:DATE#
+			modification_date = #modificationDate:DATETIME#
 		WHERE 
 			person_id = #id#
 	</update>
 	
 	<delete id="removePerson">
-		DELETE FROM scstudio.person
+		DELETE FROM ${schema}.person
 			WHERE person_id = #value#
 	</delete>
 	
 	<select id="getPersonById" resultMap="person">
-		SELECT * FROM scstudio.person
+		SELECT * FROM ${schema}.person
 			WHERE person_id = #value#
-	</select>
-	
-	<select id="getPersonByUid" resultMap="person">
-		SELECT * FROM scstudio.person
-			WHERE person_uid = #value#
 	</select>
 
 	<select id="getPersonList" resultMap="person">
-		SELECT * FROM scstudio.person
+		SELECT * FROM ${schema}.person
 	</select>
 	
 </sqlMap>

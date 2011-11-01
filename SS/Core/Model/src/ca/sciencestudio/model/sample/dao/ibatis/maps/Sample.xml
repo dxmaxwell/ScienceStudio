@@ -8,20 +8,20 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Sample">
-	<resultMap class="ca.sciencestudio.model.sample.ibatis.IbatisSample" id="sample">
+	<resultMap class="ca.sciencestudio.model.sample.dao.ibatis.support.IbatisSample" id="sample">
 		<result property="id" column="sample_id" />
 		<result property="projectId" column="project_id"/>
 		<result property="name" column="name" />
 		<result property="description" column="description" />
 		<result property="casNumber" column="cas_number" />
-		<result property="stateString" column="state" />
+		<result property="state" column="state" />
 		<result property="quantity" column="quantity" />
-		<result property="hazardsString" column="hazards"/>
+		<result property="hazards" column="hazards"/>
 		<result property="otherHazards" column="other_hazards"/>
 	</resultMap>
 	
 	<insert id="addSample">
-		INSERT INTO scstudio.sample
+		INSERT INTO ${schema}.sample
 		(
 			project_id,
 			name,
@@ -38,9 +38,9 @@
 			#name:VARCHAR#,
 			#description:VARCHAR#,
 			#casNumber:VARCHAR#,
-			#stateString:VARCHAR#,
+			#state:VARCHAR#,
 			#quantity:VARCHAR#,
-			#hazardsString:VARCHAR#,
+			#hazards:VARCHAR#,
 			#otherHazards:VARCHAR#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
@@ -49,15 +49,15 @@
 	</insert>
 
 	<update id="editSample">
-		UPDATE scstudio.sample
+		UPDATE ${schema}.sample
 			SET
 				project_id = #projectId:INT#,
 				name = #name:VARCHAR#,
 				description = #description:VARCHAR#,
 				cas_number = #casNumber:VARCHAR#,
-				state = #stateString:VARCHAR#,
+				state = #state:VARCHAR#,
 				quantity = #quantity:VARCHAR#,
-				hazards = #hazardsString:VARCHAR#,
+				hazards = #hazards:VARCHAR#,
 				other_hazards = #otherHazards:VARCHAR#
 			WHERE 
 				sample_id = #id:INT#
@@ -65,19 +65,25 @@
 
 	<delete id="removeSample">
 		DELETE
-			FROM scstudio.sample
+			FROM ${schema}.sample
 			WHERE sample_id = #value#
 	</delete>
 
+	<select id="getSampleById" resultMap="sample">
+		SELECT *
+			FROM ${schema}.sample
+			WHERE sample_id = #value# 
+	</select>
+	
+	<select id="getSampleList" resultMap="sample">
+		SELECT *
+			FROM ${schema}.sample
+	</select>
+	
 	<select id="getSampleListByProjectId" resultMap="sample">
 		SELECT *
-			FROM scstudio.sample
+			FROM ${schema}.sample
 			WHERE project_id = #value#
 	</select>
 	
-	<select id="getSampleById" resultMap="sample">
-		SELECT *
-			FROM scstudio.sample
-			WHERE sample_id = #value# 
-	</select>
 </sqlMap>

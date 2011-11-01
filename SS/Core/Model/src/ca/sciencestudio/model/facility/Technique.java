@@ -7,26 +7,56 @@
  */
 package ca.sciencestudio.model.facility;
 
-import java.io.Serializable;
-
+import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.utilities.GID;
 
 /**
  * @author maxweld
  *
  */
-public interface Technique extends Serializable {
+public class Technique implements Model {
+
+	private static final long serialVersionUID = 1L;
+
+	public static final String GID_TYPE = "T";
 	
-	public int getId();
-	public void setId(int id);
+	public static final String DEFAULT_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_NAME = "";
+	public static final String DEFAULT_LONG_NAME = "";
+	public static final String DEFAULT_DESCRIPTION = "";
 	
-	public String getName();
-	public void setName(String name);
+	private String gid = DEFAULT_GID;
+	private String name = DEFAULT_NAME;
+	private String longName = DEFAULT_LONG_NAME;
+	private String description = DEFAULT_DESCRIPTION;
 	
-	public String getLongName();
-	public void setLongName(String longName);
+	@Override
+	public String getGid() {
+		return gid;
+	}
+	@Override
+	public void setGid(String gid) {
+		this.gid = gid;
+	}
 	
-	public String getDescription();
-	public void setDescription(String description);
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 	
-	public Technique clone();
+	public String getLongName() {
+		return longName;
+	}
+	public void setLongName(String longName) {
+		this.longName = longName;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}	
 }

@@ -8,7 +8,7 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Technique">
-	<resultMap id="technique" class="ca.sciencestudio.model.facility.ibatis.IbatisTechnique">
+	<resultMap id="technique" class="ca.sciencestudio.model.facility.dao.ibatis.support.IbatisTechnique">
 		<result property="id" column="technique_id"/>
 		<result property="name" column="name"/>
 		<result property="longName" column="long_name"/>
@@ -16,7 +16,7 @@
 	</resultMap>
 	
 	<insert id="addTechnique">
-		INSERT INTO scstudio.technique
+		INSERT INTO ${schema}.technique
 		(
 			name,
 			long_name,
@@ -34,7 +34,7 @@
 	</insert>
 
 	<update id="editTechnique">
-		UPDATE scstudio.technique
+		UPDATE ${schema}.technique
 			SET
 				name = #name:VARCHAR#,
 				long_name = #longName:VARCHAR#
@@ -45,43 +45,43 @@
 	
 	<delete id="removeTechnique">
 		DELETE
-			FROM scstudio.technique
+			FROM ${schema}.technique
 			WHERE technique_id = #value#
 	</delete>
 	
 	<select id="getTechniqueById" resultMap="technique">
 		SELECT *
-			FROM scstudio.technique
+			FROM ${schema}.technique
 				WHERE technique_id = #value#
 	</select>
 	
 	<select id="getTechniqueListByName" resultMap="technique">
 		SELECT *
-			FROM scstudio.technique
+			FROM ${schema}.technique
 			WHERE name LIKE #value#
 	</select>
 	
 	<select id="getTechniqueList" resultMap="technique">
 		SELECT *
-			FROM scstudio.technique
+			FROM ${schema}.technique
 	</select>
 	
 	<select id="getTechniqueListByInstrumentId" resultMap="technique">
 		SELECT t.technique_id, t.name, t.long_name, t.description
-			FROM scstudio.technique t, scstudio.instrument_technique it
+			FROM ${schema}.technique t, ${schema}.instrument_technique it
 			WHERE it.instrument_id = #value#
 			AND it.technique_id = t.technique_id
 	</select>
 	
 	<select id="getTechniqueListByLaboratoryId" resultMap="technique">
 		SELECT t.technique_id, t.name, t.long_name, t.description
-			FROM scstudio.technique t, scstudio.instrument i, scstudio.instrument_technique it
+			FROM ${schema}.technique t, ${schema}.instrument i, ${schema}.instrument_technique it
 			WHERE i.laboratory_id = #value# AND i.instrument_id = it.instrument_id AND it.technique_id = t.technique_id
 	</select>
 	
 	<select id="getTechniqueListByNameAndInstrumentId" resultMap="technique">
 		SELECT t.technique_id, t.name, t.long_name, t.description
-			FROM scstudio.technique t, scstudio.instrument_technique it
+			FROM ${schema}.technique t, ${schema}.instrument_technique it
 				WHERE t.name LIKE #param1#
 					AND it.instrument_id = #param2#
 					AND it.technique_id = t.technique_id

@@ -2,39 +2,97 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     Facility interface.
+ *     Facility class.
  *     
  */
 package ca.sciencestudio.model.facility;
 
-import java.io.Serializable;
+import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.utilities.GID;
 
 /**
  * @author maxweld
  *
  */
-public interface Facility extends Serializable {
+public class Facility implements Model {
 	
-	public int getId();
-	public void setId(int id);
+	private static final long serialVersionUID = 1L;
 	
-	public String getName();
-	public void setName(String name);
+	public static final String GID_TYPE = "F";
 	
-	public String getLongName();
-	public void setLongName(String longName);
+	public static final String DEFAULT_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_NAME = "";
+	public static final String DEFAULT_LONG_NAME = "";
+	public static final String DEFAULT_DESCRIPTION = "";
+	public static final String DEFAULT_PHONE_NUMBER = "";
+	public static final String DEFAULT_EMAIL_ADDRESS = "";
+	public static final String DEFAULT_LOCATION = "";
+	public static final String DEFAULT_LOGIN_URL = "";
 	
-	public String getDescription();
-	public void setDescription(String description);
+	private String gid = DEFAULT_GID;
+	private String name = DEFAULT_NAME;
+	private String longName = DEFAULT_LONG_NAME;
+	private String description = DEFAULT_DESCRIPTION;
+	private String phoneNumber = DEFAULT_PHONE_NUMBER;
+	private String emailAddress = DEFAULT_EMAIL_ADDRESS;
+	private String location = DEFAULT_LOCATION;
+	private String loginUrl = DEFAULT_LOGIN_URL;
 	
-	public String getPhoneNumber();
-	public void setPhoneNumber(String phoneNumber);
+	@Override
+	public String getGid() {
+		return gid;
+	}
+	@Override
+	public void setGid(String gid) {
+		this.gid = gid;
+	}
 	
-	public String getEmailAddress();
-	public void setEmailAddress(String emailAddress);
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 	
-	public String getLocation();
-	public void setLocation(String location);
+	public String getLongName() {
+		return longName;
+	}
+	public void setLongName(String longName) {
+		this.longName = longName;
+	}
 	
-	public Facility clone();
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+	
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
+	
+	public String getLocation() {
+		return location;
+	}
+	public void setLocation(String location) {
+		this.location = location;
+	}
+	
+	public String getLoginUrl() {
+		return loginUrl;
+	}
+	public void setLoginUrl(String loginUrl) {
+		this.loginUrl = loginUrl;
+	}
 }

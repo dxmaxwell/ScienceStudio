@@ -8,7 +8,7 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Laboratory">
-	<resultMap  id="laboratory" class="ca.sciencestudio.model.facility.ibatis.IbatisLaboratory">
+	<resultMap  id="laboratory" class="ca.sciencestudio.model.facility.dao.ibatis.support.IbatisLaboratory">
 		<result property="id" column="laboratory_id"/>
 		<result property="facilityId" column="facility_id" nullValue="0"/>
 		<result property="name" column="name"/>
@@ -21,7 +21,7 @@
 	</resultMap>
 	
 	<insert id="addLaboratory">
-		INSERT INTO scstudio.laboratory
+		INSERT INTO ${schema}.laboratory
 		(
 			facility_id
 			name,
@@ -47,7 +47,7 @@
 	</insert>
 	
 	<update id="editLaboratory">
-		UPDATE scstudio.laboratory
+		UPDATE ${schema}.laboratory
 			SET
 				facility_id = #facilityId:INT#,
 				name = #name:VARCHAR#,
@@ -62,36 +62,36 @@
 	</update>
 	
 	<delete id="removeLaboratory">
-		DELETE FROM scstudio.laboratory
+		DELETE FROM ${schema}.laboratory
 			WHERE laboratory_id = #value#
 	</delete>
 	
 	<select id="getLaboratoryList" resultMap="laboratory">
 		SELECT *
-			FROM scstudio.laboratory
+			FROM ${schema}.laboratory
 	</select>
 	
 	<select id="getLaboratoryById" resultMap="laboratory">
 		SELECT *
-			FROM scstudio.laboratory 
+			FROM ${schema}.laboratory 
 			WHERE laboratory_id = #value#
 	</select>
 	
 	<select id="getLaboratoryListByFacilityId" resultMap="laboratory">
 		SELECT *
-			FROM scstudio.laboratory 
+			FROM ${schema}.laboratory 
 			WHERE facility_id = #value#
 	</select>
 	
 	<select id="getLaboratoryListByName" resultMap="laboratory">
 		SELECT *
-			FROM scstudio.laboratory 
+			FROM ${schema}.laboratory 
 			WHERE name LIKE #value#
 	</select>
 
 	<select id="getLaboratoryListByNameAndFacilityId" resultMap="laboratory">
 		SELECT *
-			FROM scstudio.laboratory
+			FROM ${schema}.laboratory
 			WHERE name LIKE #param1# AND facility_id = #param2#
 	</select>
 	

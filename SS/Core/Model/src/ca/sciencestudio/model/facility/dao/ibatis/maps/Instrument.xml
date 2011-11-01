@@ -8,7 +8,7 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Instrument">
-	<resultMap  id="instrument" class="ca.sciencestudio.model.facility.ibatis.IbatisInstrument">
+	<resultMap  id="instrument" class="ca.sciencestudio.model.facility.dao.ibatis.support.IbatisInstrument">
 		<result property="id" column="instrument_id" />
 		<result property="name" column="name" />
 		<result property="longName" column="long_name" />
@@ -17,7 +17,7 @@
 	</resultMap>
 	
 	<insert id="addInstrument">
-		INSERT INTO scstudio.instrument
+		INSERT INTO ${schema}.instrument
 		(
 			name,
 			long_name,
@@ -37,7 +37,7 @@
 	</insert>
 	
 	<update id="editInstrument">
-		UPDATE scstudio.instrument
+		UPDATE ${schema}.instrument
 			SET
 				name = #name:VARCHAR#,
 				long_name = #long_name:VARCHAR#,
@@ -49,31 +49,37 @@
 	
 	<delete id="removeInstrument">
 		DELETE 
-			FROM scstudio.instrument
+			FROM ${schema}.instrument
 			WHERE instrument_id = #value#
 	</delete>
 	
 	<select id="getInstrumentById" resultMap="instrument">
 		SELECT *
-			FROM scstudio.instrument
+			FROM ${schema}.instrument
 			WHERE instrument_id = #value#
+	</select>
+	
+	<select id="getInstrumentList" resultMap="instrument">
+		SELECT *
+			FROM ${schema}.instrument
 	</select>
 	
 	<select id="getInstrumentListByName" resultMap="instrument">
 		SELECT *
-			FROM scstudio.instrument
+			FROM ${schema}.instrument
 			WHERE name LIKE #value# ORDER BY name
 	</select>
 	
 	<select id="getInstrumentListByLaboratoryId" resultMap="instrument">
 		SELECT *
-			FROM scstudio.instrument
+			FROM ${schema}.instrument
 			WHERE laboratory_id = #value#
 	</select>
 	
 	<select id="getInstrumentListByNameAndLaboratoryId" resultMap="instrument">
 		SELECT *
-			FROM scstudio.instrument
+			FROM ${schema}.instrument
 			WHERE name LIKE #param1# AND laboratory_id = #param2#
 	</select>
+	
 </sqlMap>

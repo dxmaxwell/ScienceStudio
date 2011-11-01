@@ -17,7 +17,7 @@ import ca.sciencestudio.model.Model;
  *
  *
  */
-public abstract class AbstractModelDAO<T extends Model> implements ModelDAO<T> {
+public abstract class AbstractModelDAO<T extends Model> {
 		
 	protected Log logger = LogFactory.getLog(getClass());
 }

@@ -7,25 +7,25 @@
 		ProjectTeam sql map xml file.	
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
-<sqlMap namespace="ProjectTeam">
-	<resultMap id="projectPerson" class="ca.sciencestudio.model.project.ibatis.IbatisProjectPerson">
+<sqlMap namespace="ProjectPerson">
+	<resultMap id="projectPerson" class="ca.sciencestudio.model.project.dao.ibatis.support.IbatisProjectPerson">
 		<result property="id" column="project_person_id" />
-		<result property="projectId" column="project_id" nullValue="0"/>
-		<result property="personUid" column="person_uid" nullValue="0"/>
-		<result property="projectRoleString" column="project_role" nullValue="0"/>
+		<result property="projectId" column="project_id"/>
+		<result property="personGid" column="person_gid"/>
+		<result property="role" column="role"/>
 	</resultMap>
 	
 	<insert id="addProjectPerson">
-		INSERT INTO scstudio.project_person 
+		INSERT INTO ${schema}.project_person 
 		(
 			project_id,
 			person_uid,
-			project_role
+			role
 		) 
 		VALUES (
 			#projectId:INT#,
-			#personUid:VARCHAR#,
-			#projectRoleString:VARCHAR#
+			#personGid:VARCHAR#,
+			#role:VARCHAR#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
 			${identity.function}
@@ -33,43 +33,43 @@
 	</insert>
 	
 	<update id="editProjectPerson">
-		UPDATE scstudio.project_person
+		UPDATE ${schema}.project_person
 			SET
 				project_id = #projectId:INT#,
-				person_uid = #personUid:VARCHAR#,
-				project_role = #projectRoleString:VARCHAR#
+				person_uid = #personGid:VARCHAR#,
+				role = #role:VARCHAR#
 			WHERE
 				project_person_id = #id:INT#
 	</update>
 	
 	<delete id="removeProjectPerson">
-		DELETE FROM scstudio.project_person
+		DELETE FROM ${schema}.project_person
 			WHERE project_person_id = #value#
 	</delete>
 	
 	<select id="getProjectPersonById" resultMap="projectPerson">
-		SELECT * FROM scstudio.project_person 
+		SELECT * FROM ${schema}.project_person 
 			WHERE project_person_id = #value#
 	</select>
 	
-	<select id="getProjectPersonByProjectIdAndPersonUid" resultMap="projectPerson">
-		SELECT * FROM scstudio.project_person
-			WHERE project_id = #param1#
-			AND person_uid = #param2#
-	</select>
-	
 	<select id="getProjectPersonList" resultMap="projectPerson">
-		SELECT * FROM scstudio.project_person
+		SELECT * FROM ${schema}.project_person
 	</select>
 	
 	<select id="getProjectPersonListByProjectId" resultMap="projectPerson">
-		SELECT * FROM scstudio.project_person
+		SELECT * FROM ${schema}.project_person
 			WHERE project_id = #value#
 	</select>
 	
-	<select id="getProjectPersonListByPersonUid" resultMap="projectPerson">
-		SELECT * FROM scstudio.project_person
+	<select id="getProjectPersonListByPersonGid" resultMap="projectPerson">
+		SELECT * FROM ${schema}.project_person
 			WHERE person_uid = #value#
+	</select>
+	
+	<select id="getProjectPersonListByProjectIdAndPersonGid" resultMap="projectPerson">
+		SELECT * FROM ${schema}.project_person
+			WHERE project_id = #param1#
+			AND person_uid = #param2#
 	</select>
 	
 </sqlMap>

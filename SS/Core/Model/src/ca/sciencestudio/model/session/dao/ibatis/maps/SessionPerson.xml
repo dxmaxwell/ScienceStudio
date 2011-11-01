@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		SessionPerson sql map xml file.	
+ -->
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="SessionPerson">
+	<resultMap id="sessionPerson" class="ca.sciencestudio.model.session.dao.ibatis.support.IbatisSessionPerson">
+		<result property="id" column="session_person_id" />
+		<result property="personGid" column="person_gid"/>
+		<result property="sessionId" column="session_id" nullValue="0"/>
+	</resultMap>
+	
+	<insert id="addSessionPerson">
+		INSERT INTO ${schema}.session_person
+		(
+			person_gid,
+			session_id
+		) 
+		VALUES
+		(
+			#person_gid:VARCHAR#,
+			#session_id:INT#
+		)
+		<selectKey resultClass="java.lang.Integer" keyProperty="id">
+			${identity.function}
+		</selectKey>
+	</insert>
+	
+	<update id="editSessionPerson">
+		UPDATE ${schema}.session_person
+			SET
+				person_gid = #personGid:VARCHAR#,
+				session_id = #sessionId:INT#
+			WHERE
+				session_person_id = #id:INT#
+	</update>
+	
+	<delete id="removeSessionPerson">
+		DELETE FROM ${schema}.session_person
+			WHERE session_person_id = #value#
+	</delete>
+	
+	<select id="getSessionPersonById" resultMap="sessionPerson">
+		SELECT *
+			FROM ${schema}.session_person 
+			WHERE session_person_id = #value#
+	</select>
+	
+	<select id="getSessionPersonList" resultMap="sessionPerson">
+		SELECT *
+			FROM ${schema}.session_person
+	</select>
+	
+</sqlMap>

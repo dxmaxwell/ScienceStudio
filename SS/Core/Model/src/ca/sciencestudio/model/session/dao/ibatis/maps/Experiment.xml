@@ -8,30 +8,30 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Experiment">
-	<resultMap  id="experiment" class="ca.sciencestudio.model.session.ibatis.IbatisExperiment">
+	<resultMap  id="experiment" class="ca.sciencestudio.model.session.dao.ibatis.support.IbatisExperiment">
 		<result property="id" column="experiment_id" />
 		<result property="name" column="name"/>
 		<result property="description" column="description"/>
+		<result property="sourceGid" column="source_gid"/>
 		<result property="sessionId" column="session_id" nullValue="0"/>
-		<result property="sampleId" column="sample_id" nullValue="0"/>
 		<result property="instrumentTechniqueId" column="instrument_technique_id" nullValue="0"/>
 	</resultMap>
 	
 	<insert id="addExperiment">
-		INSERT INTO scstudio.experiment
+		INSERT INTO ${schema}.experiment
 		(
 			name,
 			description,
+			source_gid,
 			session_id,
-			sample_id,
 			instrument_technique_id
 		) 
 		VALUES
 		(
 			#name:VARCHAR#,
 			#description:VARCHAR#,
+			#sourceGid:VARCHAR#,
 			#sessionId:INT#,
-			#sampleId:INT#,
 			#instrumentTechniqueId:INT#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
@@ -40,42 +40,43 @@
 	</insert>
 	
 	<update id="editExperiment">
-		UPDATE scstudio.experiment
+		UPDATE ${schema}.experiment
 			SET
 				name = #name:VARCHAR#,
 				description = #description:VARCHAR#,
+				source_gid = #sourceGid:VARCHAR#,
 				session_id = #sessionId:INT#,
-				sample_id = #sampleId:INT#,
 				instrument_technique_id = #instrumentTechniqueId:INT#
 			WHERE
 				experiment_id = #id:INT#
 	</update>
 	
 	<delete id="removeExperiment">
-		DELETE FROM scstudio.experiment
+		DELETE FROM ${schema}.experiment
 			WHERE experiment_id = #value#
 	</delete>
 	
 	<select id="getExperimentById" resultMap="experiment">
 		SELECT *
-			FROM scstudio.experiment 
+			FROM ${schema}.experiment 
 			WHERE experiment_id = #value#
 	</select>
 	
 	<select id="getExperimentList" resultMap="experiment">
 		SELECT *
-			FROM scstudio.experiment
+			FROM ${schema}.experiment
 	</select>
 	
-	<select id="getExperimentListBySampleId" resultMap="experiment">
+	<select id="getExperimentListBySourceGid" resultMap="experiment">
 		SELECT *
-			FROM scstudio.experiment
-			WHERE sample_id = #value#
+			FROM ${schema}.experiment
+			WHERE source_gid = #value#
 	</select>
 	
 	<select id="getExperimentListBySessionId" resultMap="experiment">
 		SELECT *
-			FROM scstudio.experiment
+			FROM ${schema}.experiment
 			WHERE session_id = #value#
 	</select>
+
 </sqlMap>

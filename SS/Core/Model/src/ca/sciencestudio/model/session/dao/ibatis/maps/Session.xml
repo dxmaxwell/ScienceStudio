@@ -8,26 +8,26 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Session">
-	<resultMap id="session" class="ca.sciencestudio.model.session.ibatis.IbatisSession">
+	<resultMap id="session" class="ca.sciencestudio.model.session.dao.ibatis.support.IbatisSession">
 		<result property="id" column="session_id" />
 		<result property="name" column="name"/>
 		<result property="description" column="description"/>
 		<result property="proposal" column="proposal" />
 		<result property="startDate" column="start_date" />
 		<result property="endDate" column="end_date" />
-		<result property="projectId" column="project_id" nullValue="0"/>
+		<result property="projectGid" column="project_gid"/>
 		<result property="laboratoryId" column="laboratory_id" nullValue="0"/>
 	</resultMap>
 	
 	<insert id="addSession">
-		INSERT INTO scstudio.session
+		INSERT INTO ${schema}.session
 		(
 			name,
 			description,
 			proposal,
 			start_date,
 			end_date,
-			project_id,
+			project_gid,
 			laboratory_id
 		) 
 		VALUES
@@ -37,7 +37,7 @@
 			#proposal:VHARCHAR#,
 			#startDate:DATETIME#,
 			#endDate:DATETIME#,
-			#projectId:INT#,
+			#projectGid:VARCHAR#,
 			#laboratoryId:INT#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
@@ -46,63 +46,63 @@
 	</insert>
 	
 	<update id="editSession">
-		UPDATE scstudio.session
+		UPDATE ${schema}.session
 			SET
 				name = #name:VARCHAR#,
 				description = #description:VARCHAR#,
 				proposal = #proposal:VARCHAR#,
 				start_date = #startDate:DATETIME#,
 				end_date = #endDate:DATETIME#,
-				project_id = #projectId:INT#,
+				project_gid = #projectGid:VARCHAR#,
 				laboratory_id = #laboratoryId:INT#
 			WHERE
 				session_id = #id:INT#
 	</update>
 	
 	<delete id="removeSession">
-		DELETE FROM scstudio.session
+		DELETE FROM ${schema}.session
 			WHERE session_id = #value#
 	</delete>
 	
 	<select id="getSessionById" resultMap="session">
 		SELECT *
-			FROM scstudio.session 
+			FROM ${schema}.session 
 			WHERE session_id = #value#
 	</select>
 	
 	<select id="getSessionList" resultMap="session">
 		SELECT *
-			FROM scstudio.session
+			FROM ${schema}.session
 	</select>
 	
-	<select id="getSessionListByProjectId" resultMap="session">
+	<select id="getSessionListByProjectGid" resultMap="session">
 		SELECT *
-			FROM scstudio.session
-			WHERE project_id = #value#
+			FROM ${schema}.session
+			WHERE project_gid = #value#
 	</select>
 	
 	<select id="getSessionListByLaboratoryId" resultMap="session">
 		SELECT *
-			FROM scstudio.session
+			FROM ${schema}.session
 			WHERE laboratory_id = #value#
 	</select>
 	
 	<select id="getSessionListByPersonUid" resultMap="session">
-		SELECT s.session_id, s.name, s.description, s.project_id, s.proposal, s.laboratory_id, s.start_date, s.end_date
-			FROM scstudio.session AS s, scstudio.project AS p, scstudio.project_person AS pp
-			WHERE pp.person_uid = #value# AND pp.project_id = p.project_id AND p.project_id = s.project_id 
+		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
+			FROM ${schema}.session AS s, ${schema}.project AS p, ${schema}.project_person AS pp
+			WHERE pp.person_uid = #value# AND pp.project_gid = p.project_gid AND p.project_gid = s.project_gid
 	</select>
 	
 	<select id="getSessionListByPersonUidAndProjectStatus" resultMap="session">
-		SELECT s.session_id, s.name, s.description, s.project_id, s.proposal, s.laboratory_id, s.start_date, s.end_date
-			FROM scstudio.session AS s, scstudio.project AS p, scstudio.project_person AS pp
+		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
+			FROM ${schema}.session AS s, ${schema}.project AS p, ${schema}.project_person AS pp
 			WHERE pp.person_uid = #param1# AND p.status = #param2# AND
-					pp.project_id = p.project_id AND p.project_id = s.project_id 
+					pp.project_gid = p.project_id AND p.project_id = s.project_id 
 	</select>
 	
 	<select id="getSessionListByLaboratoryNameAndFacilityName" resultMap="session">
-		SELECT s.session_id, s.name, s.description, s.project_id, s.proposal, s.laboratory_id, s.start_date, s.end_date
-			FROM scstudio.session AS s, scstudio.laboratory AS l, scstudio.facility AS f
+		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
+			FROM ${schema}.session AS s, ${schema}.laboratory AS l, ${schema}.facility AS f
 			WHERE l.name LIKE #param1# AND f.name LIKE #param2# AND 
 					l.facility_id = f.facility_id AND s.laboratory_id = l.laboratory_id
 	</select>

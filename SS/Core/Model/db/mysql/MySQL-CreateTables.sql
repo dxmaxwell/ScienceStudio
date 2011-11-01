@@ -4,14 +4,11 @@
 --	
 --	Description:
 --		CreateTable sql file.
--- NOTE: this script needs to be reviewed, column details added, etc.
-
-USE scstudio;
+--
 
 -- --------------------- Person tables ------------------------------------------
-CREATE TABLE scstudio.person (
+CREATE TABLE person (
 	person_id INT AUTO_INCREMENT PRIMARY KEY,
-	person_uid VARCHAR(100) NOT NULL UNIQUE,
 	title VARCHAR(10),
 	first_name VARCHAR(60) NOT NULL,
 	middle_name VARCHAR(60), 
@@ -24,109 +21,117 @@ CREATE TABLE scstudio.person (
 
 
 -- ------------------ Project table --------------------------------------
-CREATE TABLE scstudio.project (
+CREATE TABLE project (
 	project_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(80) NOT NULL,
-	description VARCHAR(255),
-	start_date DATE,
-	end_date DATE,
+	description VARCHAR(2000),
+	start_date DATETIME,
+	end_date DATETIME,
 	status VARCHAR(20) NOT NULL
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE scstudio.project_person (
+CREATE TABLE project_person (
 	project_person_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	project_id INT NOT NULL,
-	person_uid VARCHAR(100) NOT NULL,
-	project_role VARCHAR(100) NOT NULL
+	person_gid VARCHAR(20) NOT NULL,
+	role VARCHAR(20) NOT NULL
 ) ENGINE=InnoDB;
 
 -- ------------------ Sample tables --------------------------------------
-CREATE TABLE scstudio.sample (
+CREATE TABLE sample (
 	sample_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	project_id INT NOT NULL,
-	name VARCHAR(40),
-	description VARCHAR(255),
+	name VARCHAR(80) NOT NULL,
+	description VARCHAR(2000),
 	cas_number VARCHAR(45),
-	state VARCHAR(40),
+	state VARCHAR(20),
 	quantity VARCHAR(100),
-	hazards VARCHAR(255),
-	other_hazards VARCHAR(255)
+	hazards VARCHAR(1000),
+	other_hazards VARCHAR(1000)
 ) ENGINE=InnoDB;
 
 
 -- ------------------ Session tables -----------------------------------
-CREATE TABLE scstudio.session (
+CREATE TABLE session (
 	session_id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(60) NOT NULL,
-	description VARCHAR(255),
+	name VARCHAR(80) NOT NULL,
+	description VARCHAR(2000),
 	proposal VARCHAR(100),
 	start_date DATETIME,
 	end_date DATETIME,
-	project_id INT NOT NULL,
+	project_gid VARCHAR(20) NOT NULL,
 	laboratory_id INT NOT NULL
 ) ENGINE=InnoDB;
 
-CREATE TABLE scstudio.experiment (
-	experiment_id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(60) NOT NULL,
-	description VARCHAR(255),
+CREATE TABLE session_person (
+	session_person_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	session_id INT NOT NULL,
-	sample_id INT NOT NULL,
+	person_gid VARCHAR(20) NOT NULL,
+	role VARCHAR(20) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE experiment (
+	experiment_id INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(80) NOT NULL,
+	description VARCHAR(2000),
+	session_id INT NOT NULL,
+	source_gid VARCHAR(20) NOT NULL,
 	instrument_technique_id INT NOT NULL
 ) ENGINE=InnoDB;
 
-CREATE TABLE scstudio.scan (
+CREATE TABLE scan (
 	scan_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(100) NOT NULL,
+	name VARCHAR(80) NOT NULL,
 	data_url VARCHAR(1000),
-	parameters VARCHAR(2000),
+	parameters VARCHAR(10000),
+	parameters_type varchar(60),
 	start_date DATETIME,
 	end_date DATETIME,
-	experiment_id INT
+	experiment_id INT NOT NULL
 ) ENGINE=InnoDB;
 
 -- ------------------ Facility tables -------------------------------------
-CREATE TABLE scstudio.facility (
+CREATE TABLE facility (
 	facility_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(20) NOT NULL,
+	name VARCHAR(20) NOT NULL UNIQUE,
 	long_name VARCHAR(80),
-	description VARCHAR(255),
-	phone_number VARCHAR(30),
-	email_address VARCHAR(60),
-	location VARCHAR(255)
+	description VARCHAR(2000),
+	phone_number VARCHAR(50),
+	email_address VARCHAR(255),
+	location VARCHAR(255),
+	login_url VARCHAR(1000)
 ) ENGINE=InnoDB;
 
-CREATE TABLE scstudio.technique (
+CREATE TABLE technique (
 	technique_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(20) NOT NULL UNIQUE,
 	long_name VARCHAR(80),
-	description VARCHAR(255)
+	description VARCHAR(2000)
 ) ENGINE=InnoDB;
 
-CREATE TABLE scstudio.instrument (
+CREATE TABLE instrument (
 	instrument_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	laboratory_id INT NOT NULL,
 	name VARCHAR(20) NOT NULL,
 	long_name VARCHAR(80),
-	description VARCHAR(255)
+	description VARCHAR(2000)
 ) ENGINE=InnoDB;
 
-CREATE TABLE scstudio.instrument_technique (
+CREATE TABLE instrument_technique (
 	instrument_technique_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	instrument_id INT,
-	technique_id INT
+	instrument_id INT NOT NULL,
+	technique_id INT NOT NULL
 ) ENGINE=InnoDB;
 
-CREATE TABLE scstudio.laboratory(
+CREATE TABLE laboratory(
 	laboratory_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	facility_id INT NOT NULL,
-	name VARCHAR(20) NOT NULL,
-	long_name VARCHAR(60),
-	description VARCHAR(255),
-	phone_number VARCHAR(40),
-	email_address VARCHAR(60),
-	location VARCHAR(45),
-	view_url VARCHAR(200)
+	name VARCHAR(20) NOT NULL UNIQUE,
+	long_name VARCHAR(80),
+	description VARCHAR(2000),
+	phone_number VARCHAR(50),
+	email_address VARCHAR(255),
+	location VARCHAR(255),
+	view_url VARCHAR(1000)
 ) ENGINE=InnoDB;
-

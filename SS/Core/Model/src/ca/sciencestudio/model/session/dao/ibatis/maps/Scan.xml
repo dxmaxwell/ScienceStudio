@@ -8,7 +8,7 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Scan">
-	<resultMap id="scan" class="ca.sciencestudio.model.session.ibatis.IbatisScan">
+	<resultMap id="scan" class="ca.sciencestudio.model.session.dao.ibatis.support.IbatisScan">
 		<result property="id" column="scan_id" />
 		<result property="name" column="name" />
 		<result property="dataUrl" column="data_url" />
@@ -19,7 +19,7 @@
 	</resultMap>
 	
 	<insert id="addScan">
-		INSERT INTO scstudio.scan
+		INSERT INTO ${schema}.scan
 		(
 			name,
 			data_url,
@@ -43,7 +43,7 @@
 	</insert>
 	
 	<update id="editScan">
-		UPDATE scstudio.scan
+		UPDATE ${schema}.scan
 			SET
 				name = #name:VARCHAR#,
 				data_url = #dataUrl:VARCHAR#,
@@ -56,7 +56,7 @@
 	</update>
 	
 	<update id="editScanInfo">
-		UPDATE scstudio.scan
+		UPDATE ${schema}.scan
 			SET
 				data_url = #dataUrl:VARCHAR#,
 				parameters = #parameters:VARCHAR#,
@@ -68,24 +68,24 @@
 	
 	<delete id="removeScan">
 		DELETE 
-			FROM scstudio.scan
+			FROM ${schema}.scan
 			WHERE scan_id = #value#
 	</delete>
 	
 	<select id="getScanById" resultMap="scan">
 		SELECT *
-			FROM scstudio.scan
+			FROM ${schema}.scan
 			WHERE scan_id = #value#
 	</select>
 	
 	<select id="getScanListByExperimentId" resultMap="scan">
 		SELECT *
-			FROM scstudio.scan
+			FROM ${schema}.scan
 			WHERE experiment_id = #value#
 	</select>
 	
 	<select id="getScanList" resultMap="scan">
 		SELECT *
-			FROM scstudio.scan
+			FROM ${schema}.scan
 	</select>
 </sqlMap>

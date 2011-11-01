@@ -2,26 +2,51 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     InstrumentTechnique interface.
+ *     InstrumentTechnique class.
  *     
  */
 package ca.sciencestudio.model.facility;
 
-import java.io.Serializable;
+import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.utilities.GID;
 
 /**
  * @author maxweld
  */
-public interface InstrumentTechnique extends Serializable {
+public class InstrumentTechnique implements Model {
 
-	public int getId();
-	public void setId(int id);
+	private static final long serialVersionUID = 1L;
+
+	public static final String GID_TYPE = "Q";
+
+	public static final String DEFAULT_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_INSTRUMENT_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_TECHNIQUE_GID = GID.DEFAULT_GID;
 	
-	public int getInstrumentId();
-	public void setInstrumentId(int instrumentId);
+	private String gid = DEFAULT_GID;
+	private String instrumentGid = DEFAULT_INSTRUMENT_GID;
+	private String techniqueGid = DEFAULT_TECHNIQUE_GID;
 	
-	public int getTechniqueId();
-	public void setTechniqueId(int techniqueId);
+	@Override
+	public String getGid() {
+		return gid;
+	}
+	@Override
+	public void setGid(String gid) {
+		this.gid = gid;
+	}
 	
-	public InstrumentTechnique clone();
+	public String getInstrumentGid() {
+		return instrumentGid;
+	}
+	public void setInstrumentGid(String instrumentGid) {
+		this.instrumentGid = instrumentGid;
+	}
+	
+	public String getTechniqueGid() {
+		return techniqueGid;
+	}
+	public void setTechniqueGid(String techniqueGid) {
+		this.techniqueGid = techniqueGid;
+	}
 }

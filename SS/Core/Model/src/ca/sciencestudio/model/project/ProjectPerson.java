@@ -2,30 +2,63 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     ProjectPerson interface.
+ *     ProjectPerson class.
  *     
  */
 package ca.sciencestudio.model.project;
 
-import java.io.Serializable;
-
-import ca.sciencestudio.model.project.ProjectRole;
+import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.utilities.GID;
 
 /**
  * @author maxweld
  *
  */
-public interface ProjectPerson extends Serializable {
+public class ProjectPerson implements Model {
 
-	public int getId();
-	public void setId(int id);
+	private static final long serialVersionUID = 1L;
+
+	public static final String GID_TYPE = "K";
 	
-	public int getProjectId();
-	public void setProjectId(int projectId);
+	public static enum Role { OBSERVER, EXPERIMENTER }
 	
-	public String getPersonUid();
-	public void setPersonUid(String personUid);
+	public static final String DEFAULT_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_PERSON_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_PROJECT_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_ROLE = "UNKNOWN";
 	
-	public ProjectRole getProjectRole();
-	public void setProjectRole(ProjectRole projectRole);
+	private String gid = DEFAULT_GID;
+	private String personGid = DEFAULT_PERSON_GID;
+	private String projectGid = DEFAULT_PROJECT_GID;
+	private String role = DEFAULT_ROLE;
+	
+	@Override
+	public String getGid() {
+		return gid;
+	}
+	@Override
+	public void setGid(String gid) {
+		this.gid = gid;
+	}
+	
+	public String getPersonGid() {
+		return personGid;
+	}
+	public void setPersonGid(String personGid) {
+		this.personGid = personGid;
+	}
+	
+	public String getProjectGid() {
+		return projectGid;
+	}
+	public void setProjectGid(String projectGid) {
+		this.projectGid = projectGid;
+	}
+	
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}	
 }

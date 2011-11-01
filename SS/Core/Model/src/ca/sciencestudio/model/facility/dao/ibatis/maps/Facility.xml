@@ -8,7 +8,7 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Facility">
-	<resultMap id="facility" class="ca.sciencestudio.model.facility.ibatis.IbatisFacility">
+	<resultMap id="facility" class="ca.sciencestudio.model.facility.dao.ibatis.support.IbatisFacility">
 		<result property="id" column="facility_id"/>
 		<result property="name" column="name"/>
 		<result property="longName" column="long_name"/>
@@ -16,17 +16,19 @@
 		<result property="phoneNumber" column="phone_number"/>
 		<result property="emailAddress" column="email_address"/>
 		<result property="location" column="location"/>
+		<result property="loginUrl" column="login_url"/>
 	</resultMap>
 	
 	<insert id="addFacility">
-		INSERT INTO scstudio.facility
+		INSERT INTO ${schema}.facility
 		(
 			name,
 			long_name,
 			description,
 			phone_number,
 			email_address,
-			location
+			location,
+			login_url
 		)
 		VALUES
 		(
@@ -35,7 +37,8 @@
 			#description:VARCHAR#,
 			#phoneNumber:VARCHAR#,
 			#emailAddress:VARCHAR#,
-			#location:VARCHAR#
+			#location:VARCHAR#,
+			#loginUrl:VARCHAR#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
 			${identity.function}
@@ -43,35 +46,36 @@
 	</insert>
 	
 	<update id="editFacility">
-		UPDATE scstudio.facility
+		UPDATE ${schema}.facility
 			SET
 				name = #name#,
 				long_name = #longName#,
 				description = #description:VARCHAR#
 				phone_number = #phoneNumber:VARCHAR#,
 				email_address = #emailAddress:VARCHAR#,
-				location = #location:VARCHAR#				
+				location = #location:VARCHAR#,
+				login_url = #loginUrl:VARCHAR#			
 			WHERE
 				facility_id = #id:INT#
 	</update>
 	
 	<delete id="removeFacility">
-		DELETE FROM scstudio.facility
+		DELETE FROM ${schema}.facility
 			WHERE facility_id = #value#
 	</delete>
 	
-	<select id="getFacilityList" resultMap="facility">
-		SELECT * FROM scstudio.facility
-	</select>
-	
 	<select id="getFacilityById" resultMap="facility">
-		SELECT * FROM scstudio.facility
+		SELECT * FROM ${schema}.facility
 			WHERE facility_id = #value#
 	</select>
 	
-	<select id="getFacilityListByName" resultMap="facility">
-		SELECT * FROM scstudio.facility
+	<select id="getFacilityByName" resultMap="facility">
+		SELECT * FROM ${schema}.facility
 			WHERE name = #value#
+	</select>
+	
+	<select id="getFacilityList" resultMap="facility">
+		SELECT * FROM ${schema}.facility
 	</select>
 	
 </sqlMap>

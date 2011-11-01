@@ -4,28 +4,27 @@
 --	
 --	Description:
 --		DropTable sql file.
+-- 
 
-
-USE scstudio;
-
--- -------------------- Person tables ------------------------------------------
-DROP TABLE scstudio.person;
+-- ----------------- Person tables --------------------------------------
+DROP TABLE person;
 
 -- ----------------- Project table --------------------------------------
-DROP TABLE scstudio.project;
-DROP TABLE scstudio.project_person;
+DROP TABLE project;
+DROP TABLE project_person;
 
 -- ----------------- Sample tables --------------------------------------
-DROP TABLE scstudio.sample;
+DROP TABLE sample;
 
--- ----------------- Session tables -----------------------------------
-DROP TABLE scstudio.session;
-DROP TABLE scstudio.experiment;
-DROP TABLE scstudio.scan;
+-- ----------------- Session tables -------------------------------------
+DROP TABLE session;
+DROP TABLE session_person
+DROP TABLE experiment;
+DROP TABLE scan;
 
 -- ----------------- Facility tables -------------------------------------
-DROP TABLE scstudio.facility;
-DROP TABLE scstudio.technique;
-DROP TABLE scstudio.instrument;
-DROP TABLE scstudio.instrument_technique;
-DROP TABLE scstudio.laboratory;
+DROP TABLE facility;
+DROP TABLE technique;
+DROP TABLE instrument;
+DROP TABLE instrument_technique;
+DROP TABLE laboratory;

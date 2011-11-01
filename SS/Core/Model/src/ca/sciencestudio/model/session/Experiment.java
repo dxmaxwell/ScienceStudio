@@ -2,36 +2,79 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     Experiment interface.
+ *     Experiment class.
  *     
  */
 package ca.sciencestudio.model.session;
 
-import java.io.Serializable;
+import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.utilities.GID;
 
 /**
  * @author maxweld
  *
  */
-public interface Experiment extends  Serializable {
+public class Experiment implements Model {
 	
-	public int getId();
-	public void setId(int id);
+	private static final long serialVersionUID = 1L;
 	
-	public String getName();
-	public void setName(String name);
+	public static final String GID_TYPE = "E";
 	
-	public String getDescription();
-	public void setDescription(String description);
+	public static final String DEFAULT_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_SESSION_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_INSTRUMENT_TECHNIQUE_GID = GID.DEFAULT_GID;
+	public static final String DEFAULT_NAME = "";
+	public static final String DEFAULT_DESCRIPTION = "";
+	public static final String DEFAULT_SOURCE_GID = GID.DEFAULT_GID;
 	
-	public int getSessionId();
-	public void setSessionId(int sessionId);
+	private String gid = DEFAULT_GID;
+	private String sessionGid = DEFAULT_SESSION_GID;
+	private String instrumentTechniqueGid = DEFAULT_INSTRUMENT_TECHNIQUE_GID;
+	private String name = DEFAULT_NAME;
+	private String description = DEFAULT_DESCRIPTION;
+	private String sourceGid = DEFAULT_SOURCE_GID;
 	
-	public int getSampleId();
-	public void setSampleId(int sampleId);
+	@Override
+	public String getGid() {
+		return gid;
+	}
+	@Override
+	public void setGid(String gid) {
+		this.gid = gid;
+	}
 	
-	public int getInstrumentTechniqueId();
-	public void setInstrumentTechniqueId(int instrumentTechniqueId);
+	public String getSessionGid() {
+		return sessionGid;
+	}
+	public void setSessionGid(String sessionGid) {
+		this.sessionGid = sessionGid;
+	}
 	
-	public Experiment clone();
+	public String getInstrumentTechniqueGid() {
+		return instrumentTechniqueGid;
+	}
+	public void setInstrumentTechniqueGid(String instrumentTechniqueGid) {
+		this.instrumentTechniqueGid = instrumentTechniqueGid;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public String getSourceGid() {
+		return sourceGid;
+	}
+	public void setSourceGid(String sourceGid) {
+		this.sourceGid = sourceGid;
+	}
 }
