@@ -13,10 +13,9 @@ import java.util.Map;
 
 import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.session.dao.ScanDAO;
-import ca.sciencestudio.model.utilities.ScanParameters;
-import ca.sciencestudio.util.Parameters;
 import ca.sciencestudio.device.proxy.event.DeviceProxyEvent;
 import ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener;
+import ca.sciencestudio.util.Parameters; 
 
 /**
  * @author maxweld
@@ -80,12 +79,9 @@ public class ScanDeviceProxyEventListener extends ReadWriteDeviceProxyEventListe
 				value = scanDetails.get(SCAN_DETAILS_KEY_PARAMETERS);
 				if(value instanceof Parameters) {
 					Parameters parameters = (Parameters)value;
-					ScanParameters scanParameters = new ScanParameters(scan);
-					for(String name : parameters.parameterNames()) {
-						scanParameters.setParameter(name, parameters.getParameter(name));
-					}
-					if(scanParameters.isModified()) {
-						scanParameters.store();
+					if(!parameters.isEmpty()) {
+						Parameters scanParameters = scan.getParameters();
+						scanParameters.putAll(parameters);
 						modified = true;
 					}
 				}

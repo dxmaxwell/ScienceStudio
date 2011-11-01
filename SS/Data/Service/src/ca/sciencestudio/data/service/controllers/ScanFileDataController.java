@@ -25,8 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import ca.sciencestudio.model.session.Scan;
-import ca.sciencestudio.model.utilities.ScanParameters;
 import ca.sciencestudio.util.text.SpecialCharacterUtils;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -44,15 +44,15 @@ public class ScanFileDataController extends AbstractScanFileController {
 			return null;
 		}
 		
-		ScanParameters sp = new ScanParameters(scan);
+		Parameters sp = scan.getParameters();
 		
-		String dataFileBase  = sp.getParameter(PARAM_KEY_DATA_FILE_BASE);
+		String dataFileBase  = sp.get(PARAM_KEY_DATA_FILE_BASE);
 		if((dataFileBase == null) || (dataFileBase.length() == 0)) {
 			sendError(response, HttpServletResponse.SC_NOT_FOUND);
 			return null;
 		}
 
-		String dataUrl = sp.getScan().getDataUrl();
+		String dataUrl = scan.getDataUrl();
 		if((dataUrl == null) || (dataUrl.length() == 0)) {
 			sendError(response, HttpServletResponse.SC_NOT_FOUND);
 			return null;
@@ -84,7 +84,7 @@ public class ScanFileDataController extends AbstractScanFileController {
 			return null;
 		}
 		
-		String filename = SpecialCharacterUtils.replaceSpecial(sp.getScan().getName()) + "." + format;
+		String filename = SpecialCharacterUtils.replaceSpecial(scan.getName()) + "." + format;
 		
 		try {
 			response.setContentLength((int)dataFile.length());

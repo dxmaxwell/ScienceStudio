@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import ca.sciencestudio.data.converter.ConverterMap;
 import ca.sciencestudio.data.standard.StdScanParams;
 import ca.sciencestudio.data.support.ConverterFactoryException;
-import ca.sciencestudio.model.utilities.ScanParameters;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -62,7 +62,7 @@ public abstract class AbstractMapVespersConverterFactory extends AbstractVespers
 		}
 		
 		String scanDataUrl = (String)request.get(REQUEST_KEY_SCAN_DATA_URL);
-		ScanParameters scanParams = (ScanParameters)request.get(REQUEST_KEY_SCAN_PARAMS);
+		Parameters scanParams = (Parameters)request.get(REQUEST_KEY_SCAN_PARAMS);
 		
 		//   Do not know if I still need this??? //		
 		//if(!"20090917A".equals(getDAFFileVersion())) {
@@ -72,13 +72,13 @@ public abstract class AbstractMapVespersConverterFactory extends AbstractVespers
 		// DAF Data File //
 		Object dafDataFile = request.get(REQUEST_KEY_DAF_DATA_FILE);
 		if(!(dafDataFile instanceof File)) {
-			if(isNotEmptyString(scanParams.getProperty(PARAM_KEY_DAF_FILE_NAME))) {
-				String dafDataFileName = scanParams.getProperty(PARAM_KEY_DAF_FILE_NAME);
+			if(isNotEmptyString(scanParams.get(PARAM_KEY_DAF_FILE_NAME))) {
+				String dafDataFileName = scanParams.get(PARAM_KEY_DAF_FILE_NAME);
 				dafDataFile = new File(scanDataUrl, dafDataFileName);
 				request.put(REQUEST_KEY_DAF_DATA_FILE, dafDataFile);
 			}
-			else if(isNotEmptyString(scanParams.getProperty(PARAM_KEY_DATA_FILE_BASE))) {
-				String dataFileBase = scanParams.getProperty(PARAM_KEY_DATA_FILE_BASE);
+			else if(isNotEmptyString(scanParams.get(PARAM_KEY_DATA_FILE_BASE))) {
+				String dataFileBase = scanParams.get(PARAM_KEY_DATA_FILE_BASE);
 				dafDataFile = new File(scanDataUrl, dataFileBase + FILE_NAME_SUFFIX_DAF_DATA);
 				request.put(REQUEST_KEY_DAF_DATA_FILE, dafDataFile);
 			}

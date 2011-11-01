@@ -30,9 +30,9 @@ import ca.sciencestudio.data.standard.StdConverter;
 import ca.sciencestudio.data.standard.StdScanParams;
 import ca.sciencestudio.data.standard.category.UniqueCategory;
 import ca.sciencestudio.data.support.CDFQueryException;
-import ca.sciencestudio.model.utilities.ScanParameters;
 import ca.sciencestudio.data.util.CategoryUtils;
 import ca.sciencestudio.model.session.Scan;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -46,11 +46,11 @@ public class CDFQuery implements StdScanParams, StdConverter, StdCategories {
 	
 	@SuppressWarnings("deprecation")
 	protected static File getCdfFileFromScan(Scan scan) throws CDFQueryException {
-		ScanParameters scanParams = new ScanParameters(scan);
-		String dataFileBase = scanParams.getParameter(PARAM_KEY_DATA_FILE_BASE);
+		Parameters scanParams = scan.getParameters();
+		String dataFileBase = scanParams.get(PARAM_KEY_DATA_FILE_BASE);
 		
 		if(dataFileBase == null) {
-			String cdfFileName = scanParams.getParameter(PARAM_KEY_CDF_FILE_NAME);
+			String cdfFileName = scanParams.get(PARAM_KEY_CDF_FILE_NAME);
 			if(cdfFileName != null) {
 				String cdfSuffixRegex = Pattern.quote(FILE_NAME_SUFFIX_CDF) + "\\Z";
 				dataFileBase = cdfFileName.replaceAll(cdfSuffixRegex, ""); 
@@ -58,7 +58,7 @@ public class CDFQuery implements StdScanParams, StdConverter, StdCategories {
 		}
 		
 		if(dataFileBase == null) {
-			String dafFileName = scanParams.getParameter(PARAM_KEY_DAF_FILE_NAME);
+			String dafFileName = scanParams.get(PARAM_KEY_DAF_FILE_NAME);
 			if(dafFileName != null) {
 				String dafSuffixRegex = Pattern.quote(FILE_NAME_SUFFIX_DAF_DATA) + "\\Z";
 				dataFileBase = dafFileName.replaceAll(dafSuffixRegex, "");

@@ -11,7 +11,6 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ca.sciencestudio.model.utilities.ScanParameters;
 import ca.sciencestudio.data.converter.Converter;
 import ca.sciencestudio.data.converter.ConverterMap;
 import ca.sciencestudio.data.converter.AbstractCDFtoCDFMLConverter;
@@ -19,6 +18,7 @@ import ca.sciencestudio.data.standard.StdConverter;
 import ca.sciencestudio.data.standard.StdScanParams;
 import ca.sciencestudio.data.support.ConverterFactoryException;
 import ca.sciencestudio.util.process.ProcessFactory;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -79,23 +79,23 @@ public class CDFtoCDFMLConverterFactory extends AbstractScanConverterFactory imp
 		}
 		
 		String scanDataUrl = (String)request.get(REQUEST_KEY_SCAN_DATA_URL);
-		ScanParameters scanParams = (ScanParameters) request.get(REQUEST_KEY_SCAN_PARAMS);
+		Parameters scanParams = (Parameters) request.get(REQUEST_KEY_SCAN_PARAMS);
 		
 		// CDF Data File //
 		Object cdfDataFile = request.get(REQUEST_KEY_CDF_DATA_FILE);
 		if(!(cdfDataFile instanceof File)) {
-			if(isNotEmptyString(scanParams.getProperty(PARAM_KEY_DATA_FILE_BASE))) {
-				String dataFileBase = scanParams.getProperty(PARAM_KEY_DATA_FILE_BASE);
+			if(isNotEmptyString(scanParams.get(PARAM_KEY_DATA_FILE_BASE))) {
+				String dataFileBase = scanParams.get(PARAM_KEY_DATA_FILE_BASE);
 				cdfDataFile = new File(scanDataUrl, dataFileBase + FILE_NAME_SUFFIX_CDF);
 				request.put(REQUEST_KEY_CDF_DATA_FILE, cdfDataFile);
 			}
-			else if(isNotEmptyString(scanParams.getProperty(PARAM_KEY_CDF_FILE_NAME))) {
-				String cdfDataFileName = scanParams.getProperty(PARAM_KEY_CDF_FILE_NAME);
+			else if(isNotEmptyString(scanParams.get(PARAM_KEY_CDF_FILE_NAME))) {
+				String cdfDataFileName = scanParams.get(PARAM_KEY_CDF_FILE_NAME);
 				cdfDataFile = new File(scanDataUrl, cdfDataFileName);
 				request.put(REQUEST_KEY_CDF_DATA_FILE, cdfDataFile);
 			}
-			else if(isNotEmptyString(scanParams.getProperty(PARAM_KEY_DAF_FILE_NAME))) {
-				String dafDataFileName = scanParams.getProperty(PARAM_KEY_DAF_FILE_NAME);
+			else if(isNotEmptyString(scanParams.get(PARAM_KEY_DAF_FILE_NAME))) {
+				String dafDataFileName = scanParams.get(PARAM_KEY_DAF_FILE_NAME);
 				String dafDataFileNameSuffixRegex = Pattern.quote(FILE_NAME_SUFFIX_DAF_DATA) + "\\Z";
 				String cdfDataFileName = dafDataFileName.replaceAll(dafDataFileNameSuffixRegex, FILE_NAME_SUFFIX_CDF);
 				cdfDataFile = new File(scanDataUrl, cdfDataFileName);

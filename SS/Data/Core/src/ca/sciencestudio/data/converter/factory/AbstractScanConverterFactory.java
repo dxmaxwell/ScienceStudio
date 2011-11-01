@@ -12,9 +12,9 @@ import java.util.Date;
 import java.util.Properties;
 
 import ca.sciencestudio.model.session.Scan;
-import ca.sciencestudio.model.utilities.ScanParameters;
 import ca.sciencestudio.data.converter.ConverterMap;
 import ca.sciencestudio.data.support.ConverterFactoryException;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -26,7 +26,7 @@ public abstract class AbstractScanConverterFactory extends AbstractConverterFact
 	private static final String DEFAULT_SCAN_DATA_URL = "file://";
 	private static final Date DEFAULT_SCAN_START_DATE = new Date(0L);
 	private static final Date DEFAULT_SCAN_END_DATE = new Date(10000L);
-	private static final ScanParameters DEFAULT_SCAN_PARAMS = new ScanParameters();
+	private static final Parameters DEFAULT_SCAN_PARAMS = new Parameters();
 	
 	@SuppressWarnings("unchecked")
 	protected ConverterMap validateRequest(ConverterMap request) throws ConverterFactoryException {
@@ -112,24 +112,24 @@ public abstract class AbstractScanConverterFactory extends AbstractConverterFact
 		if(!(scanParams instanceof Map)) {
 			Object scan = request.get(REQUEST_KEY_SCAN);
 			if(scan instanceof Scan) {
-				scanParams = new ScanParameters((Scan)scan);
+				scanParams = ((Scan)scan).getParameters();
 				request.put(REQUEST_KEY_SCAN_PARAMS, scanParams);
 			}
 		}
 		
-		if(scanParams instanceof ScanParameters) {
+		if(scanParams instanceof Parameters) {
 			// nothing to do //
 		}
 		else if(scanParams instanceof Properties) {
-			scanParams = new ScanParameters((Properties)scanParams);
+			scanParams = new Parameters((Properties)scanParams);
 			request.put(REQUEST_KEY_SCAN_PARAMS, scanParams);
 		}
 		else if(scanParams instanceof Map<?,?>) {
-			scanParams = new ScanParameters((Map<String,String>)scanParams);
+			scanParams = new Parameters((Map<String,String>)scanParams);
 			request.put(REQUEST_KEY_SCAN_PARAMS, scanParams);
 		}
 		else {
-			scanParams = DEFAULT_SCAN_PARAMS;
+			scanParams = new Parameters(DEFAULT_SCAN_PARAMS);
 			request.put(REQUEST_KEY_SCAN_PARAMS, scanParams);
 		}
 		

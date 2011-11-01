@@ -9,7 +9,7 @@ package ca.sciencestudio.data.converter;
 
 import java.util.Date;
 
-import ca.sciencestudio.model.utilities.ScanParameters;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -21,7 +21,7 @@ public abstract class AbstractScanConverter extends AbstractConverter {
 	private Date scanEndDate = null;
 	private Date scanStartDate = null;
 	private String scanDataUrl = null;
-	private ScanParameters scanParams = null;
+	private Parameters scanParams = null;
 
 	public AbstractScanConverter(String fromFormat, String toFormat, boolean forceUpdate) {
 		super(fromFormat, toFormat, forceUpdate);
@@ -54,11 +54,11 @@ public abstract class AbstractScanConverter extends AbstractConverter {
 	public void setScanDataUrl(String scanDataUrl) {
 		this.scanDataUrl = scanDataUrl;
 	}
-	
-	public ScanParameters getScanParams() {
+
+	public Parameters getScanParams() {
 		return scanParams;
 	}
-	public void setScanParams(ScanParameters scanParams) {
+	public void setScanParams(Parameters scanParams) {
 		this.scanParams = scanParams;
 	}
 }

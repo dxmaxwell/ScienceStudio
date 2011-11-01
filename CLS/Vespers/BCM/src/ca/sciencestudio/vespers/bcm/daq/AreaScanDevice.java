@@ -373,20 +373,20 @@ public class AreaScanDevice extends AbstractAcqLibCmdLineScanDevice {
 		}
 		
 		Parameters parameters = new Parameters();
-		parameters.setParameter(SCAN_PARAM_DATA_FILE_BASE, getDataFileBase());
-		parameters.setParameter(SCAN_PARAM_DATA_FILE_VERSION, getDestFileVersion());
-		parameters.setParameter(SCAN_PARAM_START_POSITION_X, String.valueOf(getStartPositionX()));
-		parameters.setParameter(SCAN_PARAM_START_POSITION_Y, String.valueOf(getStartPositionY()));
-		parameters.setParameter(SCAN_PARAM_END_POSITION_X, String.valueOf(getEndPositionX()));
-		parameters.setParameter(SCAN_PARAM_END_POSITION_Y, String.valueOf(getEndPositionY()));
-		parameters.setParameter(SCAN_PARAM_STEP_SIZE_X, String.valueOf(getStepSizeX()));
-		parameters.setParameter(SCAN_PARAM_STEP_SIZE_Y, String.valueOf(getStepSizeY()));
-		parameters.setParameter(SCAN_PARAM_NUMBER_POINTS_X, String.valueOf(getNPointsX()));
-		parameters.setParameter(SCAN_PARAM_NUMBER_POINTS_Y, String.valueOf(getNPointsY()));
-		parameters.setParameter(SCAN_PARAM_SAMPLE_IMAGE_FILE, String.valueOf(getSampleImageName()));
-		parameters.setParameter(SCAN_PARAM_SAMPLE_IMAGE_SCALE, String.valueOf(getSampleImageScale()));
-		parameters.setParameter(SCAN_PARAM_SAMPLE_IMAGE_POSITION_X, String.valueOf(getSampleImagePositionX()));
-		parameters.setParameter(SCAN_PARAM_SAMPLE_IMAGE_POSITION_Y, String.valueOf(getSampleImagePositionY()));
+		parameters.put(SCAN_PARAM_DATA_FILE_BASE, getDataFileBase());
+		parameters.put(SCAN_PARAM_DATA_FILE_VERSION, getDestFileVersion());
+		parameters.put(SCAN_PARAM_START_POSITION_X, String.valueOf(getStartPositionX()));
+		parameters.put(SCAN_PARAM_START_POSITION_Y, String.valueOf(getStartPositionY()));
+		parameters.put(SCAN_PARAM_END_POSITION_X, String.valueOf(getEndPositionX()));
+		parameters.put(SCAN_PARAM_END_POSITION_Y, String.valueOf(getEndPositionY()));
+		parameters.put(SCAN_PARAM_STEP_SIZE_X, String.valueOf(getStepSizeX()));
+		parameters.put(SCAN_PARAM_STEP_SIZE_Y, String.valueOf(getStepSizeY()));
+		parameters.put(SCAN_PARAM_NUMBER_POINTS_X, String.valueOf(getNPointsX()));
+		parameters.put(SCAN_PARAM_NUMBER_POINTS_Y, String.valueOf(getNPointsY()));
+		parameters.put(SCAN_PARAM_SAMPLE_IMAGE_FILE, String.valueOf(getSampleImageName()));
+		parameters.put(SCAN_PARAM_SAMPLE_IMAGE_SCALE, String.valueOf(getSampleImageScale()));
+		parameters.put(SCAN_PARAM_SAMPLE_IMAGE_POSITION_X, String.valueOf(getSampleImagePositionX()));
+		parameters.put(SCAN_PARAM_SAMPLE_IMAGE_POSITION_Y, String.valueOf(getSampleImagePositionY()));
 				
 		try {
 			Resource destDirResource = resourceManager.createRelativeResource("scan-" + scanId);

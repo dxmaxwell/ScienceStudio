@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Collection;
 
-import ca.sciencestudio.model.utilities.ScanParameters;
 import ca.sciencestudio.data.standard.StdScanParams;
 import ca.sciencestudio.data.converter.Converter;
 import ca.sciencestudio.data.converter.ConverterMap;
@@ -22,6 +21,7 @@ import ca.sciencestudio.data.daf.DAFEventElementOptions;
 import ca.sciencestudio.data.daf.DAFRecordParser;
 import ca.sciencestudio.data.support.ConverterFactoryException;
 import ca.sciencestudio.vespers.data.converter.AbstractMapXYVespersConverter;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -130,7 +130,7 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 		converter.setScanName((String)request.get(REQUEST_KEY_SAMPLE_NAME));
 		converter.setScanEndDate((Date)request.get(REQUEST_KEY_SCAN_END_DATE));
 		converter.setScanStartDate((Date)request.get(REQUEST_KEY_SCAN_START_DATE));
-		converter.setScanParams((ScanParameters)request.get(REQUEST_KEY_SCAN_PARAMS));
+		converter.setScanParams((Parameters)request.get(REQUEST_KEY_SCAN_PARAMS));
 		converter.setSampleName((String)request.get(REQUEST_KEY_SAMPLE_NAME));
 		converter.setProjectName((String)request.get(REQUEST_KEY_PROJECT_NAME));
 		converter.setSessionName((String)request.get(REQUEST_KEY_SESSION_NAME));
