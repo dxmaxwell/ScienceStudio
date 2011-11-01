@@ -27,6 +27,7 @@ public class Project implements Model {
 	private String gid;
 	private String name;
 	private String description;
+	private String facilityGid;
 	private Date startDate;
 	private Date endDate;
 	private Status status;
@@ -35,6 +36,7 @@ public class Project implements Model {
 		gid = ProjectValidator.DEFAULT_GID;
 		name = ProjectValidator.DEFAULT_NAME;
 		description = ProjectValidator.DEFAULT_DESCRIPTION;
+		facilityGid = ProjectValidator.DEFAULT_FACILITY_GID;
 		startDate = ProjectValidator.DEFAULT_START_DATE;
 		endDate = ProjectValidator.DEFAULT_END_DATE;
 		status = ProjectValidator.DEFAULT_STATUS;
@@ -44,6 +46,7 @@ public class Project implements Model {
 		gid = project.getGid();
 		name = project.getName();
 		description = project.getDescription();
+		facilityGid = project.getFacilityGid();
 		startDate = project.getStartDate();
 		endDate = project.getEndDate();
 		status = project.getStatus();
@@ -62,6 +65,9 @@ public class Project implements Model {
 			return false;
 		}
 		else if(description == null || !description.equals(project.getDescription())) {
+			return false;
+		}
+		else if(facilityGid == null || !facilityGid.equals(project.getFacilityGid())) {
 			return false;
 		}
 		else if(startDate == null || !startDate.equals(project.getStartDate())) {
@@ -84,7 +90,8 @@ public class Project implements Model {
 		buffer.append("[ gid:").append(gid);
 		buffer.append(", name:\"").append(name);
 		buffer.append("\", description:\"").append(description);
-		buffer.append("\", startDate:\"").append(startDate);
+		buffer.append("\", facilityGid:").append(facilityGid);
+		buffer.append(", startDate:\"").append(startDate);
 		buffer.append("\", endDate:\"").append(endDate);
 		buffer.append("\", status:").append(status);
 		buffer.append(" ]");
@@ -112,6 +119,13 @@ public class Project implements Model {
 		this.description = description;
 	}
 	
+	public String getFacilityGid() {
+		return facilityGid;
+	}
+	public void setFacilityGid(String facilityGid) {
+		this.facilityGid = facilityGid;
+	}
+
 	public Date getStartDate() {
 		return startDate;
 	}

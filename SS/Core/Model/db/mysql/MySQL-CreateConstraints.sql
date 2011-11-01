@@ -9,7 +9,8 @@
 -- ---------- person --------------------
 ALTER TABLE account ADD CONSTRAINT fk_account_person_id FOREIGN KEY(person_id) REFERENCES person(person_id) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
--- ---------- project_person --------------------
+-- ---------- project --------------------
+ALTER TABLE project ADD CONSTRAINT fk_project_facility_id FOREIGN KEY(facility_id) REFERENCES facility(facility_id) ON DELETE NO ACTION ON UPDATE NO ACTION;
 ALTER TABLE project_person ADD CONSTRAINT fk_project_person_project_id FOREIGN KEY(project_id) REFERENCES project(project_id) ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- ---------- instrument -----------------

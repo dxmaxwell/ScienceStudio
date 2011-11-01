@@ -16,6 +16,7 @@ import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.dao.ProjectBasicDAO;
 import ca.sciencestudio.model.project.dao.ibatis.support.IbatisProject;
 import ca.sciencestudio.model.dao.ibatis.AbstractIbatisModelBasicDAO;
+import ca.sciencestudio.model.facility.Facility;
 import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
 
@@ -59,6 +60,10 @@ public class IbatisProjectBasicDAO extends AbstractIbatisModelBasicDAO<Project> 
 		}
 		ibatisProject.setName(project.getName());
 		ibatisProject.setDescription(project.getDescription());
+		gid = GID.parse(project.getFacilityGid());
+		if((gid != null) && gid.isFacilityAndType(getGidFacility(), Facility.GID_TYPE, true, true)) {
+			ibatisProject.setFacilityId(gid.getId());
+		}
 		ibatisProject.setStartDate(project.getStartDate());
 		ibatisProject.setEndDate(project.getEndDate());
 		ibatisProject.setStatus(project.getStatus().name());
@@ -75,6 +80,7 @@ public class IbatisProjectBasicDAO extends AbstractIbatisModelBasicDAO<Project> 
 		project.setGid(GID.format(getGidFacility(), ibatisProject.getId(), getGidType()));
 		project.setName(ibatisProject.getName());
 		project.setDescription(ibatisProject.getDescription());
+		project.setFacilityGid(GID.format(getGidFacility(), ibatisProject.getFacilityId(), Facility.GID_TYPE));
 		project.setStartDate(ibatisProject.getStartDate());
 		project.setEndDate(ibatisProject.getEndDate());
 		project.setStatus(Project.Status.valueOf(ibatisProject.getStatus()));

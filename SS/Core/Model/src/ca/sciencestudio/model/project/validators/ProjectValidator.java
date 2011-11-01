@@ -13,6 +13,8 @@ import java.util.Date;
 import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.model.facility.Facility;
+import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.Project.Status;
 import ca.sciencestudio.model.validators.AbstractModelValidator;
@@ -31,7 +33,8 @@ public class ProjectValidator extends AbstractModelValidator<Project> {
 	
 	public static final String DEFAULT_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_NAME = "";
-	public static final String DEFAULT_DESCRIPTION = ""; 
+	public static final String DEFAULT_DESCRIPTION = "";
+	public static final String DEFAULT_FACILITY_GID = GID.DEFAULT_GID;
 	public static final Date DEFAULT_START_DATE = null;
 	public static final Date DEFAULT_END_DATE = null;
 	public static final Status DEFAULT_STATUS = null;
@@ -57,6 +60,19 @@ public class ProjectValidator extends AbstractModelValidator<Project> {
 			project.setDescription(DEFAULT_DESCRIPTION);
 		}
 		rejectIfExceedsLength(MAX_LENGTH_DESCRIPTION, errors, null, EC_MAX_LENGTH, "Description field exceeds maximum length.");
+		errors.popNestedPath();
+		
+		errors.pushNestedPath("facilityGid");
+		GID gid = GID.parse(project.getFacilityGid());
+		if(gid == null) {
+			errors.rejectValue(null, EC_REQUIRED, "Facility GID field is required.");
+		}
+		else if(!gid.isType(Laboratory.GID_TYPE)) {
+			errors.rejectValue(null, EC_INVALID, "Facility GID field must have type: " + Facility.GID_TYPE);
+		}
+		else if(gid.isLocal()) {
+			errors.rejectValue(null, EC_INVALID, "Facility GID field must have a facility specifed.");
+		}
 		errors.popNestedPath();
 		
 		errors.pushNestedPath("startDate");

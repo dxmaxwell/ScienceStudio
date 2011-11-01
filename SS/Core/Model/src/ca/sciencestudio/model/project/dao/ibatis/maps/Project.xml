@@ -12,8 +12,9 @@
 		<result property="id" column="project_id" />
 		<result property="name" column="name"/>
 		<result property="description" column="description"/>
-		<result property="startDate" column="start_date" />
-		<result property="endDate" column="end_date" />
+		<result property="facilityId" column="facility_id"/>
+		<result property="startDate" column="start_date"/>
+		<result property="endDate" column="end_date"/>
 		<result property="status" column="status"/>
 	</resultMap>
 	
@@ -22,6 +23,7 @@
 		(
 			name,
 			description,
+			facility_id,
 			start_date,
 			end_date,
 			status
@@ -30,6 +32,7 @@
 		(
 			#name:VARCHAR#,
 			#description:VARCHAR#,
+			#facilityId:INT#
 			#startDate:DATETIME#,
 			#endDate:DATETIME#,
 			#status:VARCHAR#
@@ -44,6 +47,7 @@
 			SET
 				name = #name:VARCHAR#,
 				description = #description:VARCHAR#,
+				facility_id = #facilityId:INT#
 				start_date = #startDate:DATETIME#,
 				end_date = #endDate:DATETIME#,
 				status = #status:VARCHAR#
@@ -66,7 +70,7 @@
 	</select>
 	
 	<select id="getProjectListByPersonGid" resultMap="project">
-		SELECT p.project_id, p.name,  p.description, p.start_date, p.end_date, p.status
+		SELECT p.project_id, p.name,  p.description, p.facility_id, p.start_date, p.end_date, p.status
 			FROM ${schema}.project AS p,${schema}.project_person AS pt
 			WHERE pt.person_gid = #value# AND pt.project_id = p.project_id
 			ORDER BY pt.project_id

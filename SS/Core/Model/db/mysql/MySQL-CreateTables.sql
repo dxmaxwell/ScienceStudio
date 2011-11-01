@@ -35,6 +35,7 @@ CREATE TABLE project (
 	project_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(80) NOT NULL,
 	description VARCHAR(2000),
+	facility_id INT NOT NULL,
 	start_date DATETIME,
 	end_date DATETIME,
 	status VARCHAR(20) NOT NULL

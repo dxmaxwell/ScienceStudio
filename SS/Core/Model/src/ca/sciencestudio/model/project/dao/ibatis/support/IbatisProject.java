@@ -18,11 +18,13 @@ import ca.sciencestudio.model.project.validators.ProjectValidator;
 public class IbatisProject {
 	
 	public static final int DEFAULT_ID = 0;
+	public static final int DEFAULT_FACILITY_ID = 0;
 	public static final String DEFAULT_STATUS = "";
 	
 	private int id = DEFAULT_ID;
 	private String name = ProjectValidator.DEFAULT_NAME;
 	private String description = ProjectValidator.DEFAULT_DESCRIPTION;
+	private int facilityId = DEFAULT_FACILITY_ID;
 	private Date startDate = ProjectValidator.DEFAULT_START_DATE;
 	private Date endDate = ProjectValidator.DEFAULT_END_DATE;
 	private String status = DEFAULT_STATUS;
@@ -46,6 +48,13 @@ public class IbatisProject {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public int getFacilityId() {
+		return facilityId;
+	}
+	public void setFacilityId(int facilityId) {
+		this.facilityId = facilityId;
 	}
 	
 	public Date getStartDate() {
