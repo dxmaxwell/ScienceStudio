@@ -17,7 +17,7 @@ import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.Project.Status;
 import ca.sciencestudio.model.dao.ProjectDAO;
 import ca.sciencestudio.model.dao.rest.support.RestProject;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld

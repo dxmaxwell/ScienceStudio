@@ -14,7 +14,7 @@ import org.springframework.dao.DataAccessException;
 
 import ca.sciencestudio.model.dao.ibatis.support.AbstractIbatisModelDAO;
 import ca.sciencestudio.model.dao.ibatis.support.IbatisProject;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.Project.Status;
 import ca.sciencestudio.model.dao.ProjectDAO;

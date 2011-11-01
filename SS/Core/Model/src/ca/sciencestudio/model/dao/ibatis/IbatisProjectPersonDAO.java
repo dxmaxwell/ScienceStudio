@@ -17,7 +17,7 @@ import ca.sciencestudio.model.ProjectPerson;
 import ca.sciencestudio.model.dao.ProjectPersonDAO;
 import ca.sciencestudio.model.dao.ibatis.support.AbstractIbatisModelDAO;
 import ca.sciencestudio.model.dao.ibatis.support.IbatisProjectPerson;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.util.sql.SqlMapParameters;
 

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.Project;
 import ca.sciencestudio.model.dao.ProjectDAO;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 import ca.sciencestudio.model.validators.ProjectValidator;
 import ca.sciencestudio.rest.service.controllers.support.AbstractModelController;
 

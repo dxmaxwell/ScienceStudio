@@ -17,7 +17,7 @@ import org.springframework.orm.ibatis.SqlMapClientTemplate;
 
 import ca.sciencestudio.model.Model;
 import ca.sciencestudio.model.dao.AbstractModelDAO;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 import ca.sciencestudio.model.utilities.GID;
 
 /**

@@ -20,7 +20,7 @@ import org.springframework.validation.Errors;
 import ca.sciencestudio.model.Model;
 
 import ca.sciencestudio.model.dao.ModelDAO;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 import ca.sciencestudio.model.validators.ModelValidator;
 
 /**
