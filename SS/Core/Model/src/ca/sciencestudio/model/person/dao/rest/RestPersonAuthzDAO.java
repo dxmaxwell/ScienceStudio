@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
 import ca.sciencestudio.model.person.Person;
@@ -31,10 +32,31 @@ public class RestPersonAuthzDAO extends AbstractRestModelAuthzDAO<Person> implem
 	public static final String PERSON_MODEL_PATH = "/persons";
 	
 	@Override
-	public Data<List<Person>> searchAllByName(String user, String name) {
+	public Data<Person> getByUsername(String username, String facility) {
+		Person t;
+		try {
+			t = getRestTemplate().getForObject(getRestUrl("/whois", "username={username}", "facility={facility}"), getModelClass(), username, facility);
+		}
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
+			return new SimpleData<Person>((Person)null);
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Model: " + e.getMessage());
+			return new SimpleData<Person>(new ModelAccessException(e));
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get Person with Username: " + username + ", and facility: " + facility);
+		}
+		return new SimpleData<Person>(t);
+	}
+	
+	@Override
+	public Data<List<Person>> getAllByName(String user, String name) {
 		List<Person> persons;
 		try {
-			persons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("/search", "user={user}", "name={name}"), getModelArrayClass(), user, name));
+			persons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "name={name}"), getModelArrayClass(), user, name));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());

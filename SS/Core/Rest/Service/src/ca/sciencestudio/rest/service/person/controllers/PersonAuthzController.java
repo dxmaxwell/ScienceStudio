@@ -72,8 +72,27 @@ public class PersonAuthzController extends AbstractModelAuthzController<Person> 
 	}
 	
 	@ResponseBody
+	@RequestMapping(value = PERSON_MODEL_PATH + "/whois*", method = RequestMethod.GET, params = { "username", "facility" })
+	public Object getByUsername(@RequestParam String username, @RequestParam String facility, HttpServletResponse response) throws Exception {
+		Person person;
+		try {
+			person = personBasicDAO.getByUsername(username, facility);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return Collections.emptyMap();
+		}
+		
+		if(person == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return Collections.emptyMap();
+		}
+		return person;
+	}
+		
+	@ResponseBody
 	@RequestMapping(value = PERSON_MODEL_PATH + "*", method = RequestMethod.GET)
-	public Object getAll(@RequestParam String user, HttpServletResponse response) {		
+	public Object getAll(@RequestParam String user, HttpServletResponse response) {
 		try {
 		//	if(hasLoginRole(personGid, LOGIN_ROLE_ADMIN_PERSONS)) {
 				return personBasicDAO.getAll();
@@ -88,13 +107,13 @@ public class PersonAuthzController extends AbstractModelAuthzController<Person> 
 	}
 
 	@ResponseBody
-	@RequestMapping(value = PERSON_MODEL_PATH + "/search", method = RequestMethod.GET, params = "name")
-	public List<Person> searchAllByName(@RequestParam(required = false) String user, @RequestParam String name, HttpServletResponse response) {
+	@RequestMapping(value = PERSON_MODEL_PATH + "*", method = RequestMethod.GET, params = "name")
+	public List<Person> getAllByName(@RequestParam(required = false) String user, @RequestParam String name, HttpServletResponse response) {
 		if((name != null) && (name.length() > 0)) {
-			return personBasicDAO.searchAllByName(name);
+			return personBasicDAO.getAllByName(name);
 		} else {
 			return Collections.emptyList();
-		}	
+		}
 	}
 	
 	@Override

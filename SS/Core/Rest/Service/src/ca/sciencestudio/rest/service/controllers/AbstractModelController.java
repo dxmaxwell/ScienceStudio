@@ -17,14 +17,13 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.Errors;
 
+import ca.sciencestudio.model.AddResult;
+import ca.sciencestudio.model.EditResult;
 import ca.sciencestudio.model.Model;
 
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.validators.ModelValidator;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
-import ca.sciencestudio.util.rest.AddResult;
-import ca.sciencestudio.util.rest.EditResult;
-import ca.sciencestudio.util.rest.RemoveResult;
 
 /**
  * @author maxweld
@@ -34,12 +33,12 @@ public abstract class AbstractModelController<T extends Model> {
 
 	protected Log logger = LogFactory.getLog(getClass());
 	
-	protected AddResult doAdd(T t, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public AddResult doAdd(T t, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		if(getModelValidator() == null) {
 			logger.warn("Validator is null. Check the application configuration.");
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new AddResult("Model Validator is required.");
+			return new AddResult(/* Message here? */);
 		}
 		
 		Errors errors = getModelValidator().validate(t);
@@ -53,21 +52,25 @@ public abstract class AbstractModelController<T extends Model> {
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return new AddResult(e.getMessage());
+			return new AddResult(/* Message here? */);
 		}
 		
-		String location = getLocationFromModel(t, request);	
-		response.setHeader("Location", location);
+		StringBuffer location = new StringBuffer(); 
+		location.append(request.getContextPath());
+		location.append(request.getServletPath());
+		location.append(getModelPath());
+		location.append("/").append(t.getGid());
+		response.setHeader("Location", location.toString());
 		response.setStatus(HttpStatus.CREATED.value());
-		return new AddResult(Collections.singletonList(location));
+		return new AddResult(location.toString());
 	}
 	
-	protected EditResult doEdit(T t, HttpServletResponse response) throws Exception {
+	public EditResult doEdit(T t, HttpServletResponse response) throws Exception {
 		
 		if(getModelValidator() == null) {
 			logger.warn("Validator is null. Check the application configuration.");
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new EditResult("Model Validator is required.");
+			return new EditResult(/* Message here? */);
 		}
 	
 		Errors errors = getModelValidator().validate(t);
@@ -82,34 +85,34 @@ public abstract class AbstractModelController<T extends Model> {
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new EditResult(e.getMessage());
+			return new EditResult(/* Message here? */);
 		}
 				
 		if(!found) {
 			response.setStatus(HttpStatus.NOT_FOUND.value());
-			return new EditResult("Model (" + t.getGid() +") not found.");
+			return new EditResult(/* Message here? */);
 		}
 		
 		response.setStatus(HttpStatus.OK.value());
 		return new EditResult();
 	}
 	
-	protected RemoveResult doRemove(String gid, HttpServletResponse response) throws Exception{
+	public void doRemove(String gid, HttpServletResponse response) throws Exception{
 		boolean success;
 		try {
 			success = getModelBasicDAO().remove(gid);
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return;
 		}
 		
 		if(!success) {
 			response.setStatus(HttpStatus.NOT_FOUND.value());
-			return new RemoveResult("Mode (" + gid + ") not found.");
+			return;
 		}
 		
-		return new RemoveResult();
+		response.setStatus(HttpStatus.NO_CONTENT.value());
 	}
 	
 	protected Object doGet(String gid, HttpServletResponse response) throws Exception {
@@ -127,15 +130,6 @@ public abstract class AbstractModelController<T extends Model> {
 			return Collections.emptyMap();
 		}	
 		return t;
-	}
-	
-	protected String getLocationFromModel(T t, HttpServletRequest request) {
-		StringBuffer buffer = new StringBuffer(); 
-		buffer.append(request.getContextPath());
-		buffer.append(request.getServletPath());
-		buffer.append(getModelPath());
-		buffer.append("/").append(t.getGid());
-		return buffer.toString();
 	}
 	
 	public abstract String getModelPath();

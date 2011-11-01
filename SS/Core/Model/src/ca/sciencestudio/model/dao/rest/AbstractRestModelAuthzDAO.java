@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import ca.sciencestudio.model.AddResult;
+import ca.sciencestudio.model.EditResult;
 import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.AbstractModelDAO;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
@@ -30,9 +32,6 @@ import ca.sciencestudio.model.dao.SimpleData;
 import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.util.exceptions.AuthorizationException;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
-import ca.sciencestudio.util.rest.AddResult;
-import ca.sciencestudio.util.rest.EditResult;
-import ca.sciencestudio.util.rest.RemoveResult;
 
 /**
  * @author maxweld
@@ -47,12 +46,55 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 	
 	private RestTemplate restTemplate;
 	
+	@Override
+	public Data<Permissions> permissions(String user) {
+		Permissions permissions;
+		try {
+			permissions = getRestTemplate().getForObject(getRestUrl("/perms", "user={user}"), Permissions.class, user);
+		}
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
+			return new SimpleData<Permissions>(new ModelAccessException(e));
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Model: " + e.getMessage());
+			return new SimpleData<Permissions>(new ModelAccessException(e));
+		}	
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get Permissions for user: " + user);
+		}
+		
+		return new SimpleData<Permissions>(permissions);
+	}
+
+	@Override
+	public Data<Permissions> permissions(String user, String gid) {
+		Permissions permissions;
+		try {
+			permissions = getRestTemplate().getForObject(getRestUrl("/{gid}/perms", "user={user}"), Permissions.class, gid, user);
+		}
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
+			return new SimpleData<Permissions>(new ModelAccessException(e));
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Model: " + e.getMessage());
+			return new SimpleData<Permissions>(new ModelAccessException(e));
+		}	
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get Permissions for user: " + user + ", and GID: " + gid);
+		}
+		
+		return new SimpleData<Permissions>(permissions);
+	}
 	
 	@Override
-	public Data<AddResult> add(String user, T t) {
+	public Data<AddResult> add(String user, T t, String facility) {
 		ResponseEntity<AddResult> response;
 		try {
-			response = getRestTemplate().postForEntity(getModelUrl("", "user={user}"), toRestModel(t), AddResult.class, user);	
+			response = getRestTemplate().postForEntity(getRestUrl("/{facility}", "user={user}"), toRestModel(t), AddResult.class, facility, user);	
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while adding Model: " + e.getMessage());
@@ -100,7 +142,7 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 		ResponseEntity<EditResult> response;
 		try {
 			// RestTemplate does not support getting the response body from a PUT request, so use the more complex exchange method instead. // 
-			response = getRestTemplate().exchange(getModelUrl("/{gid}", "user={user}"), HttpMethod.PUT, new HttpEntity<Object>(toRestModel(t)), EditResult.class, t.getGid(), user);
+			response = getRestTemplate().exchange(getRestUrl("/{gid}", "user={user}"), HttpMethod.PUT, new HttpEntity<Object>(toRestModel(t)), EditResult.class, t.getGid(), user);
 		}
 		catch(HttpClientErrorException e) {
 			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
@@ -115,36 +157,34 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 	}
 	
 	@Override
-	public Data<RemoveResult> remove(String user, String gid) {
-		ResponseEntity<RemoveResult> response;
+	public Data<Boolean> remove(String personGid, String gid) {
 		try {
-			// RestTemplate does not support getting the response body from a DELETE request, so use the more complex exchange method instead. // 
-			response = getRestTemplate().exchange(getModelUrl("/{gid}", "user={user}"), HttpMethod.DELETE, new HttpEntity<Object>(new HttpHeaders()), RemoveResult.class, gid, user);
+			getRestTemplate().delete(getRestUrl("/{gid}"), gid);
 		}
 		catch(HttpClientErrorException e) {
 			logger.debug("HTTP Client Error exception while removing Model: " + e.getMessage());
 			if(e.getStatusCode() == HttpStatus.FORBIDDEN) {
-				return new SimpleData<RemoveResult>(new AuthorizationException(e));
+				return new SimpleData<Boolean>(new AuthorizationException(e));
 			} else {
-				return new SimpleData<RemoveResult>(new ModelAccessException(e));
+				return new SimpleData<Boolean>(new ModelAccessException(e));
 			}
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while removing Model: " + e.getMessage());
-			return new SimpleData<RemoveResult>(new ModelAccessException(e));
+			return new SimpleData<Boolean>(new ModelAccessException(e));
 		}
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug("Remove Model with GID: " + gid);
 		}
-		return new SimpleData<RemoveResult>(response.getBody());
+		return new SimpleData<Boolean>(true);
 	}
 	
 	// Not required by the interface, buy many DAOs implement this method.
 	public Data<T> get(String gid) {
 		T t;
 		try {
-			t = getRestTemplate().getForObject(getModelUrl("/{gid}"), getModelClass(), gid);
+			t = getRestTemplate().getForObject(getRestUrl("/{gid}"), getModelClass(), gid);
 		}
 		catch(HttpClientErrorException e) {
 			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
@@ -165,7 +205,7 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 	public Data<T> get(String user, String gid) {
 		T t;
 		try {
-			t = getRestTemplate().getForObject(getModelUrl("/{gid}", "user={user}"), getModelClass(), gid, user);
+			t = getRestTemplate().getForObject(getRestUrl("/{gid}", "user={user}"), getModelClass(), gid, user);
 		}
 		catch(HttpClientErrorException e) {
 			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
@@ -186,7 +226,7 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 	public Data<List<T>> getAll() {
 		List<T> ts;
 		try {
-			ts = Arrays.asList(getRestTemplate().getForObject(getModelUrl(""), getModelArrayClass()));
+			ts = Arrays.asList(getRestTemplate().getForObject(getRestUrl(""), getModelArrayClass()));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
@@ -203,7 +243,7 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 	public Data<List<T>> getAll(String user) {
 		List<T> ts;
 		try {
-			ts = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}"), getModelArrayClass(), user));
+			ts = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}"), getModelArrayClass(), user));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
@@ -216,13 +256,9 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 		return new SimpleData<List<T>>(Collections.unmodifiableList(ts));
 	}
 	
-	protected String getModelUrl(String prefix, String... query) {
-		return getRestUrl(getModelPath(), prefix, query);
-	}
-	
-	protected String getRestUrl(String path, String prefix, String... query) {
-		StringBuffer url = new StringBuffer(getBaseUrl());
-		url.append(path).append(prefix);		
+	protected String getRestUrl(String path, String... query) {
+		StringBuffer url = new StringBuffer();
+		url.append(getBaseUrl()).append(getModelPath()).append(path);
 		
 		List<String> parameters = new ArrayList<String>();
 		if(origin != null) {

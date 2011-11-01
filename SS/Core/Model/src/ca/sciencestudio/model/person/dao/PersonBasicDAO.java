@@ -19,5 +19,6 @@ import ca.sciencestudio.model.person.Person;
  */
 public interface PersonBasicDAO extends ModelBasicDAO<Person> {
 
-	public List<Person> searchAllByName(String name);
+	public Person getByUsername(String username, String facility);
+	public List<Person> getAllByName(String name);
 }

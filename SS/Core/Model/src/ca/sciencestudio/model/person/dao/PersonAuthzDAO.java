@@ -20,5 +20,6 @@ import ca.sciencestudio.model.person.Person;
  */
 public interface PersonAuthzDAO extends ModelAuthzDAO<Person> {
 
-	public Data<List<Person>> searchAllByName(String user, String name);
+	public Data<Person> getByUsername(String username, String facility);
+	public Data<List<Person>> getAllByName(String user, String name);
 }

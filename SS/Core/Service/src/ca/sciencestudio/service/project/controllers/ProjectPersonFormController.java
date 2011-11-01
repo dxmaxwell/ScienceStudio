@@ -52,7 +52,7 @@ public class ProjectPersonFormController extends AbstractModelController {
 
 		List<ProjectPersonFormBacker> projectPersons = new ArrayList<ProjectPersonFormBacker>();
 		
-		List<Person> persons = personAuthzDAO.searchAllByName(user, name).get();
+		List<Person> persons = personAuthzDAO.getAllByName(user, name).get();
 		for(Person person : persons) {
 			projectPersons.add(new ProjectPersonFormBacker(project, Role.OBSERVER, person));
 		}

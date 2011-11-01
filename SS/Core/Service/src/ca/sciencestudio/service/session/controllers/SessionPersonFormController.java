@@ -51,7 +51,7 @@ public class SessionPersonFormController extends AbstractModelController {
 
 		List<SessionPersonFormBacker> sessionPersons = new ArrayList<SessionPersonFormBacker>();
 		
-		List<Person> persons = personAuthzDAO.searchAllByName(user, name).get();
+		List<Person> persons = personAuthzDAO.getAllByName(user, name).get();
 		for(Person person : persons) {
 			sessionPersons.add(new SessionPersonFormBacker(session, Role.OBSERVER, person));
 		}

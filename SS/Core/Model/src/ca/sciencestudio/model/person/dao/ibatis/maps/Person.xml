@@ -17,7 +17,7 @@
 		<result property="lastName" column="last_name"/>
 		<result property="phoneNumber" column="phone_number"/>
 		<result property="mobileNumber" column="mobile_number"/>
-		<result property="emailAddress" column="email_address"/>		
+		<result property="emailAddress" column="email_address"/>
 		<result property="modificationDate" column="modification_date"/>
 	</resultMap>
 	
@@ -74,11 +74,18 @@
 			WHERE person_id = #value#
 	</select>
 
+	<select id="getPersonByUsername" resultMap="person">
+		SELECT p.person_id, p.title, p.first_name, p.middle_name, p.last_name,
+				p.phone_number, p.mobile_number, p.email_address, p.modification_date
+			FROM ${schema}.person AS p, ${schema}.account AS a
+			WHERE a.username = #value# AND a.person_gid LIKE CONCAT('${facility}', p.person_id, 'U')
+	</select>
+
 	<select id="getPersonList" resultMap="person">
 		SELECT * FROM ${schema}.person
 	</select>
 	
-	<select id="searchPersonListByName" resultMap="person">
+	<select id="getPersonListByName" resultMap="person">
 		SELECT * FROM ${schema}.person
 			WHERE last_name LIKE CONCAT('%', REPLACE(#value#, '%', '\%'), '%') 
 				OR first_name LIKE CONCAT('%', REPLACE(#value#, '%', '\%'), '%')
