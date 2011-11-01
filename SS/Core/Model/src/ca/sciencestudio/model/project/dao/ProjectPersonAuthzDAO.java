@@ -10,6 +10,7 @@ package ca.sciencestudio.model.project.dao;
 import java.util.List;
 
 import ca.sciencestudio.model.project.ProjectPerson;
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
 
 /**
@@ -18,7 +19,6 @@ import ca.sciencestudio.model.dao.ModelAuthzDAO;
  */
 public interface ProjectPersonAuthzDAO extends ModelAuthzDAO<ProjectPerson> {
 
-	//public List<ProjectPerson> getAllByPersonGid(String personGid, Object personGid);
-	//public List<ProjectPerson> getAllByProjectGid(String personGid, Object projectGid);
-	//public List<ProjectPerson> getAllByProjectGidAndPersonGid(String personGid, Object projectGid, Object personGid);
+	public Data<List<ProjectPerson>> getAllByPersonGid(String user, String personGid);
+	public Data<List<ProjectPerson>> getAllByProjectGid(String user, String projectGid);
 }

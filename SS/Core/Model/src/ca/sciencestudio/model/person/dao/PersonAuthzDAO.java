@@ -7,6 +7,9 @@
  */
 package ca.sciencestudio.model.person.dao;
 
+import java.util.List;
+
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
 import ca.sciencestudio.model.person.Person;
 
@@ -17,5 +20,5 @@ import ca.sciencestudio.model.person.Person;
  */
 public interface PersonAuthzDAO extends ModelAuthzDAO<Person> {
 
-	// Extra DAO methods here //
+	public Data<List<Person>> searchAllByName(String user, String name);
 }

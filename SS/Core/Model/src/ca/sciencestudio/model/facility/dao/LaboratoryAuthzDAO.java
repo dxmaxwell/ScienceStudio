@@ -2,11 +2,14 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     LaboratoryBasicDAO interface.
+ *     LaboratoryAuthzDAO interface.
  *     
  */
 package ca.sciencestudio.model.facility.dao;
 
+import java.util.List;
+
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
 import ca.sciencestudio.model.facility.Laboratory;
 
@@ -16,6 +19,7 @@ import ca.sciencestudio.model.facility.Laboratory;
  */
 public interface LaboratoryAuthzDAO extends ModelAuthzDAO<Laboratory> {
 	
+	public Data<List<Laboratory>> getAll(String user); 
 	//public Laboratory getLaboratoryByNameAndFacilityId(String laboratoryName, int facilityId);
 	//public List<Laboratory> getLaboratoryListByName(String laboratoryName);
 	//public List<Laboratory> getLaboratoryListByFacilityId(int facilityId);

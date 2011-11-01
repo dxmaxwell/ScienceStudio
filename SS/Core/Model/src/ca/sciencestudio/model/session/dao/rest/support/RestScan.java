@@ -9,6 +9,8 @@ package ca.sciencestudio.model.session.dao.rest.support;
 
 import java.util.Date;
 
+import ca.sciencestudio.util.Parameters;
+
 /**
  * @author maxweld
  *
@@ -16,17 +18,24 @@ import java.util.Date;
 public class RestScan {
 	
 	private String name;
+	private String experimentGid;
 	private String dataUrl;
-	private String parameters;
+	private Parameters parameters;
 	private Date startDate;
 	private Date endDate;
-	private int experimentId;
 	
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+		
+	public String getExperimentGid() {
+		return experimentGid;
+	}
+	public void setExperimentGid(String experimentGid) {
+		this.experimentGid = experimentGid;
 	}
 	
 	public String getDataUrl() {
@@ -36,10 +45,10 @@ public class RestScan {
 		this.dataUrl = dataUrl;
 	}
 	
-	public String getParameters() {
+	public Parameters getParameters() {
 		return parameters;
 	}
-	public void setParameters(String parameters) {
+	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
 	}
 	
@@ -55,12 +64,5 @@ public class RestScan {
 	}
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
-	}
-	
-	public int getExperimentId() {
-		return experimentId;
-	}
-	public void setExperimentId(int experimentId) {
-		this.experimentId = experimentId;
 	}
 }

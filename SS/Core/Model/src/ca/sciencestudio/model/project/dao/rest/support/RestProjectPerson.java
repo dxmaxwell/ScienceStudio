@@ -8,6 +8,7 @@
 package ca.sciencestudio.model.project.dao.rest.support;
 
 import ca.sciencestudio.model.project.ProjectPerson;
+import ca.sciencestudio.model.project.ProjectPerson.Role;
 
 /**
  * @author maxweld
@@ -17,8 +18,8 @@ import ca.sciencestudio.model.project.ProjectPerson;
 public class RestProjectPerson {
 
 	private String personGid = ProjectPerson.DEFAULT_PERSON_GID;
-	private int projectId = ProjectPerson.DEFAULT_PROJECT_ID;
-	private String role = ProjectPerson.DEFAULT_ROLE;
+	private String projectGid = ProjectPerson.DEFAULT_PROJECT_GID;
+	private Role role = ProjectPerson.DEFAULT_ROLE;
 	
 	public String getPersonGid() {
 		return personGid;
@@ -27,17 +28,17 @@ public class RestProjectPerson {
 		this.personGid = personGid;
 	}
 	
-	public int getProjectId() {
-		return projectId;
+	public String getProjectGid() {
+		return projectGid;
 	}
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
+	public void setProjectGid(String projectGid) {
+		this.projectGid = projectGid;
 	}
 	
-	public String getRole() {
+	public Role getRole() {
 		return role;
 	}
-	public void setRole(String role) {
+	public void setRole(Role role) {
 		this.role = role;
 	}
 }

@@ -2,22 +2,22 @@
  *   - see license.txt for details.
  *
  *  Description:
- *  	ScanAuthzDAO interface.
+ *     ExperimentAuthzDAO interface.
  *     
  */
 package ca.sciencestudio.model.session.dao;
 
 import java.util.List;
 
-import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
+import ca.sciencestudio.model.session.Experiment;
 
 /**
  * @author maxweld
  *
  */
-public interface ScanAuthzDAO extends ModelAuthzDAO<Scan> {
+public interface ExperimentAuthzDAO extends ModelAuthzDAO<Experiment> {
 	
-	public Data<List<Scan>> getAllByExperimentGid(String user, String experimentGid);
+	public Data<List<Experiment>> getAllBySessionGid(String user, String sessionGid);
 }

@@ -9,7 +9,8 @@ package ca.sciencestudio.model.project.dao.rest.support;
 
 import java.util.Date;
 
-import ca.sciencestudio.model.project.Project;
+import ca.sciencestudio.model.project.Project.Status;
+import ca.sciencestudio.model.project.validators.ProjectValidator;
 
 /**
  * @author maxweld
@@ -17,11 +18,11 @@ import ca.sciencestudio.model.project.Project;
  */
 public class RestProject {
 
-	private String name = Project.DEFAULT_NAME;
-	private String description = Project.DEFAULT_DESCRIPTION;
-	private Date startDate = Project.DEFAULT_START_DATE;
-	private Date endDate = Project.DEFAULT_END_DATE;
-	private String status = Project.DEFAULT_STATUS;
+	private String name = ProjectValidator.DEFAULT_NAME;
+	private String description = ProjectValidator.DEFAULT_DESCRIPTION;
+	private Date startDate = ProjectValidator.DEFAULT_START_DATE;
+	private Date endDate = ProjectValidator.DEFAULT_END_DATE;
+	private Status status = ProjectValidator.DEFAULT_STATUS;
 	
 	public String getName() {
 		return name;
@@ -51,10 +52,10 @@ public class RestProject {
 		this.endDate = endDate;
 	}
 	
-	public String getStatus() {
+	public Status getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 }

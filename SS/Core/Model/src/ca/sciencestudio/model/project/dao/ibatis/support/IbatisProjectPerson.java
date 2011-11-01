@@ -2,27 +2,27 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     IbatisSessionPerson class.
+ *     IbatisProjectPerson class.
  *     
  */
-package ca.sciencestudio.model.session.dao.ibatis.support;
+package ca.sciencestudio.model.project.dao.ibatis.support;
 
-import ca.sciencestudio.model.session.validators.SessionPersonValidator;
+import ca.sciencestudio.model.project.ProjectPerson;
 
 /**
  * @author maxweld
- * 
+ *
  *
  */
-public class IbatisSessionPerson {
+public class IbatisProjectPerson {
 
 	public static final int DEFAULT_ID = 0;
-	public static final int DEFAULT_SESSION_ID = 0;
+	public static final int DEFAULT_PROJECT_ID = 0;
 	public static final String DEFAULT_ROLE = "";
 	
 	private int id = DEFAULT_ID;
-	private String personGid = SessionPersonValidator.DEFAULT_PERSON_GID;
-	private int sessionId = DEFAULT_SESSION_ID;
+	private String personGid = ProjectPerson.DEFAULT_PERSON_GID;
+	private int projectId = DEFAULT_PROJECT_ID;
 	private String role = DEFAULT_ROLE;
 	
 	public int getId() {
@@ -39,11 +39,11 @@ public class IbatisSessionPerson {
 		this.personGid = personGid;
 	}
 	
-	public int getSessionId() {
-		return sessionId;
+	public int getProjectId() {
+		return projectId;
 	}
-	public void setSessionId(int sessionId) {
-		this.sessionId = sessionId;
+	public void setProjectId(int projectId) {
+		this.projectId = projectId;
 	}
 	
 	public String getRole() {

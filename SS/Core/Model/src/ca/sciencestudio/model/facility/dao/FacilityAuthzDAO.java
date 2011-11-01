@@ -8,6 +8,7 @@
 package ca.sciencestudio.model.facility.dao;
 
 import ca.sciencestudio.model.facility.Facility;
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
 
 /**
@@ -16,5 +17,5 @@ import ca.sciencestudio.model.dao.ModelAuthzDAO;
  */
 public interface FacilityAuthzDAO extends ModelAuthzDAO<Facility> {
 	
-	public Facility getByName(String personGid, String name);
+	public Data<Facility> getByName(String user, String name);
 }

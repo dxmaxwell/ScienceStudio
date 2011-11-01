@@ -16,81 +16,68 @@ import org.springframework.web.client.RestClientException;
 import ca.sciencestudio.model.project.ProjectPerson;
 import ca.sciencestudio.model.project.dao.ProjectPersonAuthzDAO;
 import ca.sciencestudio.model.project.dao.rest.support.RestProjectPerson;
+import ca.sciencestudio.model.dao.Data;
+import ca.sciencestudio.model.dao.SimpleData;
 import ca.sciencestudio.model.dao.rest.AbstractRestModelAuthzDAO;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
-
 
 /**
  * @author maxweld
  *
  *
  */
-public class RestProjectPersonAuthzDAO extends AbstractRestModelAuthzDAO<ProjectPerson, RestProjectPerson> implements ProjectPersonAuthzDAO {
-
+public class RestProjectPersonAuthzDAO extends AbstractRestModelAuthzDAO<ProjectPerson> implements ProjectPersonAuthzDAO {
 	
-//	@Override
-//	public List<ProjectPerson> getAllByPersonGid(Object personGid) {
-//		List<ProjectPerson> projectPersons;
-//		try {
-//			projectPersons = Arrays.asList(getRestTemplate().getForObject(getModelUrl("?personGid={1}"), getModelArrayClass(), personGid));
-//		}
-//		catch(RestClientException e) {
-//			logger.warn("Rest Client exception while getting Project Person list: " + e.getMessage());
-//			throw new ModelAccessException(e);
-//		}
-//		
-//		if(logger.isDebugEnabled()) {
-//			logger.debug("Get all Project Persons with Person GID: " + personGid + ", size: " + projectPersons.size());
-//		}
-//		return Collections.unmodifiableList(projectPersons);
-//	}
+	public static final String PROJECT_PERSON_MODEL_PATH = "/project/persons";
 	
-//	@Override
-//	public List<ProjectPerson> getAllByProjectGid(Object projectGid) {
-//		List<ProjectPerson> projectPersons;
-//		try {
-//			projectPersons = Arrays.asList(getRestTemplate().getForObject(getModelUrl("?projectGid={1}"), getModelArrayClass(), projectGid));
-//		}
-//		catch(RestClientException e) {
-//			logger.warn("Rest Client exception while getting Project Person list: " + e.getMessage());
-//			throw new ModelAccessException(e);
-//		}
-//		
-//		if(logger.isDebugEnabled()) {
-//			logger.debug("Get all Project Persons with Project GID: " + projectGid + ", size: " + projectPersons.size());
-//		}
-//		return Collections.unmodifiableList(projectPersons);
-//	}
+	@Override
+	public Data<List<ProjectPerson>> getAllByPersonGid(String user, String personGid) {
+		List<ProjectPerson> projectPersons;
+		try {
+			projectPersons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "person={person}"), getModelArrayClass(), user, personGid));
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Project Person list: " + e.getMessage());
+			return new SimpleData<List<ProjectPerson>>(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all ProjectPersons with Person GID: " + personGid + ", size: " + projectPersons.size());
+		}
+		
+		return new SimpleData<List<ProjectPerson>>(Collections.unmodifiableList(projectPersons));
+	}
 	
-//	@Override
-//	public List<ProjectPerson> getAllByProjectGidAndPersonGid(Object projectGid, Object personGid) {
-//		List<ProjectPerson> projectPersons;
-//		try {
-//			projectPersons = Arrays.asList(getRestTemplate().getForObject(getModelUrl("?projectGid={1}&personGid={2}"), getModelArrayClass(), projectGid, personGid));
-//		}
-//		catch(RestClientException e) {
-//			logger.warn("Rest Client exception while getting Project Person list: " + e.getMessage());
-//			throw new ModelAccessException(e);
-//		}
-//		
-//		if(logger.isDebugEnabled()) {
-//			logger.debug("Get all Project Persons with Project GID: " + projectGid + ", and Person GID: " + personGid + ", size: " + projectPersons.size());
-//		}
-//		return Collections.unmodifiableList(projectPersons);
-//	}
+	@Override
+	public Data<List<ProjectPerson>> getAllByProjectGid(String user, String projectGid) {
+		List<ProjectPerson> projectPersons;
+		try {
+			projectPersons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "project={project}"), getModelArrayClass(), user, projectGid));
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Project Person list: " + e.getMessage());
+			return new SimpleData<List<ProjectPerson>>(new ModelAccessException(e));
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all ProjectPersons with Project GID: " + projectGid + ", size: " + projectPersons.size());
+		}
+		
+		return new SimpleData<List<ProjectPerson>>(Collections.unmodifiableList(projectPersons));
+	}
 
 	@Override
 	protected RestProjectPerson toRestModel(ProjectPerson projectPerson) {
 		RestProjectPerson restProjectPerson = new RestProjectPerson();
 		restProjectPerson.setPersonGid(projectPerson.getPersonGid());
-		restProjectPerson.setProjectId(projectPerson.getProjectId());
+		restProjectPerson.setProjectGid(projectPerson.getProjectGid());
 		restProjectPerson.setRole(projectPerson.getRole());
 		return restProjectPerson;
 	}
 
 	@Override
-	protected String getModelUrl() {
-		return getBaseUrl() + "/project/persons";
+	protected String getModelPath() {
+		return PROJECT_PERSON_MODEL_PATH;
 	}
 
 	@Override

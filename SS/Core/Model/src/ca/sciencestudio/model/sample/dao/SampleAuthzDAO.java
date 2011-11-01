@@ -7,8 +7,11 @@
  */
 package ca.sciencestudio.model.sample.dao;
 
-import ca.sciencestudio.model.dao.ModelAuthzDAO;
+import java.util.List;
+
 import ca.sciencestudio.model.sample.Sample;
+import ca.sciencestudio.model.dao.Data;
+import ca.sciencestudio.model.dao.ModelAuthzDAO;
 
 /**
  * @author maxweld
@@ -16,5 +19,5 @@ import ca.sciencestudio.model.sample.Sample;
  */
 public interface SampleAuthzDAO extends ModelAuthzDAO<Sample> {
 	
-	//public List<Sample> getAllByProjectGid(Object projectGid);
+	public Data<List<Sample>> getAllByProjectGid(String user, String projectGid);
 }

@@ -2,7 +2,7 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     RestProjectDAO class.
+ *     RestProjectAuthzDAO class.
  *     
  */
 package ca.sciencestudio.model.project.dao.rest;
@@ -14,10 +14,10 @@ import java.util.List;
 import org.springframework.web.client.RestClientException;
 
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.Project.Status;
 import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
-import ca.sciencestudio.model.project.dao.ProjectBasicDAO;
 import ca.sciencestudio.model.project.dao.rest.support.RestProject;
+import ca.sciencestudio.model.dao.Data;
+import ca.sciencestudio.model.dao.SimpleData;
 import ca.sciencestudio.model.dao.rest.AbstractRestModelAuthzDAO;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
 
@@ -25,69 +25,27 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  * @author maxweld
  *
  */
-public class RestProjectAuthzDAO extends AbstractRestModelAuthzDAO<Project, RestProject> implements ProjectAuthzDAO {
+public class RestProjectAuthzDAO extends AbstractRestModelAuthzDAO<Project> implements ProjectAuthzDAO {
 	
-	//@Override
-	//public List<Project> getAllByStatus(Status status) {
-	//	return getAllByStatus(status.name());
-	//}
-
-//	@Override
-//	public List<Project> getAllByStatus(String status) {
-//		List<Project> projects;
-//		try {
-//			projects = Arrays.asList(getRestTemplate().getForObject(getModelUrl("?status={1}"), getModelArrayClass(), status));
-//		}
-//		catch(RestClientException e) {
-//			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
-//			throw new ModelAccessException(e);
-//		}
-//		
-//		if(logger.isDebugEnabled()) {
-//			logger.debug("Get all Projects by Status: " + status + ", size: " + projects.size());
-//		}
-//		return Collections.unmodifiableList(projects);
-//	}
+	public static final String PROJECT_MODEL_PATH = "/projects";
 	
-//	@Override
-//	public List<Project> getAllByPersonGid(Object personGid) {
-//		List<Project> projects;
-//		try {
-//			projects = Arrays.asList(getRestTemplate().getForObject(getModelUrl("?personGid={1}"), getModelArrayClass(), personGid));
-//		}
-//		catch(RestClientException e) {
-//			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
-//			throw new ModelAccessException(e);
-//		}
-//		
-//		if(logger.isDebugEnabled()) {
-//			logger.debug("Get all Projects by Person GID: " + personGid + ", size: " + projects.size());
-//		}
-//		return Collections.unmodifiableList(projects);
-//	}
-
-//	@Override
-//	public List<Project> getAllByPersonGidAndStatus(Object personGid, Status status) {
-//		return getAllByPersonGidAndStatus(personGid, status.name());
-//	}
-
-//	@Override
-//	public List<Project> getAllByPersonGidAndStatus(Object personGid, String status) {
-//		List<Project> projects;
-//		try {
-//			projects = Arrays.asList(getRestTemplate().getForObject(getModelUrl("?personGid={1}&status={2}"), getModelArrayClass(), personGid, status));
-//		}
-//		catch(RestClientException e) {
-//			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
-//			throw new ModelAccessException(e);
-//		}
-//		
-//		if(logger.isDebugEnabled()) {
-//			logger.debug("Get all Projects by Person GID: " + personGid + ", and Status: " + status + ", size: " + projects.size());
-//		}
-//		return Collections.unmodifiableList(projects);
-//	}
-//	
+	@Override
+	public Data<List<Project>> getAll(String personGid) {
+		List<Project> projects;
+		try {
+			projects = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}"), getModelArrayClass(), personGid));
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
+			return new SimpleData<List<Project>>(new ModelAccessException(e));
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Projects, size: " + projects.size());
+		}
+		return new SimpleData<List<Project>>(Collections.unmodifiableList(projects));
+	}
+	
 	@Override
 	protected RestProject toRestModel(Project project) {
 		RestProject restProject = new RestProject();
@@ -100,8 +58,8 @@ public class RestProjectAuthzDAO extends AbstractRestModelAuthzDAO<Project, Rest
 	}
 
 	@Override
-	protected String getModelUrl() {
-		return getBaseUrl() + "/projects";
+	protected String getModelPath() {
+		return PROJECT_MODEL_PATH;
 	}
 	
 	@Override

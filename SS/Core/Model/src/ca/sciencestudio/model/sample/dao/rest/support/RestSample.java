@@ -8,8 +8,11 @@
 package ca.sciencestudio.model.sample.dao.rest.support;
 
 import java.util.Set;
+import java.util.HashSet;
 
-import ca.sciencestudio.model.sample.Sample;
+import ca.sciencestudio.model.sample.Sample.State;
+import ca.sciencestudio.model.sample.Sample.Hazard;
+import ca.sciencestudio.model.sample.validators.SampleValidator;
 
 /**
  * @author maxweld
@@ -17,20 +20,20 @@ import ca.sciencestudio.model.sample.Sample;
  */
 public class RestSample {
 
-	private int projectId = Sample.DEFAULT_PROJECT_ID;
-	private String name = Sample.DEFAULT_NAME;
-	private String description = Sample.DEFAULT_DESCRIPTION;
-	private String casNumber = Sample.DEFAULT_CAS_NUMBER;
-	private String state = Sample.DEFAULT_STATE;
-	private String quantity = Sample.DEFAULT_QUANTITY;
-	private Set<String> hazards = Sample.DEFAULT_HAZARDS;
-	private String otherHazards = Sample.DEFAULT_OTHER_HAZARDS;
+	private String projectGid = SampleValidator.DEFAULT_PROJECT_GID;
+	private String name = SampleValidator.DEFAULT_NAME;
+	private String description = SampleValidator.DEFAULT_DESCRIPTION;
+	private State state = SampleValidator.DEFAULT_STATE;
+	private String quantity = SampleValidator.DEFAULT_QUANTITY;
+	private String casNumber = SampleValidator.DEFAULT_CAS_NUMBER;
+	private Set<Hazard> hazards = new HashSet<Hazard>(SampleValidator.DEFAULT_HAZARDS);
+	private String otherHazards = SampleValidator.DEFAULT_OTHER_HAZARDS;
 	
-	public int getProjectId() {
-		return projectId;
+	public String getProjectGid() {
+		return projectGid;
 	}
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
+	public void setProjectGid(String projectGid) {
+		this.projectGid = projectGid;
 	}
 	
 	public String getName() {
@@ -54,10 +57,10 @@ public class RestSample {
 		this.casNumber = casNumber;
 	}
 	
-	public String getState() {
+	public State getState() {
 		return state;
 	}
-	public void setState(String state) {
+	public void setState(State state) {
 		this.state = state;
 	}
 	
@@ -68,10 +71,10 @@ public class RestSample {
 		this.quantity = quantity;
 	}
 	
-	public Set<String> getHazards() {
+	public Set<Hazard> getHazards() {
 		return hazards;
 	}
-	public void setHazards(Set<String> hazards) {
+	public void setHazards(Set<Hazard> hazards) {
 		this.hazards = hazards;
 	}
 	

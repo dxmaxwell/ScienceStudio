@@ -7,9 +7,10 @@
  */
 package ca.sciencestudio.model.dao;
 
-import java.util.List;
-
 import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.AddResult;
+import ca.sciencestudio.model.EditResult;
+import ca.sciencestudio.model.Permissions;
 
 /**
  * @author maxweld
@@ -18,12 +19,12 @@ import ca.sciencestudio.model.Model;
  */
 public interface ModelAuthzDAO<T extends Model> {
 
-	public boolean add(String personGid, T t);
-	public boolean add(String personGid, T t, String facility);
-	public boolean edit(String personGid, T t);
-	public boolean remove(String personGid, String gid);
+	public Data<Permissions> permissions(String user);
+	public Data<Permissions> permissions(String user, String gid);
 	
-	public T get(String personGid, String gid);
+	public Data<AddResult> add(String user, T t, String facility);
+	public Data<EditResult> edit(String user, T t);
+	public Data<Boolean> remove(String user, String gid);
 	
-	public List<T> getAll(String personGid, boolean admin);
+	public Data<T> get(String user, String gid);
 }
