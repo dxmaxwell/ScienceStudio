@@ -52,7 +52,6 @@ public class ProjectPersonValidator extends AbstractModelValidator<ProjectPerson
 			errors.rejectValue(null, EC_INVALID, "Project GID field must have a facility specifed.");
 		}	
 		errors.popNestedPath();
-		*/
 		
 		errors.pushNestedPath("role");
 		if(projectPerson.getRole() == null) {

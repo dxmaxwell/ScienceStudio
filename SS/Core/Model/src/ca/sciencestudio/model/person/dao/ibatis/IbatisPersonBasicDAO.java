@@ -25,17 +25,38 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  *
  */
 public class IbatisPersonBasicDAO extends AbstractIbatisModelBasicDAO<Person> implements PersonBasicDAO {
-
+	
 	@Override
 	public String getGidType() {
 		return Person.GID_TYPE;
 	}
 	
 	@Override
-	public List<Person> searchAllByName(String name) {
+	public Person getByUsername(String username, String facility) {
+		if(!getGidFacility().equals(facility)) {
+			return null;
+		}
+		
+		Person person;
+		try {
+			person = toModel(getSqlMapClientTemplate().queryForObject(getStatementName("get", "ByUsername"), username));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Person: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get Person with Username: " + username + ", and facility: " + facility);
+		}
+		return person;
+	}
+	
+	@Override
+	public List<Person> getAllByName(String name) {
 		List<Person> persons;
 		try {
-			persons = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("search", "ListByName"), name));
+			persons = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByName"), name));
 		}
 		catch(DataAccessException e) {
 			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
