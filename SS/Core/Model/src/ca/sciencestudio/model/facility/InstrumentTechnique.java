@@ -23,9 +23,21 @@ public class InstrumentTechnique implements Model {
 	public static final String DEFAULT_INSTRUMENT_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_TECHNIQUE_GID = GID.DEFAULT_GID;
 	
-	private String gid = DEFAULT_GID;
-	private String instrumentGid = DEFAULT_INSTRUMENT_GID;
-	private String techniqueGid = DEFAULT_TECHNIQUE_GID;
+	private String gid;
+	private String instrumentGid;
+	private String techniqueGid;
+	
+	public InstrumentTechnique() {
+		gid = DEFAULT_GID;
+		instrumentGid = DEFAULT_INSTRUMENT_GID;
+		techniqueGid = DEFAULT_TECHNIQUE_GID;
+	}
+	
+	public InstrumentTechnique(InstrumentTechnique instrumentTechnique) {
+		gid = instrumentTechnique.getGid();
+		instrumentGid = instrumentTechnique.getInstrumentGid();
+		techniqueGid = instrumentTechnique.getTechniqueGid();
+	}
 	
 	@Override
 	public String getGid() {

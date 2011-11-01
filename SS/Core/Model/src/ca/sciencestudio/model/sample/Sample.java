@@ -7,12 +7,11 @@
  */
 package ca.sciencestudio.model.sample;
 
-import java.util.Collections;
 import java.util.Set;
+import java.util.HashSet;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.utilities.GID;
-
+import ca.sciencestudio.model.sample.validators.SampleValidator;
 
 /**
  * @author maxweld
@@ -28,28 +27,40 @@ public class Sample implements Model {
 	
 	public static enum Hazard { CORROSIVE, REACTIVE, FLAMMABLE, OXIDIZER, TOXIC, OTHER }
 	
-	// Maximum field length should match database limits. //
-	////////////////////////////////////////////////////////
+	private String gid;
+	private String projectGid;
+	private String name;
+	private String description;
+	private State state;
+	private String quantity;
+	private String casNumber;
+	private Set<Hazard> hazards;
+	private String otherHazards;
 	
-	public static final String DEFAULT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_PROJECT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_NAME = "";
-	public static final String DEFAULT_DESCRIPTION = "";
-	public static final String DEFAULT_CAS_NUMBER = "";
-	public static final String DEFAULT_STATE = "";
-	public static final String DEFAULT_QUANTITY = "";
-	public static final Set<String> DEFAULT_HAZARDS = Collections.emptySet();
-	public static final String DEFAULT_OTHER_HAZARDS = "";
+	public Sample() {
+		gid = SampleValidator.DEFAULT_GID;
+		projectGid = SampleValidator.DEFAULT_PROJECT_GID;
+		name = SampleValidator.DEFAULT_NAME;
+		description = SampleValidator.DEFAULT_DESCRIPTION;
+		state = SampleValidator.DEFAULT_STATE;
+		quantity =SampleValidator.DEFAULT_QUANTITY;
+		casNumber = SampleValidator.DEFAULT_CAS_NUMBER;
+		hazards = new HashSet<Hazard>(SampleValidator.DEFAULT_HAZARDS);
+		otherHazards = SampleValidator.DEFAULT_OTHER_HAZARDS;
+	}
 	
-	private String gid = DEFAULT_GID;
-	private String projectGid = DEFAULT_PROJECT_GID;
-	private String name = DEFAULT_NAME;
-	private String description = DEFAULT_DESCRIPTION;
-	private String casNumber = DEFAULT_CAS_NUMBER;
-	private String state = DEFAULT_STATE;
-	private String quantity = DEFAULT_QUANTITY;
-	private Set<String> hazards = DEFAULT_HAZARDS;
-	private String otherHazards = DEFAULT_OTHER_HAZARDS;
+	public Sample(Sample sample) {
+		gid = sample.getGid();
+		projectGid = sample.getProjectGid();
+		name = sample.getName();
+		description = sample.getDescription();
+		state = sample.getState();
+		quantity = sample.getQuantity();
+		casNumber = sample.getCasNumber();
+		hazards = sample.getHazards();
+		otherHazards = sample.getOtherHazards();
+		
+	}
 	
 	@Override
 	public String getGid() {
@@ -88,13 +99,13 @@ public class Sample implements Model {
 		this.casNumber = casNumber;
 	}
 	
-	public String getState() {
+	public State getState() {
 		return state;
 	}
-	public void setState(String state) {
+	public void setState(State state) {
 		this.state = state;
 	}
-	
+
 	public String getQuantity() {
 		return quantity;
 	}
@@ -102,13 +113,13 @@ public class Sample implements Model {
 		this.quantity = quantity;
 	}
 	
-	public Set<String> getHazards() {
+	public Set<Hazard> getHazards() {
 		return hazards;
 	}
-	public void setHazards(Set<String> hazards) {
+	public void setHazards(Set<Hazard> hazards) {
 		this.hazards = hazards;
 	}
-	
+
 	public String getOtherHazards() {
 		return otherHazards;
 	}

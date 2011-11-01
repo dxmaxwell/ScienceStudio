@@ -7,17 +7,24 @@
  */
 package ca.sciencestudio.model.facility.dao.ibatis;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+
+import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.facility.Technique;
 import ca.sciencestudio.model.facility.dao.TechniqueBasicDAO;
 import ca.sciencestudio.model.facility.dao.ibatis.support.IbatisTechnique;
 import ca.sciencestudio.model.dao.ibatis.AbstractIbatisModelBasicDAO;
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  *
  */
-public class IbatisTechniqueBasicDAO extends AbstractIbatisModelBasicDAO<Technique, IbatisTechnique> implements TechniqueBasicDAO {
+public class IbatisTechniqueBasicDAO extends AbstractIbatisModelBasicDAO<Technique> implements TechniqueBasicDAO {
 
 	@Override
 	public String getGidType() {
@@ -51,12 +58,28 @@ public class IbatisTechniqueBasicDAO extends AbstractIbatisModelBasicDAO<Techniq
 //		return list;
 //	}
 
-//	@SuppressWarnings("unchecked")
-//	public List<Technique> getTechniqueListByLaboratoryId(int laboratoryId) {
-//		List<Technique> list = getSqlMapClientTemplate().queryForList("getTechniqueListByLaboratoryId", laboratoryId);
-//		logger.debug("Get technique with laboratory id: " + laboratoryId + ", size: " + laboratoryId);
-//		return list;
-//	}
+	//@SuppressWarnings("unchecked")
+	@Override
+	public List<Technique> getAllByLaboratoryGid(String laboratoryGid) {
+		GID gid = parseAndCheckGid(laboratoryGid, getGidFacility(), Laboratory.GID_TYPE);
+		if(gid == null) { 
+			return Collections.emptyList();
+		}
+		
+		List<Technique> techniques;
+		try {
+			techniques = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByLaboratoryId"), gid.getId()));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Techniques by Laboratory GID: " + laboratoryGid + ", size: " + techniques.size());
+		}
+		return Collections.unmodifiableList(techniques);
+	}
 	
 	@Override
 	protected IbatisTechnique toIbatisModel(Technique technique) {
@@ -75,10 +98,11 @@ public class IbatisTechniqueBasicDAO extends AbstractIbatisModelBasicDAO<Techniq
 	}
 	
 	@Override
-	protected Technique toModel(IbatisTechnique ibatisTechnique) {
-		if(ibatisTechnique == null) {
+	protected Technique toModel(Object obj) {
+		if(!(obj instanceof IbatisTechnique)) {
 			return null;
 		}
+		IbatisTechnique ibatisTechnique = (IbatisTechnique)obj;
 		Technique technique = new Technique();
 		technique.setGid(GID.format(getGidFacility(), ibatisTechnique.getId(), getGidType()));
 		technique.setName(ibatisTechnique.getName());

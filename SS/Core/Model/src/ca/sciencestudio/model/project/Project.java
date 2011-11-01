@@ -10,7 +10,7 @@ package ca.sciencestudio.model.project;
 import java.util.Date;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.model.project.validators.ProjectValidator;
 
 /**
  * @author maxweld
@@ -24,25 +24,30 @@ public class Project implements Model {
 	
 	public static enum Status { ACTIVE, INACTIVE }
 	
-	// Maximum field length should match database limits. //
-	public static final int MAX_LENGTH_NAME = 80;
-	public static final int MAX_LENGTH_DESCRIPTION = 255;
-	public static final int MAX_LENGTH_STATUS = 20;
-	////////////////////////////////////////////////////////
+	private String gid;
+	private String name;
+	private String description;
+	private Date startDate;
+	private Date endDate;
+	private Status status;
 	
-	public static final String DEFAULT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_NAME = "";
-	public static final String DEFAULT_DESCRIPTION = ""; 
-	public static final Date DEFAULT_START_DATE = new Date(0);
-	public static final Date DEFAULT_END_DATE = new Date(0);
-	public static final String DEFAULT_STATUS = "UNKNOWN";
+	public Project() {
+		gid = ProjectValidator.DEFAULT_GID;
+		name = ProjectValidator.DEFAULT_NAME;
+		description = ProjectValidator.DEFAULT_DESCRIPTION;
+		startDate = ProjectValidator.DEFAULT_START_DATE;
+		endDate = ProjectValidator.DEFAULT_END_DATE;
+		status = ProjectValidator.DEFAULT_STATUS;
+	}
 	
-	private String gid = DEFAULT_GID;
-	private String name = DEFAULT_NAME;
-	private String description = DEFAULT_DESCRIPTION;
-	private Date startDate = DEFAULT_START_DATE;
-	private Date endDate = DEFAULT_END_DATE;
-	private String status = DEFAULT_STATUS;	
+	public Project(Project project) {
+		gid = project.getGid();
+		name = project.getName();
+		description = project.getDescription();
+		startDate = project.getStartDate();
+		endDate = project.getEndDate();
+		status = project.getStatus();
+	}
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -120,11 +125,11 @@ public class Project implements Model {
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
-	
-	public String getStatus() {
+
+	public Status getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 }

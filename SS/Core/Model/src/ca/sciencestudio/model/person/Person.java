@@ -42,16 +42,67 @@ public class Person implements Model {
 	public static final String DEFAULT_MOBILE_NUMBER = "";
 	public static final String DEFAULT_EMAIL_ADDRESS = "";
 	public static final Date DEFAULT_MODIFICATION_DATE = new Date(0);
-
-	private String gid = DEFAULT_GID;
-	private String title = DEFAULT_TITLE;
-	private String firstName = DEFAULT_FIRST_NAME;
-	private String middleName = DEFAULT_MIDDLE_NAME;
-	private String lastName = DEFAULT_LAST_NAME;
-	private String phoneNumber = DEFAULT_PHONE_NUMBER;
-	private String mobileNumber = DEFAULT_MOBILE_NUMBER;
-	private String emailAddress = DEFAULT_EMAIL_ADDRESS;
-	private Date modificationDate = DEFAULT_MODIFICATION_DATE;
+	
+	// Utilities for building full and complete names. //
+	public static String getFullName(Person person) {
+		return getFullName(person, false);
+	}
+	
+	public static String getFullName(Person person, boolean initial) {
+		StringBuffer buffer = new StringBuffer(person.getFirstName());
+		if(initial) {
+			String middleName = person.getMiddleName();
+			if((middleName != null) && (middleName.length() > 0)) {
+				String middleInitial = middleName.substring(0,1);
+				buffer.append(" ").append(middleInitial).append(".");
+			}
+		}
+		return buffer.append(" ").append(person.getLastName()).toString();
+	}
+	
+	public static String getCompleteName(Person person) {
+		StringBuffer buffer = new StringBuffer(person.getFirstName());
+		String middleName = person.getMiddleName();
+		if((middleName != null) && (middleName.length() > 0)) {
+			buffer.append(" ").append(middleName);
+		}
+		return buffer.append(" ").append(person.getLastName()).toString();
+	}
+	////////////////////////////////////////////////////////
+	
+	private String gid;
+	private String title;
+	private String firstName;
+	private String middleName;
+	private String lastName;
+	private String phoneNumber;
+	private String mobileNumber;
+	private String emailAddress;
+	private Date modificationDate;
+	
+	public Person() {
+		gid = DEFAULT_GID;
+		title = DEFAULT_TITLE;
+		firstName = DEFAULT_FIRST_NAME;
+		middleName = DEFAULT_MIDDLE_NAME;
+		lastName = DEFAULT_LAST_NAME;
+		phoneNumber = DEFAULT_PHONE_NUMBER;
+		mobileNumber = DEFAULT_MOBILE_NUMBER;
+		emailAddress = DEFAULT_EMAIL_ADDRESS;
+		modificationDate = DEFAULT_MODIFICATION_DATE;
+	}
+	
+	public Person(Person person) {
+		gid = person.getGid();
+		title = person.getTitle();
+		firstName = person.getFirstName();
+		middleName = person.getMiddleName();
+		lastName = person.getLastName();
+		phoneNumber = person.getPhoneNumber();
+		mobileNumber = person.getMobileNumber();
+		emailAddress = person.getEmailAddress();
+		modificationDate = person.getModificationDate();
+	}
 	
 	@Override
 	public String getGid() {

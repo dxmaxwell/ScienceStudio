@@ -78,4 +78,11 @@
 		SELECT * FROM ${schema}.person
 	</select>
 	
+	<select id="searchPersonListByName" resultMap="person">
+		SELECT * FROM ${schema}.person
+			WHERE last_name LIKE CONCAT('%', REPLACE(#value#, '%', '\%'), '%') 
+				OR first_name LIKE CONCAT('%', REPLACE(#value#, '%', '\%'), '%')
+				OR middle_name LIKE CONCAT('%', REPLACE(#value#, '%', '\%'), '%')
+	</select>
+	
 </sqlMap>

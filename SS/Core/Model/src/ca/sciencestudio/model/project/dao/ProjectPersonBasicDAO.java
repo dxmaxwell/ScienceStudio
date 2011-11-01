@@ -20,5 +20,5 @@ public interface ProjectPersonBasicDAO extends ModelBasicDAO<ProjectPerson> {
 
 	public List<ProjectPerson> getAllByPersonGid(String personGid);
 	public List<ProjectPerson> getAllByProjectGid(String projectGid);
-	public List<ProjectPerson> getAllByProjectGidAndPersonGid(String projectGid, Object personGid);
+	//public List<ProjectPerson> getAllByProjectMember(String personGid);
 }

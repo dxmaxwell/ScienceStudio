@@ -25,11 +25,27 @@ public class Instrument implements Model {
 	public static final String DEFAULT_LONG_NAME = "";
 	public static final String DEFAULT_DESCRIPTION = "";
 	
-	private String gid = DEFAULT_GID;
-	private String laboratoryGid = DEFAULT_LABORATORY_GID;
-	private String name = DEFAULT_NAME;
-	private String longName = DEFAULT_LONG_NAME;
-	private String description = DEFAULT_DESCRIPTION;
+	private String gid;
+	private String laboratoryGid;
+	private String name;
+	private String longName;
+	private String description;
+	
+	public Instrument() {
+		gid = DEFAULT_GID;
+		laboratoryGid = DEFAULT_LABORATORY_GID;
+		name = DEFAULT_NAME;
+		longName = DEFAULT_LONG_NAME;
+		description = DEFAULT_DESCRIPTION;
+	}
+	
+	public Instrument(Instrument instrument) {
+		gid = instrument.getGid();
+		laboratoryGid = instrument.getLaboratoryGid();
+		name = instrument.getName();
+		longName = instrument.getLongName();
+		description = instrument.getDescription();
+	}
 	
 	@Override
 	public String getGid() {

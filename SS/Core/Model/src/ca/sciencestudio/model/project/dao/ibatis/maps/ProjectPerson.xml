@@ -19,7 +19,7 @@
 		INSERT INTO ${schema}.project_person 
 		(
 			project_id,
-			person_uid,
+			person_gid,
 			role
 		) 
 		VALUES (
@@ -36,7 +36,7 @@
 		UPDATE ${schema}.project_person
 			SET
 				project_id = #projectId:INT#,
-				person_uid = #personGid:VARCHAR#,
+				person_gid = #personGid:VARCHAR#,
 				role = #role:VARCHAR#
 			WHERE
 				project_person_id = #id:INT#
@@ -63,13 +63,15 @@
 	
 	<select id="getProjectPersonListByPersonGid" resultMap="projectPerson">
 		SELECT * FROM ${schema}.project_person
-			WHERE person_uid = #value#
+			WHERE person_gid = #value#
 	</select>
 	
-	<select id="getProjectPersonListByProjectIdAndPersonGid" resultMap="projectPerson">
+	<!--<select id="getProjectPersonListByProjectMember" resultMap="projectPerson">
 		SELECT * FROM ${schema}.project_person
-			WHERE project_id = #param1#
-			AND person_uid = #param2#
-	</select>
+			WHERE project_id = ANY (
+				SELECT project_id FROM ${schema}.project_person
+					WHERE person_gid = #value#
+			)
+	</select>-->
 	
 </sqlMap>

@@ -7,8 +7,10 @@
  */
 package ca.sciencestudio.model.sample.dao;
 
-import ca.sciencestudio.model.dao.ModelBasicDAO;
+import java.util.List;
+
 import ca.sciencestudio.model.sample.Sample;
+import ca.sciencestudio.model.dao.ModelBasicDAO;
 
 /**
  * @author maxweld
@@ -16,5 +18,6 @@ import ca.sciencestudio.model.sample.Sample;
  */
 public interface SampleBasicDAO extends ModelBasicDAO<Sample> {
 	
-	//public List<Sample> getAllByProjectGid(Object projectGid);
+	public List<Sample> getAllByProjectGid(String projectGid);
+	public List<Sample> getAllByProjectMember(String personGid);
 }

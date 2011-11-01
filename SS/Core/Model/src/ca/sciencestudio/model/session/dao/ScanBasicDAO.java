@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.session.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 
@@ -16,5 +18,5 @@ import ca.sciencestudio.model.dao.ModelBasicDAO;
  */
 public interface ScanBasicDAO extends ModelBasicDAO<Scan> {
 	
-	//public List<Scan> getScanListByExperimentId(int experimentId);
+	public List<Scan> getAllByExperimentGid(String experimentGid);
 }

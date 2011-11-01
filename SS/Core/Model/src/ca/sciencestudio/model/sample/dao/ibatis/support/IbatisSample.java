@@ -7,7 +7,7 @@
  */
 package ca.sciencestudio.model.sample.dao.ibatis.support;
 
-import ca.sciencestudio.model.sample.Sample;
+import ca.sciencestudio.model.sample.validators.SampleValidator;
 
 /**
  * @author maxweld
@@ -17,17 +17,18 @@ public class IbatisSample {
 	
 	public static final int DEFAULT_ID = 0;
 	public static final int DEFAULT_PROJECT_ID = 0;
+	public static final String DEFAULT_STATE = "";
 	public static final String DEFAULT_HAZARDS = "";
 	
 	private int id = DEFAULT_ID;
 	private int projectId = DEFAULT_PROJECT_ID;
-	private String name = Sample.DEFAULT_NAME;
-	private String description = Sample.DEFAULT_DESCRIPTION;
-	private String state = Sample.DEFAULT_STATE;
-	private String quantity = Sample.DEFAULT_QUANTITY;
-	private String casNumber = Sample.DEFAULT_CAS_NUMBER;
+	private String name = SampleValidator.DEFAULT_NAME;
+	private String description = SampleValidator.DEFAULT_DESCRIPTION;
+	private String state = DEFAULT_STATE;
+	private String quantity = SampleValidator.DEFAULT_QUANTITY;
+	private String casNumber = SampleValidator.DEFAULT_CAS_NUMBER;
 	private String hazards = DEFAULT_HAZARDS;
-	private String otherHazards = Sample.DEFAULT_OTHER_HAZARDS;
+	private String otherHazards = SampleValidator.DEFAULT_OTHER_HAZARDS;
 	
 	public int getId() {
 		return id;

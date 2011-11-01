@@ -9,7 +9,7 @@ package ca.sciencestudio.model.session.dao.ibatis.support;
 
 import java.util.Date;
 
-import ca.sciencestudio.model.session.Session;
+import ca.sciencestudio.model.session.validators.SessionValidator;
 
 /**
  * @author maxweld
@@ -23,12 +23,12 @@ public class IbatisSession {
 	
 	private int id = DEFAULT_ID;
 	private int laboratoryId = DEFAULT_LABORATORY_ID;
-	private String projectGid = Session.DEFAULT_PROJECT_GID;
-	private String name = Session.DEFAULT_NAME;
-	private String description = Session.DEFAULT_DESCRIPTION;
-	private String proposal = Session.DEFAULT_PROPOSAL;
-	private Date startDate = Session.DEFAULT_START_DATE;
-	private Date endDate = Session.DEFAULT_END_DATE;
+	private String projectGid = SessionValidator.DEFAULT_PROJECT_GID;
+	private String name = SessionValidator.DEFAULT_NAME;
+	private String description = SessionValidator.DEFAULT_DESCRIPTION;
+	private String proposal = SessionValidator.DEFAULT_PROPOSAL;
+	private Date startDate = SessionValidator.DEFAULT_START_DATE;
+	private Date endDate = SessionValidator.DEFAULT_END_DATE;
 	
 	public int getId() {
 		return id;

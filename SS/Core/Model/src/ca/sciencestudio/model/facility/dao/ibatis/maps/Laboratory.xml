@@ -66,33 +66,33 @@
 			WHERE laboratory_id = #value#
 	</delete>
 	
-	<select id="getLaboratoryList" resultMap="laboratory">
-		SELECT *
-			FROM ${schema}.laboratory
-	</select>
-	
 	<select id="getLaboratoryById" resultMap="laboratory">
 		SELECT *
 			FROM ${schema}.laboratory 
 			WHERE laboratory_id = #value#
 	</select>
 	
-	<select id="getLaboratoryListByFacilityId" resultMap="laboratory">
+	<select id="getLaboratoryList" resultMap="laboratory">
+		SELECT *
+			FROM ${schema}.laboratory
+	</select>
+	
+	<!--<select id="getLaboratoryListByFacilityId" resultMap="laboratory">
 		SELECT *
 			FROM ${schema}.laboratory 
 			WHERE facility_id = #value#
-	</select>
+	</select>-->
 	
-	<select id="getLaboratoryListByName" resultMap="laboratory">
+	<!--<select id="getLaboratoryListByName" resultMap="laboratory">
 		SELECT *
 			FROM ${schema}.laboratory 
 			WHERE name LIKE #value#
-	</select>
+	</select>-->
 
-	<select id="getLaboratoryListByNameAndFacilityId" resultMap="laboratory">
+	<!--<select id="getLaboratoryListByNameAndFacilityId" resultMap="laboratory">
 		SELECT *
 			FROM ${schema}.laboratory
 			WHERE name LIKE #param1# AND facility_id = #param2#
-	</select>
+	</select>-->
 	
 </sqlMap>

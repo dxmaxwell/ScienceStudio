@@ -7,12 +7,13 @@ import java.util.List;
 
 import org.springframework.validation.Errors;
 
-import ca.sciencestudio.model.Project;
-import ca.sciencestudio.model.dao.ProjectDAO;
-import ca.sciencestudio.model.dao.delegating.DelegatingProjectDAO;
-import ca.sciencestudio.model.dao.rest.RestProjectDAO;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
-import ca.sciencestudio.model.validators.ProjectValidator;
+import ca.sciencestudio.model.project.Project;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
+import ca.sciencestudio.model.project.dao.ProjectBasicDAO;
+import ca.sciencestudio.model.project.dao.delegating.DelegatingProjectAuthzDAO;
+import ca.sciencestudio.model.project.dao.rest.RestProjectAuthzDAO;
+import ca.sciencestudio.model.project.validators.ProjectValidator;
 
 public abstract class ProjectDaoTest extends ModelDaoTest {
 	
@@ -22,23 +23,23 @@ public abstract class ProjectDaoTest extends ModelDaoTest {
 		
 		ProjectValidator validator = new ProjectValidator();
 		
-		List<ProjectDAO> projectDAOs = new ArrayList<ProjectDAO>();
+		List<ProjectAuthzDAO> projectDAOs = new ArrayList<ProjectAuthzDAO>();
 		
-		RestProjectDAO localRestProjectDAO = new RestProjectDAO();
+		RestProjectAuthzDAO localRestProjectDAO = new RestProjectAuthzDAO();
 		localRestProjectDAO.setRestTemplate(REST_TEMPLATE);
 		localRestProjectDAO.setBaseUrl("http://localhost:8080/ssrest/model");
 		projectDAOs.add(localRestProjectDAO);
 		
-		RestProjectDAO remoteRestProjectDAO = new RestProjectDAO();
+		RestProjectAuthzDAO remoteRestProjectDAO = new RestProjectAuthzDAO();
 		remoteRestProjectDAO.setRestTemplate(REST_TEMPLATE);
 		remoteRestProjectDAO.setBaseUrl("http://remotehost:8080/ssrest/model");
 		projectDAOs.add(remoteRestProjectDAO);
 		
 		
-		DelegatingProjectDAO delProjectDAO = new DelegatingProjectDAO();
+		DelegatingProjectAuthzDAO delProjectDAO = new DelegatingProjectAuthzDAO();
 		delProjectDAO.setProjectDAOs(projectDAOs);
 		
-		ProjectDAO projectDAO = (ProjectDAO)delProjectDAO;
+		ProjectBasicDAO projectDAO = (ProjectBasicDAO)delProjectDAO;
 		
 		List<Project> projects = projectDAO.getAll();
 		for(Project p : projects) {

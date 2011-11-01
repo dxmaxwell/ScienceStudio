@@ -7,6 +7,7 @@
  */
 package ca.sciencestudio.model.session.dao;
 
+import java.util.List;
 
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.session.Experiment;
@@ -17,6 +18,6 @@ import ca.sciencestudio.model.session.Experiment;
  */
 public interface ExperimentBasicDAO extends ModelBasicDAO<Experiment> {
 	
-	//public List<Experiment> getExperimentListBySessionId(int sessionId);
 	//public List<Experiment> getExperimentListBySampleId(int sampleId);
+	public List<Experiment> getAllBySessionGid(String sessionGid);
 }

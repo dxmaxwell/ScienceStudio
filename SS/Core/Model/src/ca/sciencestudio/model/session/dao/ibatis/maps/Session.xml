@@ -81,30 +81,23 @@
 			WHERE project_gid = #value#
 	</select>
 	
-	<select id="getSessionListByLaboratoryId" resultMap="session">
+	<!--<select id="getSessionListByLaboratoryId" resultMap="session">
 		SELECT *
 			FROM ${schema}.session
 			WHERE laboratory_id = #value#
-	</select>
+	</select>-->
 	
-	<select id="getSessionListByPersonUid" resultMap="session">
+	<select id="getSessionListByPersonGid" resultMap="session">
 		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
-			FROM ${schema}.session AS s, ${schema}.project AS p, ${schema}.project_person AS pp
-			WHERE pp.person_uid = #value# AND pp.project_gid = p.project_gid AND p.project_gid = s.project_gid
+			FROM ${schema}.session AS s, ${schema}.session_person AS sp
+			WHERE sp.person_gid = #value# AND sp.session_id = s.session_id
 	</select>
-	
-	<select id="getSessionListByPersonUidAndProjectStatus" resultMap="session">
-		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
-			FROM ${schema}.session AS s, ${schema}.project AS p, ${schema}.project_person AS pp
-			WHERE pp.person_uid = #param1# AND p.status = #param2# AND
-					pp.project_gid = p.project_id AND p.project_id = s.project_id 
-	</select>
-	
-	<select id="getSessionListByLaboratoryNameAndFacilityName" resultMap="session">
+		
+	<!--<select id="getSessionListByLaboratoryNameAndFacilityName" resultMap="session">
 		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
 			FROM ${schema}.session AS s, ${schema}.laboratory AS l, ${schema}.facility AS f
 			WHERE l.name LIKE #param1# AND f.name LIKE #param2# AND 
 					l.facility_id = f.facility_id AND s.laboratory_id = l.laboratory_id
-	</select>
+	</select>-->
 	
 </sqlMap>

@@ -9,7 +9,9 @@ package ca.sciencestudio.model.session.dao.ibatis.support;
 
 import java.util.Date;
 
-import ca.sciencestudio.model.session.Scan;
+import org.springframework.http.MediaType;
+
+import ca.sciencestudio.model.session.validators.ScanValidator;
 import ca.sciencestudio.model.utilities.GID;
 
 /**
@@ -20,14 +22,17 @@ public class IbatisScan {
 	
 	public static final int DEFAULT_ID = GID.DEFAULT_ID;
 	public static final int DEFAULT_EXPERIMENT_ID = GID.DEFAULT_ID;
+	public static final String DEFAULT_PARAMETERS = "{}";
+	public static final String DEFAULT_PARAMETERS_TYPE = MediaType.APPLICATION_JSON.toString();
 	
 	private int id = DEFAULT_ID;
 	private int experimentId = DEFAULT_EXPERIMENT_ID;
-	private String name = Scan.DEFAULT_NAME;
-	private String dataUrl = Scan.DEFAULT_DATE_URL;
-	private String parameters = Scan.DEFAULT_PARAMETERS;
-	private Date startDate = Scan.DEFAULT_START_DATE;
-	private Date endDate = Scan.DEFAULT_END_DATE;
+	private String name = ScanValidator.DEFAULT_NAME;
+	private String dataUrl = ScanValidator.DEFAULT_DATE_URL;
+	private String parameters = DEFAULT_PARAMETERS;
+	private String parametersType = DEFAULT_PARAMETERS_TYPE;
+	private Date startDate = ScanValidator.DEFAULT_START_DATE;
+	private Date endDate = ScanValidator.DEFAULT_END_DATE;
 	
 	public int getId() {
 		return id;
@@ -57,6 +62,13 @@ public class IbatisScan {
 		this.parameters = parameters;
 	}
 	
+	public String getParametersType() {
+		return parametersType;
+	}
+	public void setParametersType(String parametersType) {
+		this.parametersType = parametersType;
+	}
+
 	public Date getStartDate() {
 		return startDate;
 	}

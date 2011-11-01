@@ -20,7 +20,7 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  * @author maxweld
  * 
  */
-public class IbatisFacilityBasicDAO extends AbstractIbatisModelBasicDAO<Facility, IbatisFacility> implements FacilityBasicDAO {
+public class IbatisFacilityBasicDAO extends AbstractIbatisModelBasicDAO<Facility> implements FacilityBasicDAO {
 
 	@Override
 	public String getGidType() {
@@ -65,10 +65,11 @@ public class IbatisFacilityBasicDAO extends AbstractIbatisModelBasicDAO<Facility
 	}
 	
 	@Override
-	protected Facility toModel(IbatisFacility ibatisFacility) {
-		if(ibatisFacility == null) {
+	protected Facility toModel(Object obj) {
+		if(!(obj instanceof IbatisFacility)) {
 			return null;
 		}
+		IbatisFacility ibatisFacility = (IbatisFacility)obj;
 		Facility facility = new Facility();
 		facility.setGid(GID.format(getGidFacility(), ibatisFacility.getId(), getGidType()));
 		facility.setName(ibatisFacility.getName());

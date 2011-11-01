@@ -7,61 +7,103 @@
  */
 package ca.sciencestudio.model.session.dao.ibatis;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+
 import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.session.dao.SessionBasicDAO;
 import ca.sciencestudio.model.session.dao.ibatis.support.IbatisSession;
 import ca.sciencestudio.model.dao.ibatis.AbstractIbatisModelBasicDAO;
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  *
  */
-public class IbatisSessionBasicDAO extends AbstractIbatisModelBasicDAO<Session, IbatisSession> implements SessionBasicDAO {
+public class IbatisSessionBasicDAO extends AbstractIbatisModelBasicDAO<Session> implements SessionBasicDAO {
 
 	@Override
 	public String getGidType() {
 		return Session.GID_TYPE;
 	}
+	
+	@Override
+	public List<Session> getAllByPersonGid(String personGid) {		
+		List<Session> sessions;
+		try {
+			sessions = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByPersonGid"), personGid));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Sessions by Person GID: " + personGid + ", size: " + sessions.size());
+		}
+		return Collections.unmodifiableList(sessions);
+	}
+	
+	@Override
+	public List<Session> getAllByProjectGid(String projectGid) {
+		List<Session> sessions;
+		try {
+			sessions = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByProjectGid"), projectGid));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Sessions by Project GID: " + projectGid + ", size: " + sessions.size());
+		}
+		return Collections.unmodifiableList(sessions);
+	}
 
-//	@SuppressWarnings("unchecked")
-//	public List<Session> getSessionListByProjectId(int projectId) {
-//		List<Session> list = getSqlMapClientTemplate().queryForList("getSessionListByProjectId", projectId);
-//		logger.info("Get Session List by Project Id: " + projectId + ", size: " + list.size());
-//		return list;
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Session> getSessionListByLaboratoryId(int laboratoryId) {
-//		List<Session> list = getSqlMapClientTemplate().queryForList("getSessionListByLaboratoryId", laboratoryId);
-//		logger.info("Get Session List by Laboratory Id: " + laboratoryId + ", size: " + list.size());
-//		return list;
+//	@Override
+//	public List<Session> getAllByLaboratoryGid(String laboratoryGid) {
+//		GID gid = parseAndCheckGid(laboratoryGid, getGidFacility(), Laboratory.GID_TYPE);
+//		if(gid == null) {
+//			return Collections.emptyList();
+//		}
+//		
+//		List<Session> sessions;
+//		try {
+//			sessions = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByLaboratoryId"), gid.getId()));
+//		}
+//		catch(DataAccessException e) {
+//			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+//			throw new ModelAccessException(e);
+//		}
+//		
+//		if(logger.isDebugEnabled()) {
+//			logger.debug("Get all Sessions by Laboratory GID: " + laboratoryGid + ", size: " + sessions.size());
+//		}
+//		return Collections.unmodifiableList(sessions);
 //	}
 
-//	@SuppressWarnings("unchecked")
-//	public List<Session> getSessionListByPersonUid(String personUid) {
-//		List<Session> list = getSqlMapClientTemplate().queryForList("getSessionListByPersonUid", personUid);
-//		logger.info("Get Session List by Person uid: " + personUid + ", size: " + list.size());
-//		return list;
+//	@Override
+//	public List<Session> getAllByLaboratoryNameAndFacilityName(String laboratoryName, String facilityName) {
+//		List<Session> sessions;
+//		try {
+//			SqlMapParameters parameters = new SqlMapParameters(laboratoryName, facilityName);
+//			sessions = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByLaboratoryNameAndFacilityName"), parameters));
+//		}
+//		catch(DataAccessException e) {
+//			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+//			throw new ModelAccessException(e);
+//		}
+//		
+//		if(logger.isDebugEnabled()) {
+//			logger.debug("Get all Sessions by Laboratory Name: " + laboratoryName + "and Facility Name: " + facilityName + ", size: " + sessions.size());
+//		}
+//		return Collections.unmodifiableList(sessions);	
 //	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Session> getSessionListByPersonUidAndProjectStatus(String personUid, Project.Status projectStatus) {
-//		SqlMapParameters parameters = new SqlMapParameters(personUid, projectStatus.name());
-//		List<Session> list = getSqlMapClientTemplate().queryForList("getSessionListByPersonUidAndProjectStatus", parameters);
-//		logger.info("Get Session List by Person uid: " + personUid + ", ProjectStatus: " + projectStatus + ", size: " + list.size());
-//		return list;
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Session> getSessionListByLaboratoryNameAndFacilityName(String laboratoryName, String facilityName) {
-//		SqlMapParameters parameters = new SqlMapParameters(laboratoryName, facilityName);
-//		List<Session> list = getSqlMapClientTemplate().queryForList("getSessionListByLaboratoryNameAndFacilityName", parameters);
-//		logger.info("Get Session List by Laboratory name: " + laboratoryName + ", Facility name: " + facilityName + ", size: " + list.size());
-//		return list;
-//	}
-	
 
 	@Override
 	protected IbatisSession toIbatisModel(Session session) {
@@ -87,10 +129,11 @@ public class IbatisSessionBasicDAO extends AbstractIbatisModelBasicDAO<Session, 
 	}
 	
 	@Override
-	protected Session toModel(IbatisSession ibatisSession) {
-		if(ibatisSession == null) {
+	protected Session toModel(Object obj) {
+		if(!(obj instanceof IbatisSession)) {
 			return null;
 		}
+		IbatisSession ibatisSession = (IbatisSession)obj;
 		Session session = new Session();
 		session.setGid(GID.format(getGidFacility(), ibatisSession.getId(), getGidType()));
 		session.setLaboratoryGid(GID.format(getGidFacility(), ibatisSession.getLaboratoryId(), Laboratory.GID_TYPE));		

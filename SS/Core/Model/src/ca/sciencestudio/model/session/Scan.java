@@ -10,7 +10,8 @@ package ca.sciencestudio.model.session;
 import java.util.Date;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.model.session.validators.ScanValidator;
+import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
@@ -22,27 +23,33 @@ public class Scan implements Model {
 	
 	public static final String GID_TYPE = "N";
 	
-	// Maximum field length should match database limits. //
-	public static final int MAX_LENGTH_NAME = 100;
-	public static final int MAX_LENGTH_DATE_URL = 1000;
-	public static final int MAX_LENGTH_PARAMETERS = 2000;
-	////////////////////////////////////////////////////////
+	private String gid;
+	private String experimentGid;
+	private String name;
+	private String dataUrl;
+	private Parameters parameters;
+	private Date startDate;
+	private Date endDate;
 	
-	public static final String DEFAULT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_EXPERIMENT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_NAME = "";
-	public static final String DEFAULT_DATE_URL= "";
-	public static final String DEFAULT_PARAMETERS= "";
-	public static final Date DEFAULT_START_DATE = new Date(0);
-	public static final Date DEFAULT_END_DATE = new Date(0);
+	public Scan() {
+		gid = ScanValidator.DEFAULT_GID;
+		experimentGid = ScanValidator.DEFAULT_EXPERIMENT_GID;
+		name = ScanValidator.DEFAULT_NAME;
+		dataUrl = ScanValidator.DEFAULT_DATE_URL;
+		parameters = new Parameters(ScanValidator.DEFAULT_PARAMETERS);
+		startDate = ScanValidator.DEFAULT_START_DATE;
+		endDate = ScanValidator.DEFAULT_END_DATE;
+	}
 	
-	private String gid = DEFAULT_GID;
-	private String experimentGid = DEFAULT_EXPERIMENT_GID;
-	private String name = DEFAULT_NAME;
-	private String dataUrl = DEFAULT_DATE_URL;
-	private String parameters = DEFAULT_PARAMETERS;
-	private Date startDate = DEFAULT_START_DATE;
-	private Date endDate = DEFAULT_END_DATE;
+	public Scan(Scan scan) {
+		gid = scan.getGid();
+		experimentGid = scan.getExperimentGid();
+		name = scan.getName();
+		dataUrl = scan.getDataUrl();
+		parameters = new Parameters(scan.getParameters());
+		startDate = scan.getStartDate();
+		endDate = scan.getEndDate();
+	}
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -118,13 +125,13 @@ public class Scan implements Model {
 		this.dataUrl = dataUrl;
 	}
 	
-	public String getParameters() {
+	public Parameters getParameters() {
 		return parameters;
 	}
-	public void setParameters(String parameters) {
+	public void setParameters(Parameters parameters) {
 		this.parameters = parameters;
 	}
-	
+
 	public Date getStartDate() {
 		return startDate;
 	}

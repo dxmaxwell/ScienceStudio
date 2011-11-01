@@ -10,7 +10,7 @@ package ca.sciencestudio.model.session;
 import java.util.Date;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.model.session.validators.SessionValidator;
 
 /**
  * @author maxweld
@@ -22,23 +22,36 @@ public class Session implements Model {
 	
 	public static final String GID_TYPE = "S";
 	
-	public static final String DEFAULT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_PROJECT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_LABORATORY_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_NAME = "";
-	public static final String DEFAULT_DESCRIPTION = "";
-	public static final String DEFAULT_PROPOSAL = "";
-	public static final Date DEFAULT_START_DATE = new Date(0);
-	public static final Date DEFAULT_END_DATE = new Date(0);
+	private String gid;
+	private String projectGid;
+	private String laboratoryGid;
+	private String name;
+	private String description;
+	private String proposal;
+	private Date startDate;
+	private Date endDate;
 	
-	private String gid = DEFAULT_GID;
-	private String projectGid = DEFAULT_PROJECT_GID;
-	private String laboratoryGid = DEFAULT_LABORATORY_GID;
-	private String name = DEFAULT_NAME;
-	private String description = DEFAULT_DESCRIPTION;
-	private String proposal = DEFAULT_PROPOSAL;
-	private Date startDate = DEFAULT_START_DATE;
-	private Date endDate = DEFAULT_END_DATE;
+	public Session() {
+		gid = SessionValidator.DEFAULT_GID;
+		projectGid = SessionValidator.DEFAULT_PROJECT_GID;
+		laboratoryGid = SessionValidator.DEFAULT_LABORATORY_GID;
+		name = SessionValidator.DEFAULT_NAME;
+		description = SessionValidator.DEFAULT_DESCRIPTION;
+		proposal = SessionValidator.DEFAULT_PROPOSAL;
+		startDate = SessionValidator.DEFAULT_START_DATE;
+		endDate = SessionValidator.DEFAULT_END_DATE;
+	}
+	
+	public Session(Session session) {
+		gid = session.getGid();
+		projectGid = session.getProjectGid();
+		laboratoryGid = session.getLaboratoryGid();
+		name = session.getName();
+		description = session.getDescription();
+		proposal = session.getProposal();
+		startDate = session.getStartDate();
+		endDate = session.getEndDate();
+	}
 	
 	@Override
 	public String getGid() {

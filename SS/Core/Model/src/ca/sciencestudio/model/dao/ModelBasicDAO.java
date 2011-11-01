@@ -17,8 +17,10 @@ import ca.sciencestudio.model.Model;
  */
 public interface ModelBasicDAO<T extends Model> {
 	
-	public boolean add(T t);
-	public boolean add(T t, String facility);
+	public String getGidType();
+	public String getGidFacility();
+	
+	public void add(T t);
 	public boolean edit(T t);
 	public boolean remove(String gid);
 	

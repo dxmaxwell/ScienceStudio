@@ -25,12 +25,26 @@ public class ProjectPerson implements Model {
 	public static final String DEFAULT_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_PERSON_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_PROJECT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_ROLE = "UNKNOWN";
+	public static final Role DEFAULT_ROLE = null;
 	
-	private String gid = DEFAULT_GID;
-	private String personGid = DEFAULT_PERSON_GID;
-	private String projectGid = DEFAULT_PROJECT_GID;
-	private String role = DEFAULT_ROLE;
+	private String gid;
+	private String personGid;
+	private String projectGid;
+	private Role role;
+	
+	public ProjectPerson() {
+		gid = DEFAULT_GID;
+		personGid = DEFAULT_PERSON_GID;
+		projectGid = DEFAULT_PROJECT_GID;
+		role = DEFAULT_ROLE;
+	}
+	
+	public ProjectPerson(ProjectPerson projectPerson) {
+		gid = projectPerson.getGid();
+		personGid = projectPerson.getPersonGid();
+		projectGid = projectPerson.getProjectGid();
+		role = projectPerson.getRole();
+	}
 	
 	@Override
 	public String getGid() {
@@ -54,11 +68,11 @@ public class ProjectPerson implements Model {
 	public void setProjectGid(String projectGid) {
 		this.projectGid = projectGid;
 	}
-	
-	public String getRole() {
+
+	public Role getRole() {
 		return role;
 	}
-	public void setRole(String role) {
+	public void setRole(Role role) {
 		this.role = role;
-	}	
+	}
 }

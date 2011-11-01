@@ -5,13 +5,13 @@
  *     ByteArrayHttpOutputMessage class.
  *     
  */
-package ca.sciencestudio.util.tags;
+package ca.sciencestudio.util.http;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 
@@ -21,9 +21,17 @@ import org.springframework.http.HttpOutputMessage;
  */
 public class ByteArrayHttpOutputMessage implements HttpOutputMessage {
 
-	private HttpHeaders httpHeaders = new HttpHeaders();
+	private HttpHeaders httpHeaders;	
+	private ByteArrayOutputStream outputStream;
+
+	public ByteArrayHttpOutputMessage() {
+		this(new HttpHeaders());
+	}
 	
-	private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+	public ByteArrayHttpOutputMessage(HttpHeaders httpHeaders) {
+		this.httpHeaders = httpHeaders;
+		this.outputStream = new ByteArrayOutputStream();
+	}
 	
 	public byte[] toByteArray() {
 		return outputStream.toByteArray();

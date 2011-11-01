@@ -7,21 +7,28 @@
  */
 package ca.sciencestudio.model.sample.dao.ibatis;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+
+import org.springframework.dao.DataAccessException;
 
 import ca.sciencestudio.model.dao.ibatis.AbstractIbatisModelBasicDAO;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.sample.Sample;
+import ca.sciencestudio.model.sample.Sample.Hazard;
+import ca.sciencestudio.model.sample.Sample.State;
 import ca.sciencestudio.model.sample.dao.SampleBasicDAO;
 import ca.sciencestudio.model.sample.dao.ibatis.support.IbatisSample;
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  *  
  */
-public class IbatisSampleBasicDAO extends AbstractIbatisModelBasicDAO<Sample, IbatisSample> implements SampleBasicDAO {
+public class IbatisSampleBasicDAO extends AbstractIbatisModelBasicDAO<Sample> implements SampleBasicDAO {
 	
 	private static final String HAZARDS_SEPARATOR_REGEX = "\\s+";
 	private static final String HAZARDS_SEPARATOR_STRING = " ";
@@ -32,12 +39,44 @@ public class IbatisSampleBasicDAO extends AbstractIbatisModelBasicDAO<Sample, Ib
 		return Sample.GID_TYPE;
 	}
 	
-//	@SuppressWarnings("unchecked")
-//	public List<Sample> getSampleListByProjectId(int projectId) {
-//		List<Sample> samples = getSqlMapClientTemplate().queryForList("getSampleListByProjectId", projectId);
-//		logger.debug("Get sample list with project id: " + projectId + ", size: " + samples.size());
-//		return samples;
-//	}
+	@Override
+	public List<Sample> getAllByProjectGid(String projectGid) {
+		GID gid = parseAndCheckGid(projectGid, getGidFacility(), Project.GID_TYPE);
+		if(gid == null) {
+			return Collections.emptyList();
+		}
+		
+		List<Sample> samples;
+		try {
+			samples = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByProjectId"), gid.getId()));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Samples with Project GID: " + projectGid + ", size: " + samples.size());
+		}
+		return Collections.unmodifiableList(samples);
+	}
+	
+	@Override
+	public List<Sample> getAllByProjectMember(String personGid) {
+		List<Sample> samples;
+		try {
+			samples = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByProjectMember"), personGid));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Samples by Project Member: " + personGid + ", size: " + samples.size());
+		}
+		return Collections.unmodifiableList(samples);
+	}
 	
 	@Override
 	protected IbatisSample toIbatisModel(Sample sample) {
@@ -56,15 +95,15 @@ public class IbatisSampleBasicDAO extends AbstractIbatisModelBasicDAO<Sample, Ib
 		ibatisSample.setName(sample.getName());
 		ibatisSample.setDescription(sample.getDescription());
 		ibatisSample.setCasNumber(sample.getCasNumber());
-		ibatisSample.setState(sample.getState());
+		ibatisSample.setState(sample.getState().name());
 		ibatisSample.setQuantity(sample.getQuantity());
 		StringBuffer hazards = new StringBuffer();
 		if(sample.getHazards() != null) {
-			for(String hazard : sample.getHazards()) {
+			for(Hazard hazard : sample.getHazards()) {
 				if(hazards.length() != 0) {
 					hazards.append(HAZARDS_SEPARATOR_STRING);
 				}
-				hazards.append(hazard);
+				hazards.append(hazard.name());
 			}
 		}
 		ibatisSample.setHazards(hazards.toString());
@@ -73,23 +112,24 @@ public class IbatisSampleBasicDAO extends AbstractIbatisModelBasicDAO<Sample, Ib
 	}
 	
 	@Override
-	protected Sample toModel(IbatisSample ibatisSample) {
-		if(ibatisSample == null) {
+	protected Sample toModel(Object obj) {
+		if(!(obj instanceof IbatisSample)) {
 			return null;
 		}
+		IbatisSample ibatisSample = (IbatisSample)obj;
 		Sample sample = new Sample();
 		sample.setGid(GID.format(getGidFacility(), ibatisSample.getId(), getGidType()));
 		sample.setProjectGid(GID.format(getGidFacility(), ibatisSample.getProjectId(), Project.GID_TYPE));
 		sample.setName(ibatisSample.getName());
 		sample.setDescription(ibatisSample.getDescription());
 		sample.setCasNumber(ibatisSample.getCasNumber());
-		sample.setState(ibatisSample.getState());
+		sample.setState(State.valueOf(ibatisSample.getState()));
 		sample.setQuantity(ibatisSample.getQuantity());
-		Set<String> hazards = new HashSet<String>();
+		Set<Hazard> hazards = new HashSet<Hazard>();
 		if((ibatisSample.getHazards() != null) && (ibatisSample.getHazards().length() > 0)) {			
 			for(String hazard : ibatisSample.getHazards().split(HAZARDS_SEPARATOR_REGEX)) {
 				if(hazard.length() > 0) {
-					hazards.add(hazard);
+					hazards.add(Hazard.valueOf(hazard));
 				}
 			}
 		}

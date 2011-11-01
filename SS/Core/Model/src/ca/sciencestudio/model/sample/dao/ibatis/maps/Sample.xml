@@ -86,4 +86,14 @@
 			WHERE project_id = #value#
 	</select>
 	
+	<select id="getSampleListByProjectMember" resultMap="sample">
+		SELECT * 
+			FROM ${schema}.sample
+			WHERE project_id = ANY (
+				SELECT project_id
+					FROM ${schema}.project_person
+					WHERE person_gid = #value#
+			)
+	</select>
+	
 </sqlMap>

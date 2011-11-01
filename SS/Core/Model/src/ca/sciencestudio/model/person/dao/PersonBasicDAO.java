@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.person.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.person.Person;
 
@@ -17,5 +19,5 @@ import ca.sciencestudio.model.person.Person;
  */
 public interface PersonBasicDAO extends ModelBasicDAO<Person> {
 
-	// Extra DAO methods here //
+	public List<Person> searchAllByName(String name);
 }

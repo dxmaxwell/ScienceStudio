@@ -29,15 +29,37 @@ public class Facility implements Model {
 	public static final String DEFAULT_LOCATION = "";
 	public static final String DEFAULT_LOGIN_URL = "";
 	
-	private String gid = DEFAULT_GID;
-	private String name = DEFAULT_NAME;
-	private String longName = DEFAULT_LONG_NAME;
-	private String description = DEFAULT_DESCRIPTION;
-	private String phoneNumber = DEFAULT_PHONE_NUMBER;
-	private String emailAddress = DEFAULT_EMAIL_ADDRESS;
-	private String location = DEFAULT_LOCATION;
-	private String loginUrl = DEFAULT_LOGIN_URL;
+	private String gid;
+	private String name;
+	private String longName;
+	private String description;
+	private String phoneNumber;
+	private String emailAddress;
+	private String location;
+	private String loginUrl;
 	
+	public Facility() {
+		gid = DEFAULT_GID;
+		name = DEFAULT_NAME;
+		longName = DEFAULT_LONG_NAME;
+		description = DEFAULT_DESCRIPTION;
+		phoneNumber = DEFAULT_PHONE_NUMBER;
+		emailAddress = DEFAULT_EMAIL_ADDRESS;
+		location = DEFAULT_LOCATION;
+		loginUrl = DEFAULT_LOGIN_URL;
+	}
+	
+	public Facility(Facility facility) {
+		gid = facility.getGid();
+		name = facility.getName();
+		longName = facility.getLongName();
+		description = facility.getDescription();
+		phoneNumber = facility.getPhoneNumber();
+		emailAddress = facility.getEmailAddress();
+		location = facility.getLocation();
+		loginUrl = facility.getLoginUrl();
+	}
+		
 	@Override
 	public String getGid() {
 		return gid;

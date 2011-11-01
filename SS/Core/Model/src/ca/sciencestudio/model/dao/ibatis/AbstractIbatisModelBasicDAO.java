@@ -7,6 +7,7 @@
  */
 package ca.sciencestudio.model.dao.ibatis;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,28 +26,19 @@ import ca.sciencestudio.model.utilities.GID;
  * @author maxweld
  *
  */
-public abstract class AbstractIbatisModelBasicDAO<T extends Model, I> extends AbstractModelDAO<T> implements ModelBasicDAO<T> {
+public abstract class AbstractIbatisModelBasicDAO<T extends Model> extends AbstractModelDAO<T> implements ModelBasicDAO<T> {
 
 	private String gidFacility = GID.DEFAULT_FACILITY;
 	
 	private SqlMapClientTemplate sqlMapClientTemplate;
-
-	@Override
-	public boolean add(T t) {
-		return add(t, getGidFacility());
-	}
 	
 	@Override
-	public boolean add(T t, String facility) {
-		if((facility == null) || !facility.equalsIgnoreCase(getGidFacility())) {
-			return false;
-		}
-		
+	public void add(T t) {
 		Integer id;
 		try {
 			id = (Integer) getSqlMapClientTemplate().insert(getStatementName("add"), toIbatisModel(t));
 		}
-		// TODO: Catch less serious exceptions and just return 'false'. //
+		//// TODO: Catch less serious exceptions and just return 'false'. //
 		catch(DataAccessException e) {
 			logger.warn("Data Access exception while adding Model: " + e.getMessage());
 			throw new ModelAccessException(e);
@@ -56,7 +48,7 @@ public abstract class AbstractIbatisModelBasicDAO<T extends Model, I> extends Ab
 		if(logger.isDebugEnabled()) {
 			logger.debug("Add Model with GID: " + t.getGid());
 		}
-		return true;
+		//return true;
 	}
 	
 	@Override
@@ -110,7 +102,6 @@ public abstract class AbstractIbatisModelBasicDAO<T extends Model, I> extends Ab
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public T get(String modelGid) {
 		GID gid = parseAndCheckGid(modelGid);
 		if(gid == null) {
@@ -119,7 +110,7 @@ public abstract class AbstractIbatisModelBasicDAO<T extends Model, I> extends Ab
 		
 		T t;
 		try {
-			t = toModel((I)getSqlMapClientTemplate().queryForObject(getStatementName("get", "ById"), gid.getId()));
+			t = toModel(getSqlMapClientTemplate().queryForObject(getStatementName("get", "ById"), gid.getId()));
 		}
 		catch(DataAccessException e) {
 			logger.warn("Data Access exception while getting Model: " + e.getMessage());
@@ -133,7 +124,6 @@ public abstract class AbstractIbatisModelBasicDAO<T extends Model, I> extends Ab
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public List<T> getAll() {
 		List<T> ts;
 		try {
@@ -180,15 +170,15 @@ public abstract class AbstractIbatisModelBasicDAO<T extends Model, I> extends Ab
 		return gid;
 	}
 	
-	protected List<T> toModelList(List<I> iList) {
+	protected List<T> toModelList(Collection<?> objects) {
 		List<T> modelList = new ArrayList<T>();
-		for(I i : iList) {
-			modelList.add(toModel(i));
+		for(Object obj : objects) {
+			modelList.add(toModel(obj));
 		}
 		return modelList;
 	}
 	
-	protected abstract T toModel(I i);
+	protected abstract T toModel(Object obj);
 	
 	protected String getStatementName(String prefix) {
 		return getStatementName(prefix, "");
@@ -196,7 +186,7 @@ public abstract class AbstractIbatisModelBasicDAO<T extends Model, I> extends Ab
 	
 	protected abstract String getStatementName(String prefix, String suffix);
 	
-	protected abstract I toIbatisModel(T t);
+	protected abstract Object toIbatisModel(T t);
 	
 	public abstract String getGidType();
 	

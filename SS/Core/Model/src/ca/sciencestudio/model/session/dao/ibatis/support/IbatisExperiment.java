@@ -7,7 +7,7 @@
  */
 package ca.sciencestudio.model.session.dao.ibatis.support;
 
-import ca.sciencestudio.model.session.Experiment;
+import ca.sciencestudio.model.session.validators.ExperimentValidator;
 import ca.sciencestudio.model.utilities.GID;
 
 /**
@@ -23,9 +23,9 @@ public class IbatisExperiment {
 	private int id = DEFAULT_ID;
 	private int sessionId = DEFAULT_SESSION_ID;
 	private int instrumentTechniqueId = DEFAULT_INSTRUMENT_TECHNIQUE_ID;
-	private String name = Experiment.DEFAULT_NAME;
-	private String description = Experiment.DEFAULT_DESCRIPTION;
-	private String sourceGid = Experiment.DEFAULT_SOURCE_GID;
+	private String name = ExperimentValidator.DEFAULT_NAME;
+	private String description = ExperimentValidator.DEFAULT_DESCRIPTION;
+	private String sourceGid = ExperimentValidator.DEFAULT_SOURCE_GID;
 	
 	public int getId() {
 		return id;

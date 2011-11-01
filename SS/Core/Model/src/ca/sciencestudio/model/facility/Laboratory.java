@@ -30,15 +30,39 @@ public class Laboratory implements Model {
 	public static final String DEFAULT_LOCATION = "";
 	public static final String DEFAULT_VIEW_URL = "";
 
-	private String gid = DEFAULT_GID;
-	private String facilityGid = DEFAULT_FACILITY_GID;
-	private String name = DEFAULT_NAME;
-	private String longName = DEFAULT_LONG_NAME;
-	private String description = DEFAULT_DESCRIPTION;
-	private String phoneNumber = DEFAULT_PHONE_NUMBER;
-	private String emailAddress = DEFAULT_EMAIL_ADDRESS;
-	private String location = DEFAULT_LOCATION;
-	private String viewUrl = DEFAULT_VIEW_URL;
+	private String gid;
+	private String facilityGid;
+	private String name;
+	private String longName;
+	private String description;
+	private String phoneNumber;
+	private String emailAddress;
+	private String location;
+	private String viewUrl;
+	
+	public Laboratory() {
+		gid = DEFAULT_GID;
+		facilityGid = DEFAULT_FACILITY_GID;
+		name = DEFAULT_NAME;
+		longName = DEFAULT_LONG_NAME;
+		description = DEFAULT_DESCRIPTION;
+		phoneNumber = DEFAULT_PHONE_NUMBER;
+		emailAddress = DEFAULT_EMAIL_ADDRESS;
+		location = DEFAULT_LOCATION;
+		viewUrl = DEFAULT_VIEW_URL;
+	}
+	
+	public Laboratory(Laboratory laboratory) {
+		gid = laboratory.getGid();
+		facilityGid = laboratory.getFacilityGid();
+		name = laboratory.getName();
+		longName = laboratory.getLongName();
+		description = laboratory.getDescription();
+		phoneNumber = laboratory.getPhoneNumber();
+		emailAddress = laboratory.getEmailAddress();
+		location = laboratory.getLocation();
+		viewUrl = laboratory.getViewUrl();
+	}
 	
 	@Override
 	public String getGid() {

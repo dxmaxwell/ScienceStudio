@@ -48,17 +48,17 @@
 			FROM ${schema}.instrument_technique
 	</select>
 	
-	<select id="getInstrumentTechniqueListByInstrumentId" resultMap="instrumentTechnique">
+	<!--<select id="getInstrumentTechniqueListByInstrumentId" resultMap="instrumentTechnique">
 		SELECT *
 			FROM ${schema}.instrument_technique
 			WHERE instrument_id = #value#
-	</select>
+	</select>-->
 	
-	<select id="getInstrumentTechniqueListByTechniqueId" resultMap="instrumentTechnique">
+	<!--<select id="getInstrumentTechniqueListByTechniqueId" resultMap="instrumentTechnique">
 		SELECT *
 			FROM ${schema}.instrument_technique
 			WHERE technique_id = #value#
-	</select>
+	</select>-->
 	
 	<select id="getInstrumentTechniqueListByLaboratoryId" resultMap="instrumentTechnique">
 		select it.instrument_technique_id, it.instrument_id, it.technique_id
@@ -66,10 +66,11 @@
 			WHERE i.laboratory_id = #value# AND i.instrument_id = it.instrument_id
 	</select>
 	
-	<select id="getInstrumentTechniqueByInstrumentIdAndTechniqueId" resultMap="instrumentTechnique">
+	<!--<select id="getInstrumentTechniqueByInstrumentIdAndTechniqueId" resultMap="instrumentTechnique">
 		SELECT *
 			FROM ${schema}.instrument_technique
 			WHERE instrument_id = #param1#
 			AND technique_id = #param2#
-	</select>
+	</select>-->
+	
 </sqlMap>

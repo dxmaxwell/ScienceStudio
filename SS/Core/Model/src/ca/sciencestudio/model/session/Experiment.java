@@ -8,7 +8,7 @@
 package ca.sciencestudio.model.session;
 
 import ca.sciencestudio.model.Model;
-import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.model.session.validators.ExperimentValidator;
 
 /**
  * @author maxweld
@@ -20,19 +20,30 @@ public class Experiment implements Model {
 	
 	public static final String GID_TYPE = "E";
 	
-	public static final String DEFAULT_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_SESSION_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_INSTRUMENT_TECHNIQUE_GID = GID.DEFAULT_GID;
-	public static final String DEFAULT_NAME = "";
-	public static final String DEFAULT_DESCRIPTION = "";
-	public static final String DEFAULT_SOURCE_GID = GID.DEFAULT_GID;
+	private String gid;
+	private String sessionGid;
+	private String name;
+	private String description;
+	private String sourceGid;
+	private String instrumentTechniqueGid;
 	
-	private String gid = DEFAULT_GID;
-	private String sessionGid = DEFAULT_SESSION_GID;
-	private String instrumentTechniqueGid = DEFAULT_INSTRUMENT_TECHNIQUE_GID;
-	private String name = DEFAULT_NAME;
-	private String description = DEFAULT_DESCRIPTION;
-	private String sourceGid = DEFAULT_SOURCE_GID;
+	public Experiment() {
+		gid = ExperimentValidator.DEFAULT_GID;
+		sessionGid = ExperimentValidator.DEFAULT_SESSION_GID;
+		instrumentTechniqueGid = ExperimentValidator.DEFAULT_INSTRUMENT_TECHNIQUE_GID;
+		name = ExperimentValidator.DEFAULT_NAME;
+		description = ExperimentValidator.DEFAULT_DESCRIPTION;
+		sourceGid = ExperimentValidator.DEFAULT_SOURCE_GID;
+	}
+	
+	public Experiment(Experiment experiment) {
+		gid = experiment.getGid();
+		sessionGid = experiment.getSessionGid();
+		instrumentTechniqueGid = experiment.getInstrumentTechniqueGid();
+		name = experiment.getName();
+		description = experiment.getDescription();
+		sourceGid = experiment.getSourceGid();
+	}
 	
 	@Override
 	public String getGid() {
@@ -42,19 +53,12 @@ public class Experiment implements Model {
 	public void setGid(String gid) {
 		this.gid = gid;
 	}
-	
+
 	public String getSessionGid() {
 		return sessionGid;
 	}
 	public void setSessionGid(String sessionGid) {
 		this.sessionGid = sessionGid;
-	}
-	
-	public String getInstrumentTechniqueGid() {
-		return instrumentTechniqueGid;
-	}
-	public void setInstrumentTechniqueGid(String instrumentTechniqueGid) {
-		this.instrumentTechniqueGid = instrumentTechniqueGid;
 	}
 	
 	public String getName() {
@@ -76,5 +80,12 @@ public class Experiment implements Model {
 	}
 	public void setSourceGid(String sourceGid) {
 		this.sourceGid = sourceGid;
+	}
+	
+	public String getInstrumentTechniqueGid() {
+		return instrumentTechniqueGid;
+	}
+	public void setInstrumentTechniqueGid(String instrumentTechniqueGid) {
+		this.instrumentTechniqueGid = instrumentTechniqueGid;
 	}
 }

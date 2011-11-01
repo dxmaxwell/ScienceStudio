@@ -78,14 +78,15 @@
 			WHERE scan_id = #value#
 	</select>
 	
+	<select id="getScanList" resultMap="scan">
+		SELECT *
+			FROM ${schema}.scan
+	</select>
+	
 	<select id="getScanListByExperimentId" resultMap="scan">
 		SELECT *
 			FROM ${schema}.scan
 			WHERE experiment_id = #value#
 	</select>
 	
-	<select id="getScanList" resultMap="scan">
-		SELECT *
-			FROM ${schema}.scan
-	</select>
 </sqlMap>

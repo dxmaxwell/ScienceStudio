@@ -7,6 +7,11 @@
  */
 package ca.sciencestudio.model.session.dao.ibatis;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+
 import ca.sciencestudio.model.dao.ibatis.AbstractIbatisModelBasicDAO;
 import ca.sciencestudio.model.facility.InstrumentTechnique;
 import ca.sciencestudio.model.session.Experiment;
@@ -14,12 +19,13 @@ import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.session.dao.ExperimentBasicDAO;
 import ca.sciencestudio.model.session.dao.ibatis.support.IbatisExperiment;
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  *
  */
-public class IbatisExperimentBasicDAO extends AbstractIbatisModelBasicDAO<Experiment, IbatisExperiment> implements ExperimentBasicDAO {
+public class IbatisExperimentBasicDAO extends AbstractIbatisModelBasicDAO<Experiment> implements ExperimentBasicDAO {
 
 	@Override
 	public String getGidType() {
@@ -33,12 +39,27 @@ public class IbatisExperimentBasicDAO extends AbstractIbatisModelBasicDAO<Experi
 //		return list;
 //	}
 	
-//	@SuppressWarnings("unchecked")
-//	public List<Experiment> getExperimentListBySessionId(int sessionId) {
-//		List<Experiment> list = getSqlMapClientTemplate().queryForList("getExperimentListBySessionId", sessionId);
-//		logger.debug("Get Experiment list by sessionId: " + sessionId + ", size: " + list.size());
-//		return list;
-//	}
+	@Override
+	public List<Experiment> getAllBySessionGid(String sessionGid) {
+		GID gid = parseAndCheckGid(sessionGid, getGidFacility(), Session.GID_TYPE);
+		if(gid == null) {
+			return Collections.emptyList();
+		}
+		
+		List<Experiment> experiments;
+		try {
+			experiments = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListBySessionId"), gid.getId()));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Experiments by Session GID: " + sessionGid + ", size: " + experiments.size());
+		}
+		return Collections.unmodifiableList(experiments);
+	}
 	
 	@Override
 	protected IbatisExperiment toIbatisModel(Experiment experiment) {
@@ -65,10 +86,11 @@ public class IbatisExperimentBasicDAO extends AbstractIbatisModelBasicDAO<Experi
 	}
 
 	@Override
-	protected Experiment toModel(IbatisExperiment ibatisExperiment) {
-		if(ibatisExperiment == null) {
+	protected Experiment toModel(Object obj) {
+		if(!(obj instanceof IbatisExperiment)) {
 			return null;
 		}
+		IbatisExperiment ibatisExperiment = (IbatisExperiment)obj;
 		Experiment experiment = new Experiment();
 		experiment.setGid(GID.format(getGidFacility(), ibatisExperiment.getId(), getGidType()));
 		experiment.setSessionGid(GID.format(getGidFacility(), ibatisExperiment.getSessionId(), Session.GID_TYPE));

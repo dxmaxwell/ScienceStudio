@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.facility.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.facility.Technique;
 
@@ -16,10 +18,9 @@ import ca.sciencestudio.model.facility.Technique;
  */
 public interface TechniqueBasicDAO extends ModelBasicDAO<Technique> {
 	
+	public List<Technique> getAllByLaboratoryGid(String laboratoryGid);
 	//public Technique getTechniqueByNameAndInstrumentId(String techniqueName, int instrumentId);
-	//
 	//public List<Technique> getTechniqueListByName(String techniqueName);
 	//public List<Technique> getTechniqueListByInstrumentId(int instrumentId);
-	//public List<Technique> getTechniqueListByLaboratoryId(int laboratoryId);
 	//public List<Technique> getTechniqueListByNameAndInstrumentId(String techniqueName, int instrumentId);
 }

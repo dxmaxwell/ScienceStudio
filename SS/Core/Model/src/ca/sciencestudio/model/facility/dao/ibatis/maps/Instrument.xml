@@ -64,11 +64,11 @@
 			FROM ${schema}.instrument
 	</select>
 	
-	<select id="getInstrumentListByName" resultMap="instrument">
+	<!--<select id="getInstrumentListByName" resultMap="instrument">
 		SELECT *
 			FROM ${schema}.instrument
 			WHERE name LIKE #value# ORDER BY name
-	</select>
+	</select>-->
 	
 	<select id="getInstrumentListByLaboratoryId" resultMap="instrument">
 		SELECT *
@@ -76,10 +76,10 @@
 			WHERE laboratory_id = #value#
 	</select>
 	
-	<select id="getInstrumentListByNameAndLaboratoryId" resultMap="instrument">
+	<!--<select id="getInstrumentListByNameAndLaboratoryId" resultMap="instrument">
 		SELECT *
 			FROM ${schema}.instrument
 			WHERE name LIKE #param1# AND laboratory_id = #param2#
-	</select>
+	</select>-->
 	
 </sqlMap>

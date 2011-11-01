@@ -7,12 +7,13 @@ import java.util.List;
 
 import org.springframework.validation.Errors;
 
-import ca.sciencestudio.model.Scan;
-import ca.sciencestudio.model.dao.ScanDAO;
-import ca.sciencestudio.model.dao.delegating.DelegatingScanDAO;
-import ca.sciencestudio.model.dao.rest.RestScanDAO;
-import ca.sciencestudio.model.dao.support.ModelAccessException;
-import ca.sciencestudio.model.validators.ScanValidator;
+import ca.sciencestudio.model.session.Scan;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
+import ca.sciencestudio.model.session.dao.ScanBasicDAO;
+import ca.sciencestudio.model.session.dao.delegating.DelegatingScanAuthzDAO;
+import ca.sciencestudio.model.session.dao.rest.RestScanAuthzDAO;
+import ca.sciencestudio.model.session.validators.ScanValidator;
 
 public abstract class ScanDaoTest extends ModelDaoTest {
 
@@ -22,22 +23,22 @@ public abstract class ScanDaoTest extends ModelDaoTest {
 		
 		ScanValidator validator = new ScanValidator();
 		
-		List<ScanDAO> scanDAOs = new ArrayList<ScanDAO>();
+		List<ScanAuthzDAO> scanDAOs = new ArrayList<ScanAuthzDAO>();
 		
-		RestScanDAO localRestScanDAO = new RestScanDAO();
+		RestScanAuthzDAO localRestScanDAO = new RestScanAuthzDAO();
 		localRestScanDAO.setRestTemplate(REST_TEMPLATE);
 		localRestScanDAO.setBaseUrl("http://localhost:8080/ssrest/model");
 		scanDAOs.add(localRestScanDAO);
 		
-		RestScanDAO remoteRestScanDAO = new RestScanDAO();
+		RestScanAuthzDAO remoteRestScanDAO = new RestScanAuthzDAO();
 		remoteRestScanDAO.setRestTemplate(REST_TEMPLATE);
 		remoteRestScanDAO.setBaseUrl("http://remotehost:8080/ssrest/model");
 		scanDAOs.add(remoteRestScanDAO);
 		
-		DelegatingScanDAO delScanDAO = new DelegatingScanDAO();
+		DelegatingScanAuthzDAO delScanDAO = new DelegatingScanAuthzDAO();
 		delScanDAO.setScanDAOs(scanDAOs);
 		
-		ScanDAO scanDAO = (ScanDAO)delScanDAO;
+		ScanBasicDAO scanDAO = (ScanBasicDAO)delScanDAO;
 		
 		List<Scan> scans = scanDAO.getAll();
 		for(Scan s : scans) {
@@ -51,7 +52,7 @@ public abstract class ScanDaoTest extends ModelDaoTest {
 		scan.setParameters("key1=value1");
 		scan.setStartDate(DATE_FORMATER.parse("2011-03-17 08:15:24"));
 		scan.setEndDate(DATE_FORMATER.parse("2011-04-21 16:23:45"));
-		scan.setExperimentId(2);
+		//scan.setExperimentId(2);
 		
 		boolean success = scanDAO.add(scan);
 		if(!success) {
@@ -74,7 +75,7 @@ public abstract class ScanDaoTest extends ModelDaoTest {
 		scan.setParameters("key1=value2");
 		scan.setStartDate(DATE_FORMATER.parse("2011-02-15 08:29:14"));
 		scan.setEndDate(DATE_FORMATER.parse("2011-05-02 12:26:19"));
-		scan.setExperimentId(3);
+		//scan.setExperimentId(3);
 		
 		success = scanDAO.edit(scan);
 		if(!success) {

@@ -16,10 +16,10 @@ import ca.sciencestudio.model.utilities.GID;
 
 
 /**
- * @author medrand
+ * @author maxweld
  *
  */
-public class IbatisLaboratoryBasicDAO extends AbstractIbatisModelBasicDAO<Laboratory, IbatisLaboratory> implements LaboratoryBasicDAO {
+public class IbatisLaboratoryBasicDAO extends AbstractIbatisModelBasicDAO<Laboratory> implements LaboratoryBasicDAO {
 
 	@Override
 	public String getGidType() {
@@ -79,10 +79,11 @@ public class IbatisLaboratoryBasicDAO extends AbstractIbatisModelBasicDAO<Labora
 	}
 	
 	@Override
-	protected Laboratory toModel(IbatisLaboratory ibatisLaboratory) {
-		if(ibatisLaboratory == null) {
+	protected Laboratory toModel(Object obj) {
+		if(!(obj instanceof IbatisLaboratory)) {
 			return null;
 		}
+		IbatisLaboratory ibatisLaboratory = (IbatisLaboratory)obj;
 		Laboratory laboratory = new Laboratory();
 		laboratory.setGid(GID.format(getGidFacility(), ibatisLaboratory.getId(), getGidType()));
 		laboratory.setFacilityGid(GID.format(getGidFacility(), ibatisLaboratory.getFacilityId(), Facility.GID_TYPE));

@@ -55,35 +55,36 @@
 				WHERE technique_id = #value#
 	</select>
 	
-	<select id="getTechniqueListByName" resultMap="technique">
-		SELECT *
-			FROM ${schema}.technique
-			WHERE name LIKE #value#
-	</select>
-	
 	<select id="getTechniqueList" resultMap="technique">
 		SELECT *
 			FROM ${schema}.technique
 	</select>
 	
-	<select id="getTechniqueListByInstrumentId" resultMap="technique">
+	<!--<select id="getTechniqueListByName" resultMap="technique">
+		SELECT *
+			FROM ${schema}.technique
+			WHERE name LIKE #value#
+	</select>-->
+	
+	<!--<select id="getTechniqueListByInstrumentId" resultMap="technique">
 		SELECT t.technique_id, t.name, t.long_name, t.description
 			FROM ${schema}.technique t, ${schema}.instrument_technique it
 			WHERE it.instrument_id = #value#
 			AND it.technique_id = t.technique_id
-	</select>
+	</select>-->
 	
 	<select id="getTechniqueListByLaboratoryId" resultMap="technique">
 		SELECT t.technique_id, t.name, t.long_name, t.description
-			FROM ${schema}.technique t, ${schema}.instrument i, ${schema}.instrument_technique it
+			FROM ${schema}.technique AS t, ${schema}.instrument AS i, ${schema}.instrument_technique AS it
 			WHERE i.laboratory_id = #value# AND i.instrument_id = it.instrument_id AND it.technique_id = t.technique_id
 	</select>
 	
-	<select id="getTechniqueListByNameAndInstrumentId" resultMap="technique">
+	<!--<select id="getTechniqueListByNameAndInstrumentId" resultMap="technique">
 		SELECT t.technique_id, t.name, t.long_name, t.description
 			FROM ${schema}.technique t, ${schema}.instrument_technique it
 				WHERE t.name LIKE #param1#
 					AND it.instrument_id = #param2#
 					AND it.technique_id = t.technique_id
-	</select>
+	</select>-->
+	
 </sqlMap>

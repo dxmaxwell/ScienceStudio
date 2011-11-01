@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.session.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.session.SessionPerson;
 
@@ -17,5 +19,7 @@ import ca.sciencestudio.model.session.SessionPerson;
  */
 public interface SessionPersonBasicDAO extends ModelBasicDAO<SessionPerson> {
 
-	// Extra DAO methods here //
+	public List<SessionPerson> getAllByPersonGid(String personGid);
+	public List<SessionPerson> getAllBySessionGid(String sessionGid);
+	//public List<SessionPerson> getAllBySessionMember(String personGid);
 }

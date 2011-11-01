@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.session.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.session.Session;
 
@@ -16,9 +18,8 @@ import ca.sciencestudio.model.session.Session;
  */
 public interface SessionBasicDAO extends ModelBasicDAO<Session> {
 	
-	//public List<Session> getSessionListByProjectId(int projectId);
-	//public List<Session> getSessionListByLaboratoryId(int laboratoryId);
-	//public List<Session> getSessionListByPersonUid(String personUid);
-	//public List<Session> getSessionListByPersonUidAndProjectStatus(String personUid, Project.Status projectStatus);
-	//public List<Session> getSessionListByLaboratoryNameAndFacilityName(String laboratoryName, String facilityName);
+	public List<Session> getAllByPersonGid(String personGid);	
+	public List<Session> getAllByProjectGid(String projectGid);
+	//public List<Session> getAllByLaboratoryGid(String laboratoryGid);
+	//public List<Session> getAllByLaboratoryNameAndFacilityName(String laboratoryName, String facilityName);
 }

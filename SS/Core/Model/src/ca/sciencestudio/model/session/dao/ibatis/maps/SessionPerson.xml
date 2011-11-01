@@ -12,18 +12,21 @@
 		<result property="id" column="session_person_id" />
 		<result property="personGid" column="person_gid"/>
 		<result property="sessionId" column="session_id" nullValue="0"/>
+		<result property="role" column="role"/>
 	</resultMap>
 	
 	<insert id="addSessionPerson">
 		INSERT INTO ${schema}.session_person
 		(
+			session_id,
 			person_gid,
-			session_id
+			role
 		) 
 		VALUES
 		(
-			#person_gid:VARCHAR#,
-			#session_id:INT#
+			#sessionId:INT#,
+			#personGid:VARCHAR#,
+			#role:VARCHAR#
 		)
 		<selectKey resultClass="java.lang.Integer" keyProperty="id">
 			${identity.function}
@@ -34,7 +37,8 @@
 		UPDATE ${schema}.session_person
 			SET
 				person_gid = #personGid:VARCHAR#,
-				session_id = #sessionId:INT#
+				session_id = #sessionId:INT#,
+				role = #role:VARCHAR#
 			WHERE
 				session_person_id = #id:INT#
 	</update>
@@ -51,8 +55,25 @@
 	</select>
 	
 	<select id="getSessionPersonList" resultMap="sessionPerson">
-		SELECT *
-			FROM ${schema}.session_person
+		SELECT * FROM ${schema}.session_person
 	</select>
+	
+	<select id="getSessionPersonListBySessionId" resultMap="sessionPerson">
+		SELECT * FROM ${schema}.session_person
+			WHERE session_id = #value#
+	</select>
+	
+	<select id="getSessionPersonListByPersonGid" resultMap="sessionPerson">
+		SELECT * FROM ${schema}.session_person
+			WHERE person_gid = #value#
+	</select>
+	
+	<!--<select id="getSessionPersonListBySessionMember" resultMap="sessionPerson">
+		SELECT * from ${schema}.session_person
+			WHERE project_id = ANY (
+				SELECT session_id FROM ${schema}.session_person
+					WHERE person_gid = #value#
+			)
+	</select>-->
 	
 </sqlMap>

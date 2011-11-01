@@ -25,10 +25,24 @@ public class Technique implements Model {
 	public static final String DEFAULT_LONG_NAME = "";
 	public static final String DEFAULT_DESCRIPTION = "";
 	
-	private String gid = DEFAULT_GID;
-	private String name = DEFAULT_NAME;
-	private String longName = DEFAULT_LONG_NAME;
-	private String description = DEFAULT_DESCRIPTION;
+	private String gid;
+	private String name;
+	private String longName;
+	private String description;
+	
+	public Technique() {
+		gid = DEFAULT_GID;
+		name = DEFAULT_NAME;
+		longName = DEFAULT_LONG_NAME;
+		description = DEFAULT_DESCRIPTION;
+	}
+	
+	public Technique(Technique t) {
+		gid = t.getGid();
+		name = t.getName();
+		longName = t.getLongName();
+		description = t.getDescription();
+	}
 	
 	@Override
 	public String getGid() {

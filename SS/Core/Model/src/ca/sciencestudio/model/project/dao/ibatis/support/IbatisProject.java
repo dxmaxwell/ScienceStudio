@@ -9,7 +9,7 @@ package ca.sciencestudio.model.project.dao.ibatis.support;
 
 import java.util.Date;
 
-import ca.sciencestudio.model.project.Project;
+import ca.sciencestudio.model.project.validators.ProjectValidator;
 
 /**
  * @author maxweld
@@ -18,13 +18,14 @@ import ca.sciencestudio.model.project.Project;
 public class IbatisProject {
 	
 	public static final int DEFAULT_ID = 0;
+	public static final String DEFAULT_STATUS = "";
 	
 	private int id = DEFAULT_ID;
-	private String name = Project.DEFAULT_NAME;
-	private String description = Project.DEFAULT_DESCRIPTION;
-	private Date startDate = Project.DEFAULT_START_DATE;
-	private Date endDate = Project.DEFAULT_END_DATE;
-	private String status = Project.DEFAULT_STATUS;
+	private String name = ProjectValidator.DEFAULT_NAME;
+	private String description = ProjectValidator.DEFAULT_DESCRIPTION;
+	private Date startDate = ProjectValidator.DEFAULT_START_DATE;
+	private Date endDate = ProjectValidator.DEFAULT_END_DATE;
+	private String status = DEFAULT_STATUS;
 	
 	public int getId() {
 		return id;

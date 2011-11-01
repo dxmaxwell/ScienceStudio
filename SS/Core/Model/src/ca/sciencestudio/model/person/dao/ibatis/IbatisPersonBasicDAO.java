@@ -2,29 +2,52 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     IbatisPersonDAO class.
+ *     IbatisPersonBasicDAO class.
  *     
  */
 package ca.sciencestudio.model.person.dao.ibatis;
+
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.dao.DataAccessException;
 
 import ca.sciencestudio.model.person.Person;
 import ca.sciencestudio.model.person.dao.PersonBasicDAO;
 import ca.sciencestudio.model.person.dao.ibatis.support.IbatisPerson;
 import ca.sciencestudio.model.dao.ibatis.AbstractIbatisModelBasicDAO;
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  * 
  *
  */
-public class IbatisPersonBasicDAO extends AbstractIbatisModelBasicDAO<Person, IbatisPerson> implements PersonBasicDAO {
+public class IbatisPersonBasicDAO extends AbstractIbatisModelBasicDAO<Person> implements PersonBasicDAO {
 
 	@Override
 	public String getGidType() {
 		return Person.GID_TYPE;
 	}
 	
+	@Override
+	public List<Person> searchAllByName(String name) {
+		List<Person> persons;
+		try {
+			persons = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("search", "ListByName"), name));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Search all Persons by Name: " + name + ", size: " + persons.size());
+		}
+		return Collections.unmodifiableList(persons);
+	}
+
 	@Override
 	protected IbatisPerson toIbatisModel(Person person) {
 		if(person == null) {
@@ -47,10 +70,11 @@ public class IbatisPersonBasicDAO extends AbstractIbatisModelBasicDAO<Person, Ib
 	}
 	
 	@Override
-	protected Person toModel(IbatisPerson ibatisPerson) {
-		if(ibatisPerson == null) {
+	protected Person toModel(Object obj) {
+		if(!(obj instanceof IbatisPerson)) {
 			return null;
 		}
+		IbatisPerson ibatisPerson = (IbatisPerson)obj;
 		Person person = new Person();
 		person.setGid(GID.format(getGidFacility(), ibatisPerson.getId(), getGidType()));
 		person.setTitle(ibatisPerson.getTitle());

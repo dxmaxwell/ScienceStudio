@@ -67,11 +67,11 @@
 			FROM ${schema}.experiment
 	</select>
 	
-	<select id="getExperimentListBySourceGid" resultMap="experiment">
+	<!--<select id="getExperimentListBySourceGid" resultMap="experiment">
 		SELECT *
 			FROM ${schema}.experiment
 			WHERE source_gid = #value#
-	</select>
+	</select>-->
 	
 	<select id="getExperimentListBySessionId" resultMap="experiment">
 		SELECT *
