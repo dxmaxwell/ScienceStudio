@@ -41,11 +41,6 @@
 		<property name="gidFacility" value="${dao.gid.facility}"/>
 	</bean>
 	
-	<bean id="projectPersonAuthzDAO"
-		class="ca.sciencestudio.model.project.dao.rest.RestProjectPersonAuthzDAO">
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="restTemplate" ref="restTemplate"/>
-	</bean>
 	
 	<!--  Sample Data Access Objects -->
 		

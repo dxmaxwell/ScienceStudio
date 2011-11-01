@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Security configuration file.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	                    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+	<sec:http>
+		<sec:http-basic/>
+		<sec:intercept-url pattern="/**" access="ROLE_USER" requires-channel="https"/>
+		<!--<sec:port-mappings><sec:port-mapping http="8080" https="8443"/></sec:port-mappings>-->
+	</sec:http>
+	
+	<!-- #################### Authentication Manager ########################## -->
+  
+	<sec:authentication-manager>
+		<sec:authentication-provider>
+		<sec:password-encoder hash="plaintext"/>
+		<sec:user-service>
+			<sec:user name="${security.rest.username}" password="${security.rest.password}" authorities="ROLE_USER"/>
+		</sec:user-service>
+		</sec:authentication-provider>
+	</sec:authentication-manager>
+
+	<!-- ### Authorization Accessors ### -->
+
+	<bean id="projectAuthorityAccessor"
+		class="ca.sciencestudio.security.authz.accessors.ProjectAuthorityAccessor">
+		<property name="projectPersonBasicDAO" ref="projectPersonBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+	</bean>
+
+	<bean id="sessionAuthorityAccessor"
+		class="ca.sciencestudio.security.authz.accessors.SessionAuthorityAccessor">
+		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>	
+	</bean>
+
+	<bean id="facilityAuthorityAccessor"
+		class="ca.sciencestudio.security.authz.accessors.FacilityAuthorityAccessor">
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+	</bean>
+
+</beans>

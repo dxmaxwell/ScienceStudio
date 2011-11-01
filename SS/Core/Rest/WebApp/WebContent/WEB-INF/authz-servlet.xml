@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	-	see license.txt for details.
+	
+	Description:
+		Configuration file for authz servlet.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	
+	<context:annotation-config/>
+	
+	<bean class="ca.sciencestudio.rest.service.authz.controllers.ProjectAuthorityController">
+		<property name="projectAuthorityAccessor" ref="projectAuthorityAccessor"/>
+		<property name="projectBasicDAO" ref="projectBasicDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.authz.controllers.SessionAuthorityController">
+		<property name="sessionAuthorityAccessor" ref="sessionAuthorityAccessor"/>
+		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.authz.controllers.FacilityAuthorityController">
+		<property name="facilityAuthorityAccessor" ref="facilityAuthorityAccessor"/>
+		<property name="facilityBasicDAO" ref="facilityBasicDAO"/>
+	</bean>
+	
+	<bean id="annotationMapping"
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="annoationMethodHandler"
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters" ref="httpMessageConverters"/>
+	</bean>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+
+</beans>

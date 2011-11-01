@@ -18,23 +18,26 @@
 	
 	<bean class="ca.sciencestudio.rest.service.person.controllers.PersonAuthzController">
 		<property name="personBasicDAO" ref="personBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
 	<!-- Project Controllers -->
 	
 	<bean class="ca.sciencestudio.rest.service.project.controllers.ProjectAuthzController">
+		<property name="projectAuthorityAccessor" ref="projectAuthorityAccessor"/>
 		<property name="projectPersonBasicDAO" ref="projectPersonBasicDAO"/>
 		<property name="projectBasicDAO" ref="projectBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="facilityBasicDAO" ref="facilityBasicDAO"/>
+		<property name="sampleBasicDAO" ref="sampleBasicDAO"/>
 		<property name="projectValidator">
 			<bean class="ca.sciencestudio.model.project.validators.ProjectValidator"/>
 		</property>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.rest.service.project.controllers.ProjectPersonAuthzController">
+		<property name="projectAuthorityAccessor" ref="projectAuthorityAccessor"/>
 		<property name="projectPersonBasicDAO" ref="projectPersonBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="projectBasicDAO" ref="projectBasicDAO"/>
 		<property name="projectPersonValidator">
 			<bean class="ca.sciencestudio.model.project.validators.ProjectPersonValidator"/>
 		</property>
@@ -43,84 +46,84 @@
 	<!-- Sample Controllers -->
 	
 	<bean class="ca.sciencestudio.rest.service.sample.controllers.SampleAuthzController">
-		<property name="projectPersonBasicDAO" ref="projectPersonBasicDAO"/>
+		<property name="projectAuthorityAccessor" ref="projectAuthorityAccessor"/>
+		<property name="projectBasicDAO" ref="projectBasicDAO"/>
 		<property name="sampleBasicDAO" ref="sampleBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 		<property name="sampleValidator">
 			<bean class="ca.sciencestudio.model.sample.validators.SampleValidator"/>
 		</property>
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
 	</bean>
 	
 	<!-- Session Controllers -->
 	
 	<bean class="ca.sciencestudio.rest.service.session.controllers.SessionAuthzController">
-		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="sessionAuthorityAccessor" ref="sessionAuthorityAccessor"/>
 		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
+		<property name="experimentBasicDAO" ref="experimentBasicDAO"/>
+		<property name="laboratoryBasicDAO" ref="laboratoryBasicDAO"/>
 		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 		<property name="sessionValidator">
 			<bean class="ca.sciencestudio.model.session.validators.SessionValidator"/>
 		</property>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.rest.service.session.controllers.SessionPersonAuthzController">
-		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="sessionAuthorityAccessor" ref="sessionAuthorityAccessor"/>
 		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
 		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 		<property name="sessionPersonValidator">
 			<bean class="ca.sciencestudio.model.session.validators.SessionPersonValidator"/>
 		</property>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.rest.service.session.controllers.ExperimentAuthzController">
-		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
-		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
-		<property name="experimentBasicDAO" ref="experimentBasicDAO"/>
-		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
-		<property name="experimentValidator">
-			<bean class="ca.sciencestudio.model.session.validators.ExperimentValidator"/>
-		</property>
-	</bean>
-	
-	<bean class="ca.sciencestudio.rest.service.session.controllers.ScanAuthzController">
-		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
-		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
+		<property name="sessionAuthorityAccessor" ref="sessionAuthorityAccessor"/>
+		<property name="instrumentTechniqueBasicDAO" ref="instrumentTechniqueBasicDAO"/>
 		<property name="experimentBasicDAO" ref="experimentBasicDAO"/>
 		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
 		<property name="scanBasicDAO" ref="scanBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="experimentValidator">
+			<bean class="ca.sciencestudio.model.session.validators.ExperimentValidator"/>
+		</property>
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.session.controllers.ScanAuthzController">
+		<property name="sessionAuthorityAccessor" ref="sessionAuthorityAccessor"/>
+		<property name="experimentBasicDAO" ref="experimentBasicDAO"/>
+		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
+		<property name="scanBasicDAO" ref="scanBasicDAO"/>
 		<property name="scanValidator">
 			<bean class="ca.sciencestudio.model.session.validators.ScanValidator"/>
 		</property>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
 	</bean>
 
 	<!-- Facility Controllers -->
 	
 	<bean class="ca.sciencestudio.rest.service.facility.controllers.FacilityAuthzController">
 		<property name="facilityBasicDAO" ref="facilityBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.rest.service.facility.controllers.InstrumentAuthzController">
 		<property name="instrumentBasicDAO" ref="instrumentBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.rest.service.facility.controllers.InstrumentTechniqueAuthzController">
 		<property name="instrumentTechniqueBasicDAO" ref="instrumentTechniqueBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.rest.service.facility.controllers.LaboratoryAuthzController">
 		<property name="laboratoryBasicDAO" ref="laboratoryBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.rest.service.facility.controllers.TechniqueAuthzController">
 		<property name="techniqueBasicDAO" ref="techniqueBasicDAO"/>
-		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
 	<bean id="annotationMapping"
