@@ -6,10 +6,9 @@
 --		DropTable sql file.
 --
 
-DROP TABLE account;
 DROP TABLE login_role;
 DROP TABLE login_group_role;
 DROP TABLE login_group;
 DROP TABLE login_group_member;
 DROP TABLE login_session;
-DROP TABLE login_history;
+-- DROP TABLE login_history;

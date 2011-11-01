@@ -78,7 +78,7 @@
 		SELECT p.person_id, p.title, p.first_name, p.middle_name, p.last_name,
 				p.phone_number, p.mobile_number, p.email_address, p.modification_date
 			FROM ${schema}.person AS p, ${schema}.account AS a
-			WHERE a.username = #value# AND a.person_gid LIKE CONCAT('${facility}', p.person_id, 'U')
+			WHERE a.username = #value# AND a.person_id = p.person_id 
 	</select>
 
 	<select id="getPersonList" resultMap="person">

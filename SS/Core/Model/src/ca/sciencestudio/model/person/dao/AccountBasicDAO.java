@@ -5,17 +5,18 @@
  *     AccountDAO interface.
  *     
  */
-package ca.sciencestudio.login.model.dao;
+package ca.sciencestudio.model.person.dao;
 
 import java.util.List;
 
-import ca.sciencestudio.login.model.Account;
+import ca.sciencestudio.model.person.Account;
+import ca.sciencestudio.model.dao.ModelBasicDAO;
 
 /**
  * @author maxweld
  *
  */
-public interface AccountDAO extends ModelDAO<Account> {
+public interface AccountBasicDAO extends ModelBasicDAO<Account> {
 	
 	public Account getByUsername(String username);
 	

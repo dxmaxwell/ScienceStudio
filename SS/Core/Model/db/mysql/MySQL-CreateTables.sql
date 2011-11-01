@@ -7,6 +7,16 @@
 --
 
 -- --------------------- Person tables ------------------------------------------
+
+CREATE TABLE account (
+	account_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	username VARCHAR(50) NOT NULL UNIQUE,
+	password VARCHAR(100),
+	person_id int NOT NULL,
+	creation_date DATETIME,
+	status VARCHAR(40)
+) ENGINE=InnoDB;
+
 CREATE TABLE person (
 	person_id INT AUTO_INCREMENT PRIMARY KEY,
 	title VARCHAR(10),

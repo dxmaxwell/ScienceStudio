@@ -8,11 +8,11 @@
  -->
 <!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
 <sqlMap namespace="Account">
-	<resultMap id="account" class="ca.sciencestudio.login.model.Account">
+	<resultMap id="account" class="ca.sciencestudio.model.person.dao.ibatis.support.Account">
 		<result property="id" column="account_id" />
 		<result property="username" column="username"/>
 		<result property="password" column="password"/>
-		<result property="personGid" column="person_gid"/>
+		<result property="personId" column="person_id"/>
 		<result property="creationDate" column="creation_date"/>
 		<result property="status" column="status"/>
 	</resultMap>
@@ -21,7 +21,7 @@
 		INSERT INTO ${schema}.account (
 			username,
 			password,
-			person_gid,
+			person_id,
 			creation_date,
 			status
 		)
@@ -42,7 +42,7 @@
 			SET 
 				username = #username:VARCHAR#,
 				password = #password:VARCHAR#,
-				person_gid = #personGid:VARCHAR#,
+				person_id = #personId:VARCHAR#,
 				status = #status:VARCHAR#
 			WHERE 
 				account_id = #id#

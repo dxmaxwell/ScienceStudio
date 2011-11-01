@@ -6,6 +6,9 @@
 --		DropConstraints sql file.
 --
 
+-- ---------- person --------------------
+ALTER TABLE account DROP FOREIGN KEY fk_account_person_id;
+
 -- ---------- project_person --------------------
 ALTER TABLE project_person DROP FOREIGN KEY fk_project_person_project_id;
 

@@ -5,11 +5,12 @@
  *     Account interface.
  *     
  */
-package ca.sciencestudio.login.model;
+package ca.sciencestudio.model.person;
 
 import java.util.Date;
 
-import ca.sciencestudio.login.model.Model;
+import ca.sciencestudio.model.Model;
+import ca.sciencestudio.model.utilities.GID;
 
 /**
  * @author maxweld
@@ -19,27 +20,29 @@ public final class Account implements Model {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String GID_TYPE = "Z";
+	
 	public static enum Status { ACTIVE, DISABLED, EXPIRED }
 	
-	public static final int DEFAULT_ID = 0;
+	public static final String DEFAULT_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_USERNAME = "";
 	public static final String DEFAULT_PASSWORD = "";
 	public static final String DEFAULT_PERSON_GID = "";
-	public static final String DEFAULT_STATUS = "UNKNOWN";
+	public static final Status DEFAULT_STATUS = Status.DISABLED;
 	public static final Date DEFAULT_CREATION_DATE = new Date();
 	
-	private int id = DEFAULT_ID;
+	private String gid = DEFAULT_GID;
 	private String username = DEFAULT_USERNAME;
 	private String password = DEFAULT_PASSWORD;
 	private String personGid = DEFAULT_PERSON_GID;
-	private String status = DEFAULT_STATUS;
+	private Status status = DEFAULT_STATUS;
 	private Date creationDate = DEFAULT_CREATION_DATE;
 	
-	public int getId() {
-		return id;
+	public String getGid() {
+		return gid;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setGid(String gid) {
+		this.gid = gid;
 	}
 	
 	public String getUsername() {
@@ -63,10 +66,10 @@ public final class Account implements Model {
 		this.personGid = personGid;
 	}
 	
-	public String getStatus() {
+	public Status getStatus() {
 		return status;
 	}
-	public void setStatus(String status) {
+	public void setStatus(Status status) {
 		this.status = status;
 	}
 	

@@ -6,15 +6,6 @@
 --		CreateTable sql file.
 --
 
-CREATE TABLE account (
-	account_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	username VARCHAR(50) NOT NULL UNIQUE,
-	password VARCHAR(100),
-	person_gid VARCHAR(50) NOT NULL,
-	creation_date DATETIME,
-	status VARCHAR(40)
-) ENGINE=InnoDB;
-
 CREATE TABLE login_role (
 	login_role_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(50) NOT NULL UNIQUE
