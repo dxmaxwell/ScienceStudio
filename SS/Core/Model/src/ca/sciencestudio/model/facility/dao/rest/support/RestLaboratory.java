@@ -2,35 +2,35 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     IbatisFacility class.
+ *     RestLaboratory class.
  *     
  */
-package ca.sciencestudio.model.facility.dao.ibatis.support;
+package ca.sciencestudio.model.facility.dao.rest.support;
 
-import ca.sciencestudio.model.facility.Facility;
+import ca.sciencestudio.model.facility.Laboratory;
 
 /**
+ * 
  * @author maxweld
+ * 
  *
  */
-public class IbatisFacility {
+public class RestLaboratory {
+
+	private String facilityGid = Laboratory.DEFAULT_FACILITY_GID;
+	private String name = Laboratory.DEFAULT_NAME;
+	private String longName = Laboratory.DEFAULT_LONG_NAME;
+	private String description = Laboratory.DEFAULT_DESCRIPTION;
+	private String phoneNumber = Laboratory.DEFAULT_PHONE_NUMBER;
+	private String emailAddress  = Laboratory.DEFAULT_EMAIL_ADDRESS;
+	private String location = Laboratory.DEFAULT_LOCATION;
+	private String viewUrl = Laboratory.DEFAULT_VIEW_URL;
 	
-	private static final int DEFAULT_ID = 0;
-	
-	private int id = DEFAULT_ID;
-	private String name = Facility.DEFAULT_NAME;
-	private String longName = Facility.DEFAULT_LONG_NAME;
-	private String description = Facility.DEFAULT_DESCRIPTION;
-	private String phoneNumber = Facility.DEFAULT_PHONE_NUMBER;
-	private String emailAddress = Facility.DEFAULT_EMAIL_ADDRESS;
-	private String location = Facility.DEFAULT_LOCATION;
-	private String loginUrl = Facility.DEFAULT_LOGIN_URL;
-	
-	public int getId() {
-		return id;
+	public String getFacilityGid() {
+		return facilityGid;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setFacilityGid(String facilityGid) {
+		this.facilityGid = facilityGid;
 	}
 	
 	public String getName() {
@@ -75,10 +75,10 @@ public class IbatisFacility {
 		this.location = location;
 	}
 	
-	public String getLoginUrl() {
-		return loginUrl;
+	public String getViewUrl() {
+		return viewUrl;
 	}
-	public void setLoginUrl(String loginUrl) {
-		this.loginUrl = loginUrl;
+	public void setViewUrl(String viewUrl) {
+		this.viewUrl = viewUrl;
 	}
 }

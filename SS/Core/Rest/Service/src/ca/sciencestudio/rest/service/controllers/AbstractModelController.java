@@ -129,7 +129,7 @@ public abstract class AbstractModelController<T extends Model> {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return Collections.emptyMap();
 		}	
-		return t; 
+		return t;
 	}
 	
 	public abstract String getModelPath();

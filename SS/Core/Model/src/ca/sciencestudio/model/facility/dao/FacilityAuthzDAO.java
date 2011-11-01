@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.facility.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.facility.Facility;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
@@ -17,5 +19,7 @@ import ca.sciencestudio.model.dao.ModelAuthzDAO;
  */
 public interface FacilityAuthzDAO extends ModelAuthzDAO<Facility> {
 	
-	public Data<Facility> getByName(String user, String name);
+	public Data<Facility> get(String gid);
+	
+	public Data<List<Facility>> getAll();
 }

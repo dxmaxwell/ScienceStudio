@@ -100,7 +100,8 @@ CREATE TABLE facility (
 	phone_number VARCHAR(50),
 	email_address VARCHAR(255),
 	location VARCHAR(255),
-	login_url VARCHAR(1000)
+	authc_url VARCHAR(1000),
+	home_url VARCHAR(1000)
 ) ENGINE=InnoDB;
 
 CREATE TABLE technique (

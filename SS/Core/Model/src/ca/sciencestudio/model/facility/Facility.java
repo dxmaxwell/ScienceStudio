@@ -27,7 +27,8 @@ public class Facility implements Model {
 	public static final String DEFAULT_PHONE_NUMBER = "";
 	public static final String DEFAULT_EMAIL_ADDRESS = "";
 	public static final String DEFAULT_LOCATION = "";
-	public static final String DEFAULT_LOGIN_URL = "";
+	public static final String DEFAULT_AUTHC_URL = "";
+	public static final String DEFAULT_HOME_URL = "";
 	
 	private String gid;
 	private String name;
@@ -36,7 +37,9 @@ public class Facility implements Model {
 	private String phoneNumber;
 	private String emailAddress;
 	private String location;
-	private String loginUrl;
+	private String authcUrl;
+	private String homeUrl;
+	
 	
 	public Facility() {
 		gid = DEFAULT_GID;
@@ -46,7 +49,8 @@ public class Facility implements Model {
 		phoneNumber = DEFAULT_PHONE_NUMBER;
 		emailAddress = DEFAULT_EMAIL_ADDRESS;
 		location = DEFAULT_LOCATION;
-		loginUrl = DEFAULT_LOGIN_URL;
+		authcUrl = DEFAULT_AUTHC_URL;
+		homeUrl = DEFAULT_HOME_URL;
 	}
 	
 	public Facility(Facility facility) {
@@ -57,7 +61,8 @@ public class Facility implements Model {
 		phoneNumber = facility.getPhoneNumber();
 		emailAddress = facility.getEmailAddress();
 		location = facility.getLocation();
-		loginUrl = facility.getLoginUrl();
+		authcUrl = facility.getAuthcUrl();
+		homeUrl = facility.getHomeUrl();
 	}
 		
 	@Override
@@ -110,11 +115,18 @@ public class Facility implements Model {
 	public void setLocation(String location) {
 		this.location = location;
 	}
-	
-	public String getLoginUrl() {
-		return loginUrl;
+
+	public String getAuthcUrl() {
+		return authcUrl;
 	}
-	public void setLoginUrl(String loginUrl) {
-		this.loginUrl = loginUrl;
+	public void setAuthcUrl(String authcUrl) {
+		this.authcUrl = authcUrl;
+	}
+
+	public String getHomeUrl() {
+		return homeUrl;
+	}
+	public void setHomeUrl(String homeUrl) {
+		this.homeUrl = homeUrl;
 	}
 }

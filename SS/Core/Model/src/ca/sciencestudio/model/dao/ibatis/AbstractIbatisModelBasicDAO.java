@@ -48,7 +48,6 @@ public abstract class AbstractIbatisModelBasicDAO<T extends Model> extends Abstr
 		if(logger.isDebugEnabled()) {
 			logger.debug("Add Model with GID: " + t.getGid());
 		}
-		//return true;
 	}
 	
 	@Override

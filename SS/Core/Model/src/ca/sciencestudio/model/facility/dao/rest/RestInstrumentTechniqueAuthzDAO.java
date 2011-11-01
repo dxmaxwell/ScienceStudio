@@ -18,6 +18,7 @@ import ca.sciencestudio.model.dao.SimpleData;
 import ca.sciencestudio.model.dao.rest.AbstractRestModelAuthzDAO;
 import ca.sciencestudio.model.facility.InstrumentTechnique;
 import ca.sciencestudio.model.facility.dao.InstrumentTechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.rest.support.RestInstrumentTechnique;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 public class RestInstrumentTechniqueAuthzDAO extends AbstractRestModelAuthzDAO<InstrumentTechnique> implements InstrumentTechniqueAuthzDAO {
@@ -42,9 +43,11 @@ public class RestInstrumentTechniqueAuthzDAO extends AbstractRestModelAuthzDAO<I
 	}
 
 	@Override
-	protected Object toRestModel(InstrumentTechnique t) {
-		// TODO Auto-generated method stub
-		return null;
+	protected Object toRestModel(InstrumentTechnique instrumentTechnique) {
+		RestInstrumentTechnique restInstrumentTechnique = new RestInstrumentTechnique();
+		restInstrumentTechnique.setInstrumentGid(instrumentTechnique.getInstrumentGid());
+		restInstrumentTechnique.setTechniqueGid(instrumentTechnique.getTechniqueGid());
+		return restInstrumentTechnique;
 	}
 
 	@Override

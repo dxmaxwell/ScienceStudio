@@ -1,0 +1,83 @@
+/** Copyright (c) Canadian Light Source, Inc. All rights reserved.
+ *   - see license.txt for details.
+ *
+ *  Description:
+ *     RestFacility class.
+ *     
+ */
+package ca.sciencestudio.model.facility.dao.rest.support;
+
+import ca.sciencestudio.model.facility.Facility;
+
+/**
+ * @author maxweld
+ * 
+ *
+ */
+public class RestFacility {
+
+	private String name = Facility.DEFAULT_NAME;
+	private String longName = Facility.DEFAULT_LONG_NAME;
+	private String description = Facility.DEFAULT_DESCRIPTION;
+	private String phoneNumber = Facility.DEFAULT_PHONE_NUMBER;
+	private String emailAddress = Facility.DEFAULT_EMAIL_ADDRESS;
+	private String location = Facility.DEFAULT_LOCATION;
+	private String authcUrl = Facility.DEFAULT_AUTHC_URL;
+	private String homeUrl = Facility.DEFAULT_HOME_URL;
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getLongName() {
+		return longName;
+	}
+	public void setLongName(String longName) {
+		this.longName = longName;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+	
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
+	
+	public String getLocation() {
+		return location;
+	}
+	public void setLocation(String location) {
+		this.location = location;
+	}
+	
+	public String getAuthcUrl() {
+		return authcUrl;
+	}
+	public void setAuthcUrl(String authcUrl) {
+		this.authcUrl = authcUrl;
+	}
+	
+	public String getHomeUrl() {
+		return homeUrl;
+	}
+	public void setHomeUrl(String homeUrl) {
+		this.homeUrl = homeUrl;
+	}
+}

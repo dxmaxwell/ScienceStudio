@@ -10,8 +10,8 @@
 -- =========================================================================================
 -- Facility
 -- =========================================================================================
-insert into facility (name, long_name, description, phone_number, email_address, location, login_url)
-	values ('CLSI', 'Canadian Light Source', '', '(306) 657-3500', '', 'Saskatoon, Saskatchewan, Canada', 'https://cas.lightsource.ca/cas');
+insert into facility (name, long_name, description, phone_number, email_address, location, authc_url, home_url)
+	values ('CLSI', 'Canadian Light Source', '', '(306) 657-3500', '', 'Saskatoon, Saskatchewan, Canada', 'https://cas.lightsource.ca/cas', 'http://sciencestudio.lightsource.ca/ss');
 
 -- =========================================================================================
 -- Laboratory

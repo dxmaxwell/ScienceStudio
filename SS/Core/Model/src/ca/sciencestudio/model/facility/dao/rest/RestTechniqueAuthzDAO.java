@@ -18,6 +18,7 @@ import ca.sciencestudio.model.dao.SimpleData;
 import ca.sciencestudio.model.dao.rest.AbstractRestModelAuthzDAO;
 import ca.sciencestudio.model.facility.Technique;
 import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.rest.support.RestTechnique;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
@@ -46,9 +47,12 @@ public class RestTechniqueAuthzDAO extends AbstractRestModelAuthzDAO<Technique> 
 	}
 	
 	@Override
-	protected Object toRestModel(Technique t) {
-		// TODO Auto-generated method stub
-		return null;
+	protected Object toRestModel(Technique technique) {
+		RestTechnique restTechnique = new RestTechnique();
+		restTechnique.setName(technique.getName());
+		restTechnique.setLongName(technique.getLongName());
+		restTechnique.setDescription(technique.getDescription());
+		return restTechnique;
 	}
 
 	@Override

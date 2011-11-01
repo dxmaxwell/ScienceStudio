@@ -68,20 +68,30 @@ public class FacilityAuthzController extends AbstractModelAuthzController<Facili
 	@RequestMapping(value = FACILITY_MODEL_PATH + "/{gid}*", method = RequestMethod.GET)
 	public Object get(@PathVariable String gid, HttpServletResponse response) throws Exception {
 		// No authorization checks required. Everyone is allowed to read this information. //
-		return doGet(gid, response);
-	}
-	
-	@ResponseBody
-	@RequestMapping(value = FACILITY_MODEL_PATH + "*", method = RequestMethod.GET, params = "name")
-	public Object getByName(@RequestParam String name, HttpServletResponse response) throws Exception {
-		// No authorization checks required. Everyone is allowed to read this information. //
+		Facility facility;
 		try {
-			return getFacilityBasicDAO().getByName(name);
+			facility = getModelBasicDAO().get(gid);
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return Collections.emptyMap();
 		}
+		
+		if(facility == null) {
+			try {
+				facility = getFacilityBasicDAO().getByName(gid);
+			}
+			catch(ModelAccessException e) {
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				return Collections.emptyMap();
+			}
+		}
+		
+		if(facility == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return Collections.emptyMap();
+		}
+		return facility;
 	}
 	
 	@ResponseBody

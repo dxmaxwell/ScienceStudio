@@ -60,7 +60,8 @@ public class IbatisFacilityBasicDAO extends AbstractIbatisModelBasicDAO<Facility
 		ibatisFacility.setPhoneNumber(facility.getPhoneNumber());
 		ibatisFacility.setEmailAddress(facility.getEmailAddress());
 		ibatisFacility.setLocation(facility.getLocation());
-		ibatisFacility.setLoginUrl(facility.getLoginUrl());
+		ibatisFacility.setAuthcUrl(facility.getAuthcUrl());
+		ibatisFacility.setHomeUrl(facility.getHomeUrl());
 		return ibatisFacility;
 	}
 	
@@ -78,7 +79,8 @@ public class IbatisFacilityBasicDAO extends AbstractIbatisModelBasicDAO<Facility
 		facility.setPhoneNumber(ibatisFacility.getPhoneNumber());
 		facility.setEmailAddress(ibatisFacility.getEmailAddress());
 		facility.setLocation(ibatisFacility.getLocation());
-		facility.setLoginUrl(ibatisFacility.getLoginUrl());
+		facility.setAuthcUrl(ibatisFacility.getAuthcUrl());
+		facility.setHomeUrl(ibatisFacility.getHomeUrl());
 		return facility;
 	}
 	
