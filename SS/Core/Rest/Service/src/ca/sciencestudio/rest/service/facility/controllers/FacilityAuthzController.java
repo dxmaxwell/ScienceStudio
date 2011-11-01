@@ -15,10 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.facility.Facility;
 import ca.sciencestudio.model.facility.dao.FacilityBasicDAO;
@@ -39,26 +37,6 @@ public class FacilityAuthzController extends AbstractModelAuthzController<Facili
 	private FacilityBasicDAO facilityBasicDAO;
 	
 	private FacilityValidator facilityValidator;
-	
-	@ResponseBody
-	@RequestMapping(value = FACILITY_MODEL_PATH + "/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user) {
-		if(hasLoginRole(user, LOGIN_ROLE_ADMIN_FACILITY)) {
-			return new Permissions(true);
-		} else {
-			return new Permissions(false);
-		}
-	}
-	
-	@ResponseBody
-	@RequestMapping(value = FACILITY_MODEL_PATH + "/{gid}/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user, @PathVariable String gid) {
-		if(hasLoginRole(user, LOGIN_ROLE_ADMIN_FACILITY)) {
-			return new Permissions(true);
-		} else {
-			return new Permissions(false);
-		}
-	}
 	
 	//
 	//	Adding, Editing and Removing Facilities currently only done by administrator. No REST API implemented. 
@@ -97,6 +75,7 @@ public class FacilityAuthzController extends AbstractModelAuthzController<Facili
 	@ResponseBody
 	@RequestMapping(value = FACILITY_MODEL_PATH + "*", method = RequestMethod.GET)
 	public Object getAll(HttpServletResponse response) {
+		// No authorization checks required. Everyone is allowed to read this information. //
 		try {
 			return facilityBasicDAO.getAll();
 		}

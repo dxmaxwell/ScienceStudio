@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.facility.Technique;
 import ca.sciencestudio.model.facility.dao.TechniqueBasicDAO;
@@ -40,25 +39,6 @@ public class TechniqueAuthzController extends AbstractModelAuthzController<Techn
 	
 	private TechniqueValidator techniqueValidator;
 	
-	@ResponseBody
-	@RequestMapping(value = TECHNIQUE_MODEL_PATH + "/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user) {
-		if(hasLoginRole(user, LOGIN_ROLE_ADMIN_FACILITY)) {
-			return new Permissions(true);
-		} else {
-			return new Permissions(false);
-		}
-	}
-	
-	@ResponseBody
-	@RequestMapping(value = TECHNIQUE_MODEL_PATH + "/{gid}/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user, @PathVariable String gid) {
-		if(hasLoginRole(user, LOGIN_ROLE_ADMIN_FACILITY)) {
-			return new Permissions(true);
-		} else {
-			return new Permissions(false);
-		}
-	}
 	
 	//
 	//	Adding, Editing and Removing InstrumentTechniques currently only done by administrator. No REST API implemented. 
@@ -67,30 +47,33 @@ public class TechniqueAuthzController extends AbstractModelAuthzController<Techn
 	@ResponseBody
 	@RequestMapping(value = TECHNIQUE_MODEL_PATH + "/{gid}*", method = RequestMethod.GET)
 	public Object get(@PathVariable String gid, HttpServletResponse response) throws Exception {
+		// No authorization checks required. Everyone is allowed to read this information. //
 		return doGet(gid, response);
 	}
 
 	@ResponseBody
 	@RequestMapping(value = TECHNIQUE_MODEL_PATH + "*", method = RequestMethod.GET)
 	public Object getAll(HttpServletResponse response) {
+		// No authorization checks required. Everyone is allowed to read this information. //
 		try {
 			return techniqueBasicDAO.getAll();
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return Collections.emptyMap();
+			return Collections.emptyList();
 		}
 	}
 
 	@ResponseBody
 	@RequestMapping(value = TECHNIQUE_MODEL_PATH + "*", method = RequestMethod.GET, params = "laboratory")
 	public Object getAll(@RequestParam("laboratory") String laboratoryGid, HttpServletResponse response) {
+		// No authorization checks required. Everyone is allowed to read this information. //
 		try {
 			return techniqueBasicDAO.getAll();
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return Collections.emptyMap();
+			return Collections.emptyList();
 		}
 	}
 	

@@ -22,16 +22,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.AddResult;
-import ca.sciencestudio.model.EditResult;
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.session.SessionPerson;
+import ca.sciencestudio.model.session.dao.SessionBasicDAO;
+import ca.sciencestudio.model.session.dao.SessionPersonBasicDAO;
 import ca.sciencestudio.model.session.validators.SessionPersonValidator;
 import ca.sciencestudio.model.validators.ModelValidator;
 import ca.sciencestudio.rest.service.controllers.AbstractSessionAuthzController;
+import ca.sciencestudio.util.authz.Authorities;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
+import ca.sciencestudio.util.rest.AddResult;
+import ca.sciencestudio.util.rest.EditResult;
+import ca.sciencestudio.util.rest.RemoveResult;
 
 /**
  * @author maxweld
@@ -43,100 +46,222 @@ public class SessionPersonAuthzController extends AbstractSessionAuthzController
 
 	private static final String SESSION_PERSON_MODEL_PATH = "/session/persons";
 
+	private SessionBasicDAO sessionBasicDAO;
+	
+	private SessionPersonBasicDAO sessionPersonBasicDAO;
+	
 	private SessionPersonValidator sessionPersonValidator;
 	
-	@ResponseBody
-	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user) {
-		return new Permissions(true);
-	}
-	
-	@ResponseBody
-	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "/{gid}/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user, @PathVariable String gid) {
-		return new Permissions(true);
-	}
 
 	@ResponseBody
-	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "/{facility}*", method = RequestMethod.POST)
-	public AddResult add(@RequestBody SessionPerson sp, @PathVariable String facility, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		if(!facility.equals(getSessionPersonBasicDAO().getGidFacility())) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-			return new AddResult();
+	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "*", method = RequestMethod.POST)
+	public AddResult add(@RequestBody SessionPerson sessionPerson, @RequestParam String user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		
+		String sessionGid = sessionPerson.getSessionGid();
+		
+		try {
+			Session session = sessionBasicDAO.get(sessionGid);
+			if(session == null) {
+				response.setStatus(HttpStatus.NOT_FOUND.value());
+				return new AddResult("Session (" + sessionGid + ") not found.");
+			}
 		}
-		// Check permissions. //
-		return doAdd(sp, request, response);
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new AddResult(e.getMessage());
+		}
+		
+		Authorities authorities;
+		try {
+			authorities = sessionAuthorityAccessor.getAuthorities(user, sessionGid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new AddResult(e.getMessage());
+		}
+		
+		if(authorities.containsNone(FACILITY_ADMIN_SESSIONS)) {
+			response.setStatus(HttpStatus.FORBIDDEN.value());
+			return new AddResult("Required authorities not found.");
+		}
+		
+		List<SessionPerson> sessionPersons;
+		try {
+			sessionPersons = sessionPersonBasicDAO.getAllBySessionGid(sessionGid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new AddResult(e.getMessage());
+		}
+		
+		for(SessionPerson sp : sessionPersons) {
+			if(sp.getPersonGid().equalsIgnoreCase(sessionPerson.getPersonGid())) {
+				response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+				return new AddResult("Already a member of the session team.");
+			}
+		}
+		
+		return doAdd(sessionPerson, request, response);
 	}
 
 	@ResponseBody
 	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "/{gid}*", method = RequestMethod.PUT)
-	public EditResult edit(@RequestBody SessionPerson sp, @PathVariable String gid, HttpServletResponse response) throws Exception {
-		sp.setGid(gid);
+	public EditResult edit(@RequestBody SessionPerson sessionPerson, @RequestParam String user, @PathVariable String gid, HttpServletResponse response) throws Exception {
 		
-		// Check permissions. //
-		return doEdit(sp, response);
+		SessionPerson current;
+		try {
+			current = sessionPersonBasicDAO.get(gid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new EditResult(e.getMessage());
+		}
+		
+		if(current == null) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return new EditResult("SessionPerson (" + gid + ") not found.");
+		}
+		
+		Authorities authorities;
+		try {
+			authorities = sessionAuthorityAccessor.getAuthorities(user, current.getSessionGid());
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new EditResult(e.getMessage());
+		}
+		
+		if(authorities.containsNone(FACILITY_ADMIN_SESSIONS)) {
+			response.setStatus(HttpStatus.FORBIDDEN.value());
+			return new EditResult("Required authorities not found.");
+		}
+		
+		sessionPerson.setGid(current.getGid());
+		sessionPerson.setPersonGid(current.getPersonGid());
+		
+		return doEdit(sessionPerson, response);
 	}
 
 	@ResponseBody
 	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "/{gid}*", method = RequestMethod.DELETE)
-	public void remove(@PathVariable String gid, HttpServletResponse response) throws Exception {
-		// Check permissions. //
+	public RemoveResult remove(@RequestParam String user, @PathVariable String gid, HttpServletResponse response) throws Exception {
 		
-		response.setStatus(HttpStatus.FORBIDDEN.value());
-		//doRemove(gid, response);
+		SessionPerson sessionPerson;
+		try {
+			sessionPerson = sessionPersonBasicDAO.get(gid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new RemoveResult(e.getMessage());
+		}
+		
+		if(sessionPerson == null) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return new RemoveResult("SessionPerson (" + gid + ") not found.");
+		}
+		
+		Authorities authorities;
+		try {
+			authorities = sessionAuthorityAccessor.getAuthorities(user, sessionPerson.getSessionGid());
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new RemoveResult(e.getMessage());
+		}
+
+		if(authorities.containsNone(FACILITY_ADMIN_SESSIONS)) {
+			response.setStatus(HttpStatus.FORBIDDEN.value());
+			return new RemoveResult("Required authorities not found.");
+		}
+		
+		return doRemove(gid, response);
 	}
 
 	@ResponseBody
 	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "/{gid}*", method = RequestMethod.GET)
 	public Object get(@RequestParam String user, @PathVariable String gid, HttpServletResponse response) throws Exception {
+		
+		SessionPerson sessionPerson;
 		try {
-			SessionPerson sessionPerson = getSessionPersonBasicDAO().get(gid);
-			if(sessionPerson == null) {
-				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			sessionPerson = sessionPersonBasicDAO.get(gid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyMap();
+		}
+		
+		if(sessionPerson == null) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return Collections.emptyMap();
+		}
+		
+		Authorities authorities;
+		try {
+			authorities = sessionAuthorityAccessor.getAuthorities(user, sessionPerson.getSessionGid());
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new RemoveResult(e.getMessage());
+		}
+		
+		if(!authorities.containsSessionAuthority() && authorities.containsNone(FACILITY_ADMIN_SESSIONS)) {
+			Session session;
+			try {
+				session = sessionBasicDAO.get(sessionPerson.getSessionGid());
+				if(session == null) {
+					throw new ModelAccessException("Session not found.");
+				}
+			}
+			catch(ModelAccessException e) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 				return Collections.emptyMap();
 			}
 			
-			if(isSessionMember(user, sessionPerson.getSessionGid())) {
-				return sessionPerson;
+			authorities = projectAuthzDAO.getAuthorities(user, session.getProjectGid()).get();
+			if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
+				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				return Collections.emptyMap();
 			}
-			
-			Session session = getSessionBasicDAO().get(sessionPerson.getSessionGid());
-			if((session != null) && isProjectMember(user, user, session.getProjectGid())) {
-				return sessionPerson;
-			}
-					
-			if(!hasLoginRole(user, LOGIN_ROLE_ADMIN_SESSIONS)) {
-				return sessionPerson;
-			}
-			
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return Collections.emptyMap();
 		}
-		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return Collections.emptyList();
-		}
+		
+		return sessionPerson;
 	}
 
 	@ResponseBody
 	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "*", method = RequestMethod.GET, params = "session")
-	public List<SessionPerson> getAll(@RequestParam String user, @RequestParam("session") String sessionGid, HttpServletResponse response) {
+	public Object getAllBySessionGid(@RequestParam String user, @RequestParam("session") String sessionGid, HttpServletResponse response) {
+	
+		Authorities authorities;
 		try {
-			if(isSessionMember(user, sessionGid)) {
-				return getSessionPersonBasicDAO().getAllBySessionGid(sessionGid);
-			}
-			
-			Session session = getSessionBasicDAO().get(sessionGid);
-			if((session != null) && isProjectMember(user, user, session.getProjectGid())) {
-				return getSessionPersonBasicDAO().getAllBySessionGid(sessionGid);
-			}
-			
-			if(hasLoginRole(user, LOGIN_ROLE_ADMIN_SESSIONS)) {
-				return getSessionPersonBasicDAO().getAllBySessionGid(sessionGid);	
-			}
-			
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			authorities = sessionAuthorityAccessor.getAuthorities(user, sessionGid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
+		}
+		
+		if(!authorities.containsSessionAuthority() && authorities.containsNone(FACILITY_ADMIN_SESSIONS)) {
+			Session session;
+			try {
+				session = sessionBasicDAO.get(sessionGid);
+				if(session == null) {
+					throw new ModelAccessException("Session not found.");
+				}
+			}
+			catch(ModelAccessException e) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return Collections.emptyList();
+			}
+			
+			authorities = projectAuthzDAO.getAuthorities(user, session.getProjectGid()).get();
+			if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
+				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				return Collections.emptyList();
+			}
+		}
+	
+		try {
+			return sessionPersonBasicDAO.getAllBySessionGid(sessionGid);
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -144,7 +269,6 @@ public class SessionPersonAuthzController extends AbstractSessionAuthzController
 		}
 	}
 	
-
 	@Override
 	public String getModelPath() {
 		return SESSION_PERSON_MODEL_PATH;
@@ -152,12 +276,26 @@ public class SessionPersonAuthzController extends AbstractSessionAuthzController
 	
 	@Override
 	public ModelBasicDAO<SessionPerson> getModelBasicDAO() {
-		return getSessionPersonBasicDAO();
+		return sessionPersonBasicDAO;
 	}
 
 	@Override
 	public ModelValidator<SessionPerson> getModelValidator() {
 		return sessionPersonValidator;
+	}
+
+	public SessionBasicDAO getSessionBasicDAO() {
+		return sessionBasicDAO;
+	}
+	public void setSessionBasicDAO(SessionBasicDAO sessionBasicDAO) {
+		this.sessionBasicDAO = sessionBasicDAO;
+	}
+
+	public SessionPersonBasicDAO getSessionPersonBasicDAO() {
+		return sessionPersonBasicDAO;
+	}
+	public void setSessionPersonBasicDAO(SessionPersonBasicDAO sessionPersonBasicDAO) {
+		this.sessionPersonBasicDAO = sessionPersonBasicDAO;
 	}
 
 	public SessionPersonValidator getSessionPersonValidator() {

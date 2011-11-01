@@ -8,7 +8,6 @@
 package ca.sciencestudio.rest.service.person.controllers;
 
 import java.util.Collections;
-import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.person.Person;
 import ca.sciencestudio.model.person.dao.PersonBasicDAO;
@@ -37,37 +35,18 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
 public class PersonAuthzController extends AbstractModelAuthzController<Person> {
 
 	private static final String PERSON_MODEL_PATH = "/persons";
-	
-	private static final Permissions PERMISSIONS_READ_ONLY = new Permissions();
-	
+		
 	private PersonBasicDAO personBasicDAO;
 	
 	private PersonValidator personValidator;
-	
-	
-	@ResponseBody
-	@RequestMapping(value = PERSON_MODEL_PATH + "/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user) {
-		return PERMISSIONS_READ_ONLY;
-	}
-	
-	@ResponseBody
-	@RequestMapping(value = PERSON_MODEL_PATH + "/{gid}/perms*", method = RequestMethod.GET)
-	public Permissions permissions(@RequestParam String user, @PathVariable String gid) {
-		return PERMISSIONS_READ_ONLY;
-	}	
-	
+		
 	//
 	//	Adding, Editing and Removing Persons currently only done by administrator. No REST API implemented. 
 	//
 
 	@ResponseBody
 	@RequestMapping(value = PERSON_MODEL_PATH + "/{gid}*", method = RequestMethod.GET)
-	public Object get(@RequestParam String user, @PathVariable String gid, HttpServletResponse response) throws Exception {
-//		if(!personGid.equals(gid) && !hasLoginRole(personGid, LOGIN_ROLE_ADMIN_PERSONS)) {
-//			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//			return Collections.emptyMap();	
-//		}
+	public Object get(@PathVariable String gid, HttpServletResponse response) throws Exception {
 		return doGet(gid, response);
 	}
 	
@@ -91,27 +70,17 @@ public class PersonAuthzController extends AbstractModelAuthzController<Person> 
 	}
 		
 	@ResponseBody
-	@RequestMapping(value = PERSON_MODEL_PATH + "*", method = RequestMethod.GET)
-	public Object getAll(@RequestParam String user, HttpServletResponse response) {
+	@RequestMapping(value = PERSON_MODEL_PATH + "*", method = RequestMethod.GET, params = "name")
+	public Object getAllByName(@RequestParam String name, HttpServletResponse response) {
+		if((name == null) || (name.trim().length() == 0)) {
+			return Collections.emptyList();
+		}
+		
 		try {
-		//	if(hasLoginRole(personGid, LOGIN_ROLE_ADMIN_PERSONS)) {
-				return personBasicDAO.getAll();
-		//	} else {
-		//		return Collections.emptyList();
-		//	}
+			return personBasicDAO.getAllByName(name);
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return Collections.emptyList();
-		}
-	}
-
-	@ResponseBody
-	@RequestMapping(value = PERSON_MODEL_PATH + "*", method = RequestMethod.GET, params = "name")
-	public List<Person> getAllByName(@RequestParam(required = false) String user, @RequestParam String name, HttpServletResponse response) {
-		if((name != null) && (name.length() > 0)) {
-			return personBasicDAO.getAllByName(name);
-		} else {
 			return Collections.emptyList();
 		}
 	}
