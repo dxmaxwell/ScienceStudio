@@ -25,19 +25,24 @@ public abstract class AbstractModelValidator<T extends Model> extends Validation
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
-	public void validate(Object obj, Errors errors) {
-		if(supports(obj.getClass())) {
-			validate((T)obj, errors);
-		}
-		else {
-			errors.reject(EC_CLASS_NOT_SUPPORTED, "Validator does not support class: " + obj.getClass());
-		}
+	public Errors validate(T t) {
+		return invokeValidator(this, t);
 	}
 	
 	@Override
-	public Errors validate(T t) {
-		return invokeValidator(this, t);
+	@SuppressWarnings("unchecked")
+	public void validate(Object obj, Errors errors) {
+		if(obj == null) {
+			errors.reject(EC_CLASS_NOT_SUPPORTED, "Valdiator does not support NULL object.");
+			return;
+		}
+		
+		if(!supports(obj.getClass())) {
+			errors.reject(EC_CLASS_NOT_SUPPORTED, "Validator does not support class: " + obj.getClass());
+			return;
+		}
+		
+		validate((T)obj, errors);
 	}
 	
 	public abstract void validate(T t, Errors errors);

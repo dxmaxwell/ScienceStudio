@@ -2,7 +2,7 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     ProjectValidator class.
+ *     PersonValidator class.
  *     
  */
 package ca.sciencestudio.model.person.validators;
@@ -56,9 +56,6 @@ public class PersonValidator extends AbstractModelValidator<Person> {
 		if(person.getPhoneNumber() == null) {
 			person.setPhoneNumber(Person.DEFAULT_PHONE_NUMBER);
 		}
-		//if(person.getPhoneNumber().length() > 0) {
-		//	rejectIfInvalidTelephone(errors, null, EC_INVALID, "Phone Number field is invalid.");
-		//}
 		rejectIfExceedsLength(Person.MAX_LENGTH_PHONE_NUMBER, errors, null, EC_MAX_LENGTH, "Phone Number field exceeds maximum length.");
 		errors.popNestedPath();
 		
@@ -66,9 +63,6 @@ public class PersonValidator extends AbstractModelValidator<Person> {
 		if(person.getMobileNumber() == null) {
 			person.setMobileNumber(Person.DEFAULT_MOBILE_NUMBER);
 		}
-		//if(person.getMobileNumber().length() > 0) {
-		//	rejectIfInvalidTelephone(errors, null, EC_INVALID, "Mobile Number field is invalid.");
-		//}
 		rejectIfExceedsLength(Person.MAX_LENGTH_MOBILE_NUMBER, errors, null, EC_MAX_LENGTH, "Mobile Number field exceeds maximum length.");
 		errors.popNestedPath();
 		
