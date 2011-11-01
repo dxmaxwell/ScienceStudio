@@ -19,64 +19,103 @@
 		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
 	</bean>
 	
-	<bean id="projectDAO"
-		class="ca.sciencestudio.model.project.dao.ibatis.IbatisProjectDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<!-- Person Data Access Objects -->
+	
+	<bean id="personAuthzDAO"
+		class="ca.sciencestudio.model.person.dao.rest.RestPersonAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
-	<bean id="projectPersonDAO"
-		class="ca.sciencestudio.model.project.dao.ibatis.IbatisProjectPersonDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<!-- Project Data Access Objects -->
+	
+	<bean id="projectAuthzDAO"
+		class="ca.sciencestudio.model.project.dao.rest.RestProjectAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
-	<bean id="personDAO"
-		class="ca.sciencestudio.model.person.dao.ibatis.IbatisPersonDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<bean id="projectPersonAuthzDAO"
+		class="ca.sciencestudio.model.project.dao.rest.RestProjectPersonAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
-	<bean id="sampleDAO"
-		class="ca.sciencestudio.model.sample.dao.ibatis.IbatisSampleDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<!-- Sample Data Access Objects -->
+	
+	<bean id="sampleAuthzDAO"
+		class="ca.sciencestudio.model.sample.dao.rest.RestSampleAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
+	</bean>
+
+	<!-- Session Data Access Objects -->
+	
+	<bean id="sessionAuthzDAO"
+		class="ca.sciencestudio.model.session.dao.rest.RestSessionAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
-	<bean id="sessionDAO"
-		class="ca.sciencestudio.model.session.dao.ibatis.IbatisSessionDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<bean id="sessionPersonAuthzDAO"
+		class="ca.sciencestudio.model.session.dao.rest.RestSessionPersonAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
-	<bean id="laboratoryDAO"
-		class="ca.sciencestudio.model.facility.dao.ibatis.IbatisLaboratoryDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<bean id="experimentAuthzDAO"
+		class="ca.sciencestudio.model.session.dao.rest.RestExperimentAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
-	<bean id="experimentDAO"
-		class="ca.sciencestudio.model.session.dao.ibatis.IbatisExperimentDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<bean id="scanAuthzDAO"
+		class="ca.sciencestudio.model.session.dao.rest.RestScanAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
-	<bean id="instrumentDAO"
-		class="ca.sciencestudio.model.facility.dao.ibatis.IbatisInstrumentDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
-	</bean>
+	<!-- Facility Data Access Objects -->
 	
-	<bean id="techniqueDAO"
-		class="ca.sciencestudio.model.facility.dao.ibatis.IbatisTechniqueDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
-	</bean>
-	
-	<bean id="instrumentTechniqueDAO"
-		class="ca.sciencestudio.model.facility.dao.ibatis.IbatisInstrumentTechniqueDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
-	</bean>
-	
-	<bean id="scanDAO"
-		class="ca.sciencestudio.model.session.dao.ibatis.IbatisScanDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
-	</bean>
-	
-	<bean id="facilityDAO"
+	<!--<bean id="facilityAuthzDAO"
 		class="ca.sciencestudio.model.facility.dao.ibatis.IbatisFacilityDAO">
 		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>-->
+	
+	<bean id="laboratoryAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.rest.RestLaboratoryAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
+	</bean>
+	
+	<bean id="instrumentAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.rest.RestInstrumentAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
+	</bean>
+	
+	<bean id="instrumentTechniqueAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.rest.RestInstrumentTechniqueAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
+	</bean>
+	
+	<bean id="techniqueAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.rest.RestTechniqueAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.base.url}"/>
+		<property name="origin" value="DEVI"/>
 	</bean>
 	
 </beans>

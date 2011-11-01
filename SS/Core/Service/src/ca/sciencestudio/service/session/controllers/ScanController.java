@@ -8,21 +8,16 @@
 package ca.sciencestudio.service.session.controllers;
 
 import java.util.List;
-import java.util.Collections;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
 import ca.sciencestudio.model.session.Scan;
-import ca.sciencestudio.model.session.dao.ScanDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
 
 /**
  * @author maxweld
@@ -31,48 +26,19 @@ import ca.sciencestudio.security.util.SecurityUtil;
 @Controller
 public class ScanController {
 
-	@Autowired
-	private ScanDAO scanDAO;
-	
-	@Autowired
-	private ProjectDAO projectDAO;
-	
-	@RequestMapping(value = "/experiment/{experimentId}/scans.{format}", method = RequestMethod.GET)
-	public String getScanList(@PathVariable int experimentId, @PathVariable String format, ModelMap model) {
+	private ScanAuthzDAO scanAuthzDAO;
 		
-		List<Scan> scanList = Collections.emptyList();
-		model.put("response", scanList);
-		
-		String responseView = "response-" + format;
-		
-		Project project = projectDAO.getProjectByExperimentId(experimentId);
-		if(project == null) {
-			return responseView;
-		}
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		
-		if(!SecurityUtil.hasAnyAuthority(admin, group)) {
-			return responseView;
-		}
-		
-		scanList = scanDAO.getScanListByExperimentId(experimentId);
-		model.put("response", scanList);
-		return responseView;
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.SCAN_PATH + "*", params = "experiment")
+	public List<Scan> getScanList(@RequestParam("experiment") String experimentGid) {
+		String user = SecurityUtil.getPersonGid();
+		return scanAuthzDAO.getAllByExperimentGid(user, experimentGid).get();
 	}
 
-	public ScanDAO getScanDAO() {
-		return scanDAO;
+	public ScanAuthzDAO getScanAuthzDAO() {
+		return scanAuthzDAO;
 	}
-	public void setScanDAO(ScanDAO scanDAO) {
-		this.scanDAO = scanDAO;
-	}
-
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setScanAuthzDAO(ScanAuthzDAO scanAuthzDAO) {
+		this.scanAuthzDAO = scanAuthzDAO;
 	}
 }

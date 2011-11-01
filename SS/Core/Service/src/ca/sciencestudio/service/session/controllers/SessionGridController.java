@@ -10,20 +10,19 @@ package ca.sciencestudio.service.session.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.ProjectStatus;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.SessionDAO;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.SessionGridBacker;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
 
 /**
  * @author maxweld
@@ -32,44 +31,63 @@ import ca.sciencestudio.service.session.backers.SessionGridBacker;
 @Controller
 public class SessionGridController extends AbstractModelController {
 
-	@Autowired
-	private ProjectDAO projectDAO;
+	private ProjectAuthzDAO projectAuthzDAO;
 	
-	@Autowired
-	private SessionDAO sessionDAO;
+	private SessionAuthzDAO sessionAuthzDAO;
 
-	@RequestMapping(value = "/sessions/grid.{format}")
-	public String sessions(@PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.SESSION_PATH + "/grid*")
+	public List<SessionGridBacker> sessions() {
 		
-		String personUid = SecurityUtil.getPerson().getGid();
-		List<Project> projectList = projectDAO.getProjectListByPersonUidAndStatus(personUid, ProjectStatus.ACTIVE);
-		List<Session> sessionList = sessionDAO.getSessionListByPersonUidAndProjectStatus(personUid, ProjectStatus.ACTIVE);
+		String user = SecurityUtil.getPersonGid();
 		
-		List<SessionGridBacker> sessionGridBackerList = new ArrayList<SessionGridBacker>(sessionList.size());
+		List<Session> sessionList = sessionAuthzDAO.getAll(user).get();
+
+		List<ProjectContainer> projectContainerList = new ArrayList<ProjectContainer>();
 		for(Session session : sessionList) {
-			for(Project project : projectList) {
-				if(project.getId() == session.getProjectId()) {
-					sessionGridBackerList.add(new SessionGridBacker(project, session));
-					break;
-				}
-			}
+			projectContainerList.add(new ProjectContainer(session, projectAuthzDAO.get(user, session.getProjectGid())));
 		}
-				
-		model.put("response", sessionGridBackerList);
-		return "response-" + format;
+		
+		List<SessionGridBacker> sessionGridBackerList = new ArrayList<SessionGridBacker>();
+		for(ProjectContainer projectContainer : projectContainerList) {
+			sessionGridBackerList.add(new SessionGridBacker(projectContainer.getProject(), projectContainer.getSession()));
+		}
+		
+		return sessionGridBackerList;
 	}
 	
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	
+	private static class ProjectContainer {
+		
+		private Data<Project> dataProject;
+		private Session session;
+		
+		
+		public ProjectContainer(Session session, Data<Project> dataProject) {
+			this.session = session;
+			this.dataProject = dataProject;
+		}
+		
+		public Project getProject() {
+			return dataProject.get();
+		}
+		
+		public Session getSession() {
+			return session;
+		}
 	}
 
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
+	}
+
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
+	}
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
 }

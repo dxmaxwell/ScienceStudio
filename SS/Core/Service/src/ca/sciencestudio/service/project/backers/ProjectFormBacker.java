@@ -2,122 +2,108 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     ProjectFormController class.
+ *     ProjectFormBacker class.
  *     
  */
 package ca.sciencestudio.service.project.backers;
 
-import java.text.ParseException;
 import java.util.Date;
+import java.util.Map;
 
-import ca.sciencestudio.model.Project;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.model.project.Project;
+import ca.sciencestudio.util.convert.ConversionServiceHolder;
+import ca.sciencestudio.util.convert.SimpleDateToStringConverter;
+import ca.sciencestudio.util.rest.ValidationError;
+import ca.sciencestudio.util.rest.ValidationResult;
 
 /**
  * @author maxweld
  *
  */
-public class ProjectFormBacker { 
+public class ProjectFormBacker extends Project { 
 	
-	private String gid;
-	private String name;
-	private String description;
-	private String startDate;
-	private String endDate;
-	private String status;
+	private static final long serialVersionUID = 1L;
+
+	private static final String START_DAY_FIELD = "startDay";
+	private static final String END_DAY_FIELD = "endDay";
 	
+	private static final String START_DATE_FIELD = "startDate";
+	private static final String END_DATE_FIELD = "endDate";
+	
+	private static final SimpleDateToStringConverter converter = new SimpleDateToStringConverter("yyyy-MM-dd");
+
+	private String startDay;
+	private String endDay;
+	
+	public static ValidationResult transformResult(ValidationResult result) {
+		Map<String, ValidationError> fieldErrors = result.getFieldErrors();
+		if(fieldErrors.containsKey(START_DATE_FIELD)) {
+			fieldErrors.put(START_DAY_FIELD, fieldErrors.get(START_DATE_FIELD));
+			fieldErrors.remove(START_DATE_FIELD);
+		}
+		if(fieldErrors.containsKey(END_DATE_FIELD)) {
+			fieldErrors.put(END_DAY_FIELD, fieldErrors.get(END_DATE_FIELD));
+			fieldErrors.remove(END_DATE_FIELD);
+		}
+		return result;
+	}
+
 	public ProjectFormBacker() {
-		setGid(Project.DEFAULT_GID);
-		setName(Project.DEFAULT_NAME);
-		setDescription(Project.DEFAULT_DESCRIPTION);
-		setRawStartDate(Project.DEFAULT_START_DATE);
-		setRawEndDate(Project.DEFAULT_END_DATE);
-		setStatus(Project.DEFAULT_STATUS);
+		setStartDate(getStartDate());
+		setEndDate(getEndDate());
 	}
-	
+
 	public ProjectFormBacker(Project project) {
-		setGid(project.getGid());
-		setName(project.getName());
-		setDescription(project.getDescription());
-		setRawStartDate(project.getStartDate());
-		setRawEndDate(project.getEndDate());
-		setStatus(project.getStatus());
+		super(project);
+		setStartDate(getStartDate());
+		setEndDate(getEndDate());
 	}
 	
-	public Project toProject() {
-		Project project = new Project();
-		project.setGid(getGid());
-		project.setName(getName());
-		project.setDescription(getDescription());
-		project.setStartDate(getRawStartDate());
-		project.setEndDate(getRawEndDate());
-		project.setStatus(getStatus());
-		return project;
+	@Override
+	public void setStartDate(Date startDate) {
+		try {
+			startDay = converter.convert(startDate);
+		}
+		catch(IllegalArgumentException e) {
+			startDay = null;
+		}
+		super.setStartDate(startDate);
 	}
 	
-	public Date getRawStartDate() {
+	@Override
+	public void setEndDate(Date endDate) {
 		try {
-			return BindAndValidateUtils.DATE_FORMAT_ISO8601_DATE.parse(getStartDate());
+			endDay = converter.convert(endDate);
 		}
-		catch (ParseException e) {
-			return Project.DEFAULT_START_DATE;
+		catch(IllegalArgumentException e) {
+			endDay = null;
 		}
+		super.setEndDate(endDate);
 	}
-	public void setRawStartDate(Date date) {
-		setStartDate(BindAndValidateUtils.DATE_FORMAT_ISO8601_DATE.format(date));
+	
+	public String getStartDay() {
+		return startDay;
 	}
-
-	public Date getRawEndDate() {
+	public void setStartDay(String startDay) {		
+		this.startDay = startDay;		
 		try {
-			return BindAndValidateUtils.DATE_FORMAT_ISO8601_DATE.parse(getEndDate());
+			super.setStartDate(ConversionServiceHolder.getConversionService().convert(startDay, Date.class));
 		}
-		catch (ParseException e) {
-			return Project.DEFAULT_END_DATE;
+		catch(IllegalArgumentException e) {
+			super.setStartDate(null);
 		}
 	}
-	public void setRawEndDate(Date date) {
-		setEndDate(BindAndValidateUtils.DATE_FORMAT_ISO8601_DATE.format(date));
+	
+	public String getEndDay() {
+		return endDay;
 	}
-
-	public String getGid() {
-		return gid;
-	}
-	public void setGid(String gid) {
-		this.gid = gid;
-	}
-
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getStartDate() {
-		return startDate;
-	}
-	public void setStartDate(String startDate) {
-		this.startDate = startDate;
-	}
-
-	public String getEndDate() {
-		return endDate;
-	}
-	public void setEndDate(String endDate) {
-		this.endDate = endDate;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
+	public void setEndDay(String endDay) {
+		this.endDay = endDay;
+		try {
+			super.setEndDate(ConversionServiceHolder.getConversionService().convert(endDay, Date.class));
+		}
+		catch(IllegalArgumentException e) {
+			super.setEndDate(null);
+		}
 	}
 }

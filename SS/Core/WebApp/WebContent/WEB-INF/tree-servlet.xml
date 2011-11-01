@@ -14,39 +14,37 @@
            
 	<context:annotation-config/>
 		
-	<bean id="rootTreeNodeController"
-		class="ca.sciencestudio.service.tree.controllers.RootTreeNodeController">
-		<property name="modelServletPath" value="/model"/>
+	<bean class="ca.sciencestudio.service.tree.controllers.RootTreeNodeController">
 	</bean>
 	
-	<bean id="projectTreeNodeController"
-		class="ca.sciencestudio.service.tree.controllers.ProjectTreeNodeController">
-		<property name="modelServletPath" value="/model"/>
+	<bean class="ca.sciencestudio.service.tree.controllers.ProjectTreeNodeController">
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
 	</bean>
 	
-	<bean id="projectPersonTreeNodeController"
-		class="ca.sciencestudio.service.tree.controllers.ProjectPersonTreeNodeController">
-		<property name="modelServletPath" value="/model"/>
+	<bean class="ca.sciencestudio.service.tree.controllers.ProjectPersonTreeNodeController">
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
 	</bean>
 	
-	<bean id="sampleTreeNodeController"
-		class="ca.sciencestudio.service.tree.controllers.SampleTreeNodeController">
-		<property name="modelServletPath" value="/model"/>
+	<bean class="ca.sciencestudio.service.tree.controllers.SampleTreeNodeController">
+		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
 	</bean>
 	
-	<bean id="sessionTreeNodeController"
-		class="ca.sciencestudio.service.tree.controllers.SessionTreeNodeController">
-		<property name="modelServletPath" value="/model"/>
+	<bean class="ca.sciencestudio.service.tree.controllers.SessionTreeNodeController">
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
 	</bean>
 	
-	<bean id="experimentTreeNodeController"
-		class="ca.sciencestudio.service.tree.controllers.ExperimentTreeNodeController">
-		<property name="modelServletPath" value="/model"/>
+	<bean class="ca.sciencestudio.service.tree.controllers.SessionPersonTreeNodeController">
+		<property name="sessionPersonAuthzDAO" ref="sessionPersonAuthzDAO"/>
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
 	</bean>
 	
-	<bean id="scanTreeNodeController"
-		class="ca.sciencestudio.service.tree.controllers.ScanTreeNodeController">
-		<property name="modelServletPath" value="/model"/>
+	<bean class="ca.sciencestudio.service.tree.controllers.ExperimentTreeNodeController">
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.tree.controllers.ScanTreeNodeController">
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
 	</bean>
 	
 	<bean id="annotationMapping"

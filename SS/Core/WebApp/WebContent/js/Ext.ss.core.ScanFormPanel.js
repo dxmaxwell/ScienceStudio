@@ -26,6 +26,11 @@ Ext.ss.core.ScanFormPanel = function(config) {
 		delete formPanelConfig.buttonDefaults;
 	}
 	
+	this.ss.fields.gid = new Ext.form.Hidden(Ext.applyIf({
+		name: 'gid',
+		disabled: false
+	}, defaults));
+	
 	this.ss.fields.name = new Ext.form.TextField(Ext.applyIf({
 		fieldLabel: 'Name',
 		name: 'name',
@@ -41,23 +46,27 @@ Ext.ss.core.ScanFormPanel = function(config) {
 	
 	this.ss.fields.parameters = new Ext.form.TextArea(Ext.applyIf({
 		fieldLabel : 'Parameters',
-		name: 'parameters',
+		name: 'paramsText',
 		height: 200,
 		width: 350,
 		disabled: true
 	}, defaults));
 	
-	this.ss.fields.startDate = new Ext.form.TextField(Ext.applyIf({
+	this.ss.fields.startDate = new Ext.form.DateField(Ext.applyIf({
 		fieldLabel: 'Start',
 		name: 'startDate',
-		width: 150,
+		format: Date.patterns.ISO8601Long,
+		altFormats: Date.altDateFormats,
+		width: 200,
 		disabled: true
 	}, defaults));
 
-	this.ss.fields.endDate = new Ext.form.TextField(Ext.applyIf({
+	this.ss.fields.endDate = new Ext.form.DateField(Ext.applyIf({
 		fieldLabel: 'End',
 		name: 'endDate',
-		width: 150,
+		format: Date.patterns.ISO8601Long,
+		altFormats: Date.altDateFormats,
+		width: 200,
 		disabled: true
 	}, defaults));
 
@@ -96,25 +105,23 @@ Ext.ss.core.ScanFormPanel = function(config) {
 			waitMsg: waitMsg,
 			success: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.response && json.response.message) {
+				if(json && json.message) {
 					messagePanel.removeAll();
 					messagePanel.add({
-						html: json.response.message
+						html: json.message
 					});
 					messagePanel.doLayout();
 				}
 			},
 			failure: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.globalErrors) {
+				if(json && json.message) {
 					messagePanel.removeAll();
-					for(var idx=0; idx < json.globalErrors.length; idx++) {
-						messagePanel.add({
-							html: json.globalErrors[idx],
-							style: { 'color':'red' }
-						});
-						messagePanel.doLayout();
-					}
+					messagePanel.add({
+						html: json.message,
+						style: { 'color':'red' }
+					});
+					messagePanel.doLayout();
 				}
 			},
 			scope:this
@@ -122,6 +129,7 @@ Ext.ss.core.ScanFormPanel = function(config) {
 	}, this);
 	
 	formPanelConfig.items = [
+         this.ss.fields.gid,
 	     this.ss.fields.name,
 	     this.ss.fields.dataUrl,
 	     this.ss.fields.parameters,

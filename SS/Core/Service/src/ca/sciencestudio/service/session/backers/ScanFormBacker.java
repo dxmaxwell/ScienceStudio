@@ -7,119 +7,78 @@
  */
 package ca.sciencestudio.service.session.backers;
 
-import java.text.ParseException;
-import java.util.Date;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Map;
 
 import ca.sciencestudio.model.session.Scan;
-import ca.sciencestudio.model.session.dao.ScanDAO;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.Parameters;
+import ca.sciencestudio.util.rest.ValidationError;
+import ca.sciencestudio.util.rest.ValidationResult;
 
 /**
  * @author maxweld
  *
  */
-public class ScanFormBacker {
+public class ScanFormBacker extends Scan {
 
-	private int id;
-	private int experimentId;
-	private String name;
-	private String dataUrl;
-	private String endDate;
-	private String startDate;
-	private String parameters;
+	private static final long serialVersionUID = 1L;
+	
+	private static final String DEFAULT_PARAM_VALUE = "";
+	
+	private static final String PARAMETERS_FIELD = "parameters";
+	
+	private static final String PARAMS_TEXT_FIELD = "paramsText";
+	
+	public static ValidationResult transformResult(ValidationResult result) {
+		Map<String,ValidationError> fieldErrors = result.getFieldErrors();
+		if(fieldErrors.containsKey(PARAMETERS_FIELD)) {
+			fieldErrors.put(PARAMS_TEXT_FIELD, fieldErrors.get(PARAMETERS_FIELD));
+			fieldErrors.remove(PARAMETERS_FIELD);
+		}
+		return result;
+	}
+	
+	public ScanFormBacker() {
+		super();
+	}
 	
 	public ScanFormBacker(Scan scan) {
-		setId(scan.getId());
-		setExperimentId(scan.getExperimentId());
-		setName(scan.getName());
-		setDataUrl(scan.getDataUrl());
-		setRawEndDate(scan.getEndDate());
-		setRawStartDate(scan.getStartDate());
-		setParameters(scan.getParameters());
-	}
-
-	public Scan createScan(ScanDAO scanDAO) {
-		Scan scan = scanDAO.createScan();
-		scan.setId(getId());
-		scan.setExperimentId(getExperimentId());
-		scan.setName(getName());
-		scan.setDataUrl(getDataUrl());
-		scan.setEndDate(getRawEndDate());
-		scan.setStartDate(getRawStartDate());
-		scan.setParameters(getParameters());
-		return scan;
+		super(scan);
 	}
 	
-	public Date getRawEndDate() {
+	public String getParamsText() {
+		StringBuffer buffer = new StringBuffer();
+		Parameters params = getParameters();
+		if(params != null) {
+			for(Map.Entry<String,String> param : params.entrySet()) {
+				buffer.append(param.getKey()).append(" = ").append(param.getValue()).append("\n");
+			}
+		}
+		return buffer.toString();
+	}
+
+	public void setParamsText(String paramsText) {
+		Parameters params = new Parameters();
 		try {
-			return BindAndValidateUtils.DATE_FORMAT_ISO8601_LONG.parse(getEndDate());
+			BufferedReader r = new BufferedReader(new StringReader(paramsText));
+			for(String line = r.readLine(); line != null; line = r.readLine()) {
+				if(line.length() > 0) {
+					String[] kv = line.split("=", 2);
+					if(kv.length > 0) {
+						if((kv.length == 1) || (kv[2].length() == 0)) {
+							params.put(kv[0], DEFAULT_PARAM_VALUE);
+						} else {
+							params.put(kv[0], kv[1]);
+						}
+					}
+				}
+			}
 		}
-		catch(ParseException e) {
-			return null;
+		catch(IOException e) {
+			return;
 		}
-	}
-	public void setRawEndDate(Date rawEndDate) {
-		setEndDate(BindAndValidateUtils.DATE_FORMAT_ISO8601_LONG.format(rawEndDate));
-	}
-	
-	public Date getRawStartDate() {
-		try {
-			return BindAndValidateUtils.DATE_FORMAT_ISO8601_LONG.parse(getStartDate());
-		}
-		catch(ParseException e) {
-			return null;
-		}
-	}
-	public void setRawStartDate(Date rawStartDate) {
-		setStartDate(BindAndValidateUtils.DATE_FORMAT_ISO8601_LONG.format(rawStartDate));
-	}
-	
-	public int getId() {
-		return id;
-	}
-	private void setId(int id) {
-		this.id = id;
-	}
-
-	public int getExperimentId() {
-		return experimentId;
-	}
-	private void setExperimentId(int experimentId) {
-		this.experimentId = experimentId;
-	}
-
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDataUrl() {
-		return dataUrl;
-	}
-	public void setDataUrl(String dataUrl) {
-		this.dataUrl = dataUrl;
-	}
-
-	public String getEndDate() {
-		return endDate;
-	}
-	public void setEndDate(String endDate) {
-		this.endDate = endDate;
-	}
-
-	public String getStartDate() {
-		return startDate;
-	}
-	public void setStartDate(String startDate) {
-		this.startDate = startDate;
-	}
-
-	public String getParameters() {
-		return parameters;
-	}
-	public void setParameters(String parameters) {
-		this.parameters = parameters;
+		setParameters(params);
 	}
 }

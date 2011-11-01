@@ -10,31 +10,31 @@ package ca.sciencestudio.service.session.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.facility.Instrument;
 import ca.sciencestudio.model.facility.InstrumentTechnique;
 import ca.sciencestudio.model.facility.Technique;
-import ca.sciencestudio.model.facility.dao.InstrumentDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentTechniqueDAO;
-import ca.sciencestudio.model.facility.dao.TechniqueDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentTechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.sample.Sample;
-import ca.sciencestudio.model.sample.dao.SampleDAO;
+import ca.sciencestudio.model.sample.dao.SampleAuthzDAO;
 import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
-import ca.sciencestudio.model.session.dao.SessionDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.ExperimentGridBacker;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
 
 /**
  * @author maxweld
@@ -43,64 +43,56 @@ import ca.sciencestudio.service.session.backers.ExperimentGridBacker;
 @Controller
 public class ExperimentGridController extends AbstractModelController {
 
-	@Autowired
-	private SampleDAO sampleDAO;
+	private SampleAuthzDAO sampleAuthzDAO;	
+
+	private ProjectAuthzDAO projectAuthzDAO;
 	
-	@Autowired
-	private ProjectDAO projectDAO;
+	private SessionAuthzDAO sessionAuthzDAO;
 	
-	@Autowired
-	private SessionDAO sessionDAO;
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	
-	@Autowired
-	private ExperimentDAO experimentDAO;
+	private TechniqueAuthzDAO techniqueAuthzDAO;
 	
-	@Autowired
-	private TechniqueDAO techniqueDAO;
+	private InstrumentAuthzDAO instrumentAuthzDAO;
 	
-	@Autowired
-	private InstrumentDAO instrumentDAO;
+	private InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO;
 	
-	@Autowired
-	private InstrumentTechniqueDAO instrumentTechniqueDAO;
-	
-	@RequestMapping(value = "/session/{sessionId}/experiments/grid.{format}", method = RequestMethod.GET)
-	public String getSessionList(@PathVariable int sessionId, @PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.EXPERIMENT_PATH + "/grid*", method = RequestMethod.GET, params = "session")
+	public List<ExperimentGridBacker> getSessionList(@RequestParam("session") String sessionGid) {
+		
+		String user = SecurityUtil.getPersonGid();
 		
 		List<ExperimentGridBacker> experimentGridBackerList = new ArrayList<ExperimentGridBacker>();
-		model.put("response", experimentGridBackerList);
 		
-		String responseView = "response-" + format;
-		
-		Session session = sessionDAO.getSessionById(sessionId);
+		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
-			return responseView;
+			return experimentGridBackerList;
 		}
 		
-		Project project = projectDAO.getProjectById(session.getProjectId());
+		Data<Project> dataProject = projectAuthzDAO.get(user, session.getProjectGid());
+		Data<List<Sample>> dataSampleList = sampleAuthzDAO.getAllByProjectGid(user, session.getProjectGid());
+		Data<List<Experiment>> dataExperimentList = experimentAuthzDAO.getAllBySessionGid(user, sessionGid);
+		Data<List<Technique>> dataTechniqueList = techniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<Instrument>> dataInstrumentList = instrumentAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<InstrumentTechnique>> dataInstrumentTechniqueList = instrumentTechniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		
+		Project project = dataProject.get();
 		if(project == null) {
-			return responseView;
+			return experimentGridBackerList;
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object team = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		if(!SecurityUtil.hasAnyAuthority(admin, team)) {
-			return responseView;
-		}
-		
-		int laboratoryId = session.getLaboratoryId();
-		
-		List<Sample> sampleList = sampleDAO.getSampleListByProjectId(project.getId());
-		List<Experiment> experimentList = experimentDAO.getExperimentListBySessionId(sessionId);
-		List<Technique> techniqueList = techniqueDAO.getTechniqueListByLaboratoryId(laboratoryId);
-		List<Instrument> instrumentList = instrumentDAO.getInstrumentListByLaboratoryId(laboratoryId);
-		List<InstrumentTechnique> instrumentTechniqueList = instrumentTechniqueDAO.getInstrumentTechniqueListByLaboratoryId(laboratoryId);
+		List<Sample> sampleList = dataSampleList.get();
+		List<Experiment> experimentList = dataExperimentList.get();
+		List<Technique> techniqueList = dataTechniqueList.get();
+		List<Instrument> instrumentList = dataInstrumentList.get();
+		List<InstrumentTechnique> instrumentTechniqueList = dataInstrumentTechniqueList.get();
 		
 		for(Experiment experiment : experimentList) {
 			
 			Sample sample = null;
 			for(Sample s : sampleList) {
-				if(experiment.getSampleId() == s.getId()) {
+				if(experiment.getSourceGid().equals(s.getGid())) {
 					sample = s;
 				}
 			}
@@ -110,7 +102,7 @@ public class ExperimentGridController extends AbstractModelController {
 			
 			InstrumentTechnique instrumentTechnique = null;
 			for(InstrumentTechnique it : instrumentTechniqueList) {
-				if(experiment.getInstrumentTechniqueId() == it.getId()) {
+				if(experiment.getInstrumentTechniqueGid().equals(it.getGid())) {
 					instrumentTechnique = it;
 				}
 			}
@@ -120,7 +112,7 @@ public class ExperimentGridController extends AbstractModelController {
 				
 			Instrument instrument = null;
 			for(Instrument i : instrumentList) {
-				if(instrumentTechnique.getInstrumentId() == i.getId()) {
+				if(instrumentTechnique.getInstrumentGid().equals(i.getGid())) {
 					instrument = i;
 				}
 			}
@@ -130,7 +122,7 @@ public class ExperimentGridController extends AbstractModelController {
 			
 			Technique technique = null;		
 			for(Technique t : techniqueList) {
-				if(instrumentTechnique.getTechniqueId() == t.getId()) {
+				if(instrumentTechnique.getTechniqueGid().equals(t.getGid())) {
 					technique = t;
 				}
 			}
@@ -138,60 +130,58 @@ public class ExperimentGridController extends AbstractModelController {
 				continue;
 			}
 			
-			experimentGridBackerList.add(new ExperimentGridBacker(experiment, project.getId(), sample, instrument, technique));
+			experimentGridBackerList.add(new ExperimentGridBacker(experiment, sample, instrument, technique));
 		}
 		
-		return responseView;
+		return experimentGridBackerList;
 	}
 
-	public SampleDAO getSampleDAO() {
-		return sampleDAO;
+	public SampleAuthzDAO getSampleAuthzDAO() {
+		return sampleAuthzDAO;
 	}
-	public void setSampleDAO(SampleDAO sampleDAO) {
-		this.sampleDAO = sampleDAO;
-	}
-
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setSampleAuthzDAO(SampleAuthzDAO sampleAuthzDAO) {
+		this.sampleAuthzDAO = sampleAuthzDAO;
 	}
 
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
-	}
-
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
-	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 
-	public TechniqueDAO getTechniqueDAO() {
-		return techniqueDAO;
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
 	}
-	public void setTechniqueDAO(TechniqueDAO techniqueDAO) {
-		this.techniqueDAO = techniqueDAO;
-	}
-
-	public InstrumentDAO getInstrumentDAO() {
-		return instrumentDAO;
-	}
-	public void setInstrumentDAO(InstrumentDAO instrumentDAO) {
-		this.instrumentDAO = instrumentDAO;
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
 
-	public InstrumentTechniqueDAO getInstrumentTechniqueDAO() {
-		return instrumentTechniqueDAO;
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
 	}
-	public void setInstrumentTechniqueDAO(InstrumentTechniqueDAO instrumentTechniqueDAO) {
-		this.instrumentTechniqueDAO = instrumentTechniqueDAO;
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
+	}
+
+	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
+		return techniqueAuthzDAO;
+	}
+	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
+		this.techniqueAuthzDAO = techniqueAuthzDAO;
+	}
+
+	public InstrumentAuthzDAO getInstrumentAuthzDAO() {
+		return instrumentAuthzDAO;
+	}
+	public void setInstrumentAuthzDAO(InstrumentAuthzDAO instrumentAuthzDAO) {
+		this.instrumentAuthzDAO = instrumentAuthzDAO;
+	}
+
+	public InstrumentTechniqueAuthzDAO getInstrumentTechniqueAuthzDAO() {
+		return instrumentTechniqueAuthzDAO;
+	}
+	public void setInstrumentTechniqueAuthzDAO(InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO) {
+		this.instrumentTechniqueAuthzDAO = instrumentTechniqueAuthzDAO;
 	}
 }
-
-	

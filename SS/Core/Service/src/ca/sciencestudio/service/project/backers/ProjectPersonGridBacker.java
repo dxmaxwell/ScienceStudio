@@ -9,7 +9,6 @@ package ca.sciencestudio.service.project.backers;
 
 import ca.sciencestudio.model.person.Person;
 import ca.sciencestudio.model.project.ProjectPerson;
-import ca.sciencestudio.model.project.ProjectRole;
 
 /**
  * @author maxweld
@@ -17,13 +16,15 @@ import ca.sciencestudio.model.project.ProjectRole;
  */
 public class ProjectPersonGridBacker extends ProjectPersonFormBacker {
 
-	public ProjectPersonGridBacker(int projectId, ProjectRole projectRole, Person person) {
-		super(projectId, projectRole, person);
-	}
+	private static final long serialVersionUID = 1L;
 
-	public ProjectPersonGridBacker(int projectId, ProjectRole projectRole) {
-		super(projectId, projectRole);
-	}
+//	public ProjectPersonGridBacker(int projectId, ProjectRole projectRole, Person person) {
+//		super(projectId, projectRole, person);
+//	}
+
+//	public ProjectPersonGridBacker(int projectId, ProjectRole projectRole) {
+//		super(projectId, projectRole);
+//	}
 
 	public ProjectPersonGridBacker(ProjectPerson projectPerson, Person person) {
 		super(projectPerson, person);

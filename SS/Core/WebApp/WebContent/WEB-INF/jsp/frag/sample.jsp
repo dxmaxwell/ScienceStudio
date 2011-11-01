@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -57,8 +57,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#samples${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSamplesPath(${project.id}, '.html'));",
+				href:"#samples${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSamplePath('.html?project=${project.gid}'));",
 				html:"Samples"
 			}
 		},{
@@ -77,16 +77,16 @@ Ext.onReady(function() {
 	Edit Sample Form
 --%>
 	var sampleForm = new Ext.ss.core.SampleFormPanel({
-		url: ModelPathUtils.getSamplePath(${sample.id}, '/form/edit.json'),
+		url: ModelPathUtils.getModelSamplePath('/form/edit.json'),
 		method: 'POST',
-		<sec:authorize ifNotGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+		<c:if test="${not permissions.add}">
 		defaults: {
 			disabled:true
 		},
 		buttonDefaults: {
 			hidden:true
 		},
-		</sec:authorize>
+		</c:if>
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',		
@@ -96,48 +96,45 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 	
-	<c:if test="${not empty sampleStateList}">
-	var stateStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="sampleStateList"/>
-		</jsp:include>
-	};
-	
-	sampleForm.ss.fields.state.getStore().loadData(stateStoreData);
+	<c:if test="${not empty sampleStateOptions}">
+	sampleForm.ss.fields.state.getStore().loadData(<hmc:write source="${sampleStateOptions}"/>);
 	</c:if>
 	
-	<c:if test="${not empty sampleFormBacker}">
-	var sampleFormValues =
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="sampleFormBacker"/>
-		</jsp:include>;
-	
+	<c:if test="${not empty sample}">
+	var sampleFormValues = <hmc:write source="${sample}"/>;
 	// Hack to make the checkbox group load values properly //
-	sampleFormValues.sampleFormBacker.hazards = sampleFormValues.sampleFormBacker;
+	sampleFormValues.hazards = sampleFormValues;
 	//////////////////////////////////////////////////////////
-	sampleForm.getForm().setValues(sampleFormValues.sampleFormBacker);
-	</c:if>	
+	sampleForm.getForm().setValues(sampleFormValues);
+	</c:if>
 
 	function removeSample() {
 		Ext.Msg.confirm('Question', 'Do you REALLY want to remove this sample?', function(ans) {
 			if(ans == 'yes') {
 				Ext.Ajax.request({
-					url:ModelPathUtils.getSamplePath(${sample.id}, '/remove.json'),
+					method:'POST',				
+					params:{ gid:'${sample.gid}' },
+					url:ModelPathUtils.getModelSamplePath('/form/remove.json'),
 					failure:function(response, options) {
 						Ext.Msg.alert('Error', 'Network connection problem.');
 					},
 					success:function(response, options) {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
- 							if(json.success && json.response.viewUrl) { 
-								loadModelViewTab(json.response.viewUrl);
-							}
-							else if(json.globalErrors && json.globalErrors[0]) {
-								Ext.Msg.alert('Error', json.globalErrors[0]);
+ 							if(json.success) {
+								if(json.viewUrl) {
+									loadModelViewTab(json.viewUrl);
+								} else {
+									loadModelViewTab(ModelPathUtils.getModelSamplePath('.html'));
+								}
 							}
 							else {
-								Ext.Msg.alert('Error', 'An unspecified error has occurred.');
-							}
+								if(json.message) {
+									Ext.Msg.alert('Error', json.message);
+								} else {
+									Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+								}
+ 							}
 						}
 					}
 				});
@@ -146,14 +143,14 @@ Ext.onReady(function() {
 	};
 
 	var panel = new Ext.Panel({
-		title:'Sample (Id:${sample.id})',
-		<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+		title:'Sample (GID:${sample.gid})',
+		<c:if test="${permissions.remove}">		
 		tools:[{
 			id:'close',
 			handler:removeSample,
 			scope:this
 		}],
-		</sec:authorize>
+		</c:if>
 		items:[
 			sampleForm
 		],

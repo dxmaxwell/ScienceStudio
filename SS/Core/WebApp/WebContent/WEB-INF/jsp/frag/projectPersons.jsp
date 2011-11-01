@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -66,20 +66,19 @@ Ext.onReady(function() {
 	Project Person Grid
 --%>
 	var projectPersonsGridStore = new Ext.data.JsonStore({
-		url: ModelPathUtils.getProjectPersonsPath(${project.id}, "/grid.json"),
+		url: ModelPathUtils.getModelProjectPersonPath('/grid.json?project=${project.gid}'),
 		autoDestroy: true,
 		autoLoad: false,
-		root:"response",
 		fields:[{
-			name:"id", mapping:"projectPersonGridBacker.id"
+			name:"gid",
 		},{
-			name:"projectId", mapping:"projectPersonGridBacker.projectId"
+			name:"projectGid",
 		},{
-			name:"fullName", mapping:"projectPersonGridBacker.fullName"
+			name:"fullName",
 		},{
-			name:"emailAddress", mapping:"projectPersonGridBacker.emailAddress"
+			name:"emailAddress",
 		},{
-			name:"projectRole", mapping:"projectPersonGridBacker.projectRole"
+			name:"role",
 		}]
 	});
 
@@ -96,13 +95,13 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"id", sortable:true
+			header: "GID", width:50, dataIndex:"gid", sortable:true
 		},{
 			header: "Name", width: 180, dataIndex: 'fullName', sortable: true
 		},{
 			header: "Email", width: 180, dataIndex: 'emailAddress', sortable: true
 		},{
-			header: "Role", width: 80, dataIndex: 'projectRole', sortable: true
+			header: "Role", width: 80, dataIndex: 'role', sortable: true
 		}],
 		border:false,
 		height:400
@@ -111,9 +110,9 @@ Ext.onReady(function() {
 	projectPersonsGridPanel.on('rowclick', function(grid, index, event) {
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var projectPersonId = record.get("id");
-			if(projectPersonId) {
-				loadModelViewTab(ModelPathUtils.getProjectPersonPath(projectPersonId, '.html'));
+			var gid = record.get("gid");
+			if(gid) {
+				loadModelViewTab(ModelPathUtils.getModelProjectPersonPath(['/', gid, '.html']));
 			}
 		}
 	}, this);
@@ -151,34 +150,33 @@ Ext.onReady(function() {
 
 	Add Project Person
 --%>
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+	<c:if test="${permissions.add}">
 
 	var projectPersonStore = new Ext.data.JsonStore({
-		url:ModelPathUtils.getProjectPersonsPath(${project.id}, '/form/query.json'),
+		url:ModelPathUtils.getModelProjectPersonPath('/form/search.json'),
+		baseParams:{ project:'${project.gid}' },
 		autoDestroy:true,
-		root:'response',
 		fields: [{
-			name:'id', mapping:'projectPersonFormBacker.id'
+			name:'gid'
 		},{
-			name:'personUid', mapping:'projectPersonFormBacker.personUid'
+			name:'personGid'
 		},{
-			name:'projectId', mapping:'projectPersonFormBacker.projectId'			
+			name:'projectGid'			
 		},{
-			name:'fullName', mapping:'projectPersonFormBacker.fullName'
+			name:'fullName'
 		},{
-			name:'emailAddress', mapping:'projectPersonFormBacker.emailAddress'
+			name:'emailAddress'
 		},{
-			name:'phoneNumber', mapping:'projectPersonFormBacker.phoneNumber'
+			name:'phoneNumber'
 		},{
-			name:'mobileNumber', mapping:'projectPersonFormBacker.mobileNumber'
+			name:'mobileNumber'
 		},{
-			name:'projectRole', mapping:'projectPersonFormBacker.projectRole'
+			name:'role'
 		}]
 	});
 	
 	var projectPersonForm = new Ext.ss.core.ProjectPersonFormPanel({
-		url:ModelPathUtils.getProjectPersonsPath(${project.id}, '/form/add.json'),
-		method: 'POST', 
+		url:ModelPathUtils.getModelProjectPersonPath('/form/add.json'),
 		defaults: {
 			disabled:true
 		},
@@ -192,28 +190,19 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 	
-	projectPersonForm.ss.fields.personUid.setDisabled(false);
-
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
-	projectPersonForm.ss.fields.projectRole.setDisabled(false);
-	</sec:authorize>
+	projectPersonForm.ss.fields.personGid.setDisabled(false);
+	projectPersonForm.ss.fields.role.setDisabled(false);
 
 	projectPersonForm.getForm().on('actioncomplete', function(form, action) {
 		if(action.type == 'submit' && action.result.success == true) {
-			if(action.result.response && action.result.response.viewUrl) {
-				loadModelViewTab(action.result.response.viewUrl);
+			if(action.result.viewUrl) {
+				loadModelViewTab(action.result.viewUrl);
 			}
 		}
 	}, this);
 
-	<c:if test="${not empty projectRoleList}">
-	var projectRoleStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="projectRoleList"/>
-		</jsp:include>	
-	};
-	
-	projectPersonForm.ss.fields.projectRole.getStore().loadData(projectRoleStoreData);
+	<c:if test="${not empty projectRoleOptions}">
+	projectPersonForm.ss.fields.role.getStore().loadData(<hmc:write source="${projectRoleOptions}"/>);
 	</c:if>	
 
 	var panel = new Ext.Panel({
@@ -227,7 +216,7 @@ Ext.onReady(function() {
 
 	addItemModelViewTab(panel, true);
 
-	</sec:authorize>
+	</c:if>
 });
 </script>
 </div>

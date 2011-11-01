@@ -2,7 +2,7 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     MainPageController class.
+ *     ScanDataViewController class.
  *     
  */
 package ca.sciencestudio.service.app.controllers;
@@ -12,11 +12,9 @@ import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import ca.sciencestudio.model.facility.Facility;
@@ -24,15 +22,16 @@ import ca.sciencestudio.model.facility.Instrument;
 import ca.sciencestudio.model.facility.InstrumentTechnique;
 import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.facility.Technique;
-import ca.sciencestudio.model.facility.dao.FacilityDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentTechniqueDAO;
-import ca.sciencestudio.model.facility.dao.LaboratoryDAO;
-import ca.sciencestudio.model.facility.dao.TechniqueDAO;
+import ca.sciencestudio.model.facility.dao.FacilityAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentTechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.LaboratoryAuthzDAO;
+import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
 import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.Scan;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
-import ca.sciencestudio.model.session.dao.ScanDAO;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
+import ca.sciencestudio.security.util.SecurityUtil;
 
 /**
  * @author maxweld
@@ -51,67 +50,62 @@ public class ScanDataViewController {
 	
 	private static final String ERROR_VIEW = "page/error";
 	
-	@Autowired
-	private ScanDAO scanDAO;
+	private ScanAuthzDAO scanAuthzDAO;
 	
-	@Autowired
-	private FacilityDAO facilityDAO;
+	private FacilityAuthzDAO facilityAuthzDAO;
 	
-	@Autowired
-	private TechniqueDAO techniqueDAO;
+	private TechniqueAuthzDAO techniqueAuthzDAO;
 	
-	@Autowired
-	private InstrumentDAO instrumentDAO;
+	private InstrumentAuthzDAO instrumentAuthzDAO;
 	
-	@Autowired
-	private ExperimentDAO experimentDAO;
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	
-	@Autowired
-	private LaboratoryDAO laboratoryDAO;
+	private LaboratoryAuthzDAO laboratoryAuthzDAO;
 	
-	@Autowired
-	private InstrumentTechniqueDAO instrumentTechniqueDAO;
+	private InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO;
 	
-	@RequestMapping(value = "/scan/data/view.html", method = RequestMethod.GET)
-	public String viewScanData(@RequestParam int scanId, ModelMap model) {
+	@RequestMapping(value = "/scan/data/view.html", params = "scan")
+	public String viewScanData(@RequestParam("scan") String scanGid, ModelMap model) {
 		
-		Scan scan = scanDAO.getScanById(scanId);
+		String user = SecurityUtil.getPersonGid();
+		
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
 		if(scan == null) {
 			model.put("error", "Scan not found.");
 			return ERROR_VIEW;
 		}
 		
-		Experiment experiment = experimentDAO.getExperimentById(scan.getExperimentId());
+		Experiment experiment = experimentAuthzDAO.get(user, scan.getExperimentGid()).get();
 		if(experiment == null) {
 			model.put("error", "Experiment not found.");
 			return ERROR_VIEW;
 		}
 		
-		InstrumentTechnique instrumentTechnique = instrumentTechniqueDAO.getInstrumentTechniqueById(experiment.getInstrumentTechniqueId());
+		InstrumentTechnique instrumentTechnique = instrumentTechniqueAuthzDAO.get(user, experiment.getInstrumentTechniqueGid()).get();
 		if(instrumentTechnique == null) {
 			model.put("error", "Instrument and technique not found.");
 			return ERROR_VIEW;
 		}
 	
-		Technique technique = techniqueDAO.getTechniqueById(instrumentTechnique.getTechniqueId());
+		Technique technique = techniqueAuthzDAO.get(user, instrumentTechnique.getTechniqueGid()).get();
 		if(technique == null) {
 			model.put("error", "Technique not found.");
 			return ERROR_VIEW;
 		}
 		
-		Instrument instrument = instrumentDAO.getInstrumentById(instrumentTechnique.getInstrumentId());
+		Instrument instrument = instrumentAuthzDAO.get(user, instrumentTechnique.getInstrumentGid()).get();
 		if(instrument == null) {
 			model.put("error", "Instrument not found.");
 			return ERROR_VIEW;
 		}
 		
-		Laboratory laboratory = laboratoryDAO.getLaboratoryById(instrument.getLaboratoryId());
+		Laboratory laboratory = laboratoryAuthzDAO.get(user, instrument.getLaboratoryGid()).get();
 		if(laboratory == null) {
 			model.put("error", "Laboratory not found.");
 			return ERROR_VIEW;
 		}
 		
-		Facility facility = facilityDAO.getFacilityById(laboratory.getFacilityId());
+		Facility facility = facilityAuthzDAO.get(user, laboratory.getFacilityGid()).get();
 		if(facility == null) {
 			model.put("error", "Facility not found.");
 			return ERROR_VIEW;
@@ -124,7 +118,7 @@ public class ScanDataViewController {
 			redirectUrl.append(REDIRECT_URL_SEPARATOR).append(sanitize(laboratory.getName()));
 			redirectUrl.append(REDIRECT_URL_SEPARATOR).append(sanitize(instrument.getName()));
 			redirectUrl.append(REDIRECT_URL_SEPARATOR).append(sanitize(technique.getName()));
-			redirectUrl.append(REDIRECT_URL_SUFFIX).append("?scanId=").append(scanId);
+			redirectUrl.append(REDIRECT_URL_SUFFIX).append("?scan=").append(scanGid);
 		}
 		catch (Exception e) {
 			model.put("error", "Error while constructing redirect URL.");
@@ -138,46 +132,53 @@ public class ScanDataViewController {
 		Matcher matcher = SANITIZE_DIRTY_PATTERN.matcher(name.toLowerCase());
 		return URLEncoder.encode(matcher.replaceAll(SANITIZE_REPLACE_ALL), SANITIZE_URL_ENCODING);
 	}
-	
-	public ScanDAO getScanDAO() {
-		return scanDAO;
+
+	public ScanAuthzDAO getScanAuthzDAO() {
+		return scanAuthzDAO;
 	}
-	public void setScanDAO(ScanDAO scanDAO) {
-		this.scanDAO = scanDAO;
+	public void setScanAuthzDAO(ScanAuthzDAO scanAuthzDAO) {
+		this.scanAuthzDAO = scanAuthzDAO;
 	}
 
-	public TechniqueDAO getTechniqueDAO() {
-		return techniqueDAO;
+	public FacilityAuthzDAO getFacilityAuthzDAO() {
+		return facilityAuthzDAO;
 	}
-	public void setTechniqueDAO(TechniqueDAO techniqueDAO) {
-		this.techniqueDAO = techniqueDAO;
-	}
-
-	public InstrumentDAO getInstrumentDAO() {
-		return instrumentDAO;
-	}
-	public void setInstrumentDAO(InstrumentDAO instrumentDAO) {
-		this.instrumentDAO = instrumentDAO;
+	public void setFacilityAuthzDAO(FacilityAuthzDAO facilityAuthzDAO) {
+		this.facilityAuthzDAO = facilityAuthzDAO;
 	}
 
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
+	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
+		return techniqueAuthzDAO;
 	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
-	}
-
-	public LaboratoryDAO getLaboratoryDAO() {
-		return laboratoryDAO;
-	}
-	public void setLaboratoryDAO(LaboratoryDAO laboratoryDAO) {
-		this.laboratoryDAO = laboratoryDAO;
+	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
+		this.techniqueAuthzDAO = techniqueAuthzDAO;
 	}
 
-	public InstrumentTechniqueDAO getInstrumentTechniqueDAO() {
-		return instrumentTechniqueDAO;
+	public InstrumentAuthzDAO getInstrumentAuthzDAO() {
+		return instrumentAuthzDAO;
 	}
-	public void setInstrumentTechniqueDAO(InstrumentTechniqueDAO instrumentTechniqueDAO) {
-		this.instrumentTechniqueDAO = instrumentTechniqueDAO;
+	public void setInstrumentAuthzDAO(InstrumentAuthzDAO instrumentAuthzDAO) {
+		this.instrumentAuthzDAO = instrumentAuthzDAO;
+	}
+
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
+	}
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
+	}
+
+	public LaboratoryAuthzDAO getLaboratoryAuthzDAO() {
+		return laboratoryAuthzDAO;
+	}
+	public void setLaboratoryAuthzDAO(LaboratoryAuthzDAO laboratoryAuthzDAO) {
+		this.laboratoryAuthzDAO = laboratoryAuthzDAO;
+	}
+
+	public InstrumentTechniqueAuthzDAO getInstrumentTechniqueAuthzDAO() {
+		return instrumentTechniqueAuthzDAO;
+	}
+	public void setInstrumentTechniqueAuthzDAO(InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO) {
+		this.instrumentTechniqueAuthzDAO = instrumentTechniqueAuthzDAO;
 	}
 }

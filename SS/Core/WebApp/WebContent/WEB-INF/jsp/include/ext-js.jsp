@@ -27,9 +27,7 @@
 	    ISO8601TimeShrt:"H:i"
 	};
 	
-	Date.altFormats =  
-		Date.patterns.ISO8601Full + '|' +
-		Date.patterns.ISO8601Long + '|' +
-		Date.patterns.ISO8601Shrt + '|' +
-		Date.patterns.ISO8601Date + '|' + 'c';
+	Date.altFormats = Date.altDateFormats = 'c|m/d/Y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y|m-d-y|m-d-Y|m/d|m-d|md|mdy|mdY|d|Y-m-d|n-j|n/j';
+	Date.altTimeFormats = 'H:i:s.uO|g:ia|g:iA|g:i a|g:i A|h:i|g:i|H:i|ga|ha|gA|h a|g a|g A|gi|hi|gia|hia|g|H|gi a|hi a|giA|hiA|gi A|hi A';
+	
 </script>

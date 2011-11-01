@@ -14,7 +14,6 @@ function westPanel() {
 	
 	var treeLoader = new Ext.tree.TreeLoader({
 		dataUrl:'/will/be/replaced',
-		requestMethod: 'GET',
 		nodeParameter: ''
 	});
 	

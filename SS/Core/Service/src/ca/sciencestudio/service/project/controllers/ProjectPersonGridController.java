@@ -2,7 +2,7 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     ProjectPersonController class.
+ *     ProjectPersonGridController class.
  *     
  */
 package ca.sciencestudio.service.project.controllers;
@@ -10,20 +10,19 @@ package ca.sciencestudio.service.project.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.person.Person;
-import ca.sciencestudio.model.person.dao.PersonDAO;
+import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 import ca.sciencestudio.model.project.ProjectPerson;
-import ca.sciencestudio.model.project.dao.ProjectPersonDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.project.dao.ProjectPersonAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.project.backers.ProjectPersonGridBacker;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
 
 /**
  * @author maxweld
@@ -32,46 +31,69 @@ import ca.sciencestudio.service.project.backers.ProjectPersonGridBacker;
 @Controller
 public class ProjectPersonGridController {
 
-	@Autowired
-	private PersonDAO personDAO;
+	private PersonAuthzDAO personAuthzDAO;
 	
-	@Autowired
-	private ProjectPersonDAO projectPersonDAO;
+	private ProjectPersonAuthzDAO projectPersonAuthzDAO;
 	
-	@RequestMapping(value = "/project/{projectId}/persons/grid.{format}", method = RequestMethod.GET)
-	public String getProjectPersonGridList(@PathVariable int projectId, @PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.PROJECT_PERSON_PATH + "/grid*")
+	public List<ProjectPersonGridBacker> getProjectPersonGridList(@RequestParam("project") String projectGid) {
+		
+		String user = SecurityUtil.getPersonGid();
+		
+		List<PersonContainer> personContainerList = new ArrayList<PersonContainer>();
+		
+		List<ProjectPerson> projectPersonList = projectPersonAuthzDAO.getAllByProjectGid(user, projectGid).get();
+		for(ProjectPerson projectPerson : projectPersonList) {
+			Data<Person> dataPerson = personAuthzDAO.get(user, projectPerson.getPersonGid());
+			personContainerList.add(new PersonContainer(projectPerson, dataPerson));
+		}
 		
 		List<ProjectPersonGridBacker> projectPersonGridBackerList = new ArrayList<ProjectPersonGridBacker>();
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object team = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		if(SecurityUtil.hasAnyAuthority(admin,team)) {
-			
-			List<ProjectPerson> projectPersonList = projectPersonDAO.getProjectPersonListByProjectId(projectId);
-			for(ProjectPerson projectPerson : projectPersonList) {
-				
-				Person person = personDAO.getPersonByUid(projectPerson.getPersonUid());
-				if(person != null) {			
-					projectPersonGridBackerList.add(new ProjectPersonGridBacker(projectPerson, person));
-				}
-			}
+		for(PersonContainer personContainer : personContainerList) {
+			if(personContainer.getPerson() != null) {
+				Person p = personContainer.getPerson();
+				ProjectPerson pp = personContainer.getProjectPerson();
+				projectPersonGridBackerList.add(new ProjectPersonGridBacker(pp, p));
+			}	
 		}
 		
-		model.put("response", projectPersonGridBackerList);
-		return "response-" + format;
-	}
-	
-	public PersonDAO getPersonDAO() {
-		return personDAO;
-	}
-	public void setPersonDAO(PersonDAO personDAO) {
-		this.personDAO = personDAO;
+		return projectPersonGridBackerList;
 	}
 
-	public ProjectPersonDAO getProjectPersonDAO() {
-		return projectPersonDAO;
+	
+	private static class PersonContainer  {
+		
+		private Data<Person> dataPerson;
+		private ProjectPerson projectPerson;
+		
+		public PersonContainer(ProjectPerson projectPerson, Data<Person> dataPerson) {
+			this.projectPerson = projectPerson;
+			this.dataPerson = dataPerson;
+		}
+		
+		public Person getPerson() {
+			return dataPerson.get();
+		}
+		
+		public ProjectPerson getProjectPerson() {
+			return projectPerson;
+		}
 	}
-	public void setProjectPersonDAO(ProjectPersonDAO projectPersonDAO) {
-		this.projectPersonDAO = projectPersonDAO;
+	
+	
+	public PersonAuthzDAO getPersonAuthzDAO() {
+		return personAuthzDAO;
+	}
+	public void setPersonAuthzDAO(PersonAuthzDAO personAuthzDAO) {
+		this.personAuthzDAO = personAuthzDAO;
+	}
+
+	public ProjectPersonAuthzDAO getProjectPersonAuthzDAO() {
+		return projectPersonAuthzDAO;
+	}
+	public void setProjectPersonAuthzDAO(ProjectPersonAuthzDAO projectPersonAuthzDAO) {
+		this.projectPersonAuthzDAO = projectPersonAuthzDAO;
 	}
 }

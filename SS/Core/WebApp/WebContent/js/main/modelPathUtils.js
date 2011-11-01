@@ -8,128 +8,66 @@
 
 var ModelPathUtils = {
 
-	MODEL_BASE_PATH: '/ss/model',
+	PERSON_PATH:"/persons",
 	
-	PERSON:"/person",
+	PROJECT_PATH:'/projects',
+
+    PROJECT_PERSON_PATH:'/project/persons',
 	
-	SCAN:"/scan",
-	SCANS:"/scans",
-	
-	PROJECT: "/project",
-    PROJECTS: "/projects",
-	
-    PROJECT_PERSON:"/project/person",
-    PROJECT_PERSONS:"/persons",
-	
-	SAMPLE:"/sample",
-    SAMPLES:"/samples",
-	
-    SESSION:"/session",
-    SESSIONS:"/sessions",
-	
-    EXPERIMENT:"/experiment",
-	EXPERIMENTS:"/experiments",
-	
-	getProjectsPath: function(gid, ext) {
-		var projectsPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.PROJECTS;
-		if(gid && ext) {
-			projectsPath += '/' + gid + ext;	
-		}
-		else if(gid) {
-			projectsPath += gid;
-		}
-		else if(ext) {
-			projectsPath += ext;
-		}
-		return projectsPath;
+    SESSION_PATH:'/sessions',
+    
+    SESSION_PERSON_PATH:'/session/persons',
+    
+    EXPERIMENT_PATH:"/experiments",
+    
+    SAMPLE_PATH:'/samples',
+    
+    SCAN_PATH:"/scans",
+    
+    MODEL_PATH:'/ss/model',
+    
+    getPersonPath: function(exts) {
+    	return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.PERSON_PATH, exts);	
+	},
+    
+	getModelProjectPath: function(exts) {
+		return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.PROJECT_PATH, exts);
 	},
 	
-	getProjectPersonsPath: function(projectId, ext) {
-		var projectPersonsPath = ModelPathUtils.getProjectPath(projectId) + ModelPathUtils.PROJECT_PERSONS;
-		if(ext) {
-			projectPersonsPath += ext;
-		}
-		return projectPersonsPath;
+	getModelProjectPersonPath: function(exts) {
+		return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.PROJECT_PERSON_PATH, exts);
 	},
 	
-	getProjectPersonPath: function(projectPersonId, ext) {
-		var projectPersonPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.PROJECT_PERSON + "/" + projectPersonId;
-		if(ext) {
-			projectPersonPath += ext;
-		}
-		return projectPersonPath;
+	getModelSessionPath: function(exts) {
+		return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.SESSION_PATH, exts);
 	},
 	
-	getSamplesPath: function(projectId, ext) {
-		var samplesPath =  ModelPathUtils.getProjectPath(projectId) + ModelPathUtils.SAMPLES;
-		if(ext) {
-			samplesPath += ext;
-		}
-		return samplesPath;
+	getModelSessionPersonPath: function(exts) {
+		return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.SESSION_PERSON_PATH, exts);
 	},
 	
-	getSamplePath: function(sampleId, ext) {
-		var samplePath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.SAMPLE + "/" + sampleId;
-		if(ext) {
-			samplePath += ext;
-		}
-		return samplePath;
+	getModelExperimentPath: function(exts) {
+		return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.EXPERIMENT_PATH, exts);
 	},
 	
-	getSessionsPath: function(projectId, ext) {
-		var sessionsPath =  ModelPathUtils.getProjectPath(projectId) + ModelPathUtils.SESSIONS;
-		if(ext) {
-			sessionsPath += ext;
-		}
-		return sessionsPath;
+	getModelSamplePath: function(exts) {
+		return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.SAMPLE_PATH, exts);
 	},
 	
-	getSessionPath: function(sessionId, ext) {
-		var sessionPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.SESSION + "/" + sessionId;
-		if(ext) {
-			sessionPath += ext;
-		}
-		return sessionPath;
+	getModelScanPath: function(exts) {
+		return ModelPathUtils.specialJoin(ModelPathUtils.MODEL_PATH + ModelPathUtils.SCAN_PATH, exts);
 	},
 	
-	getExperimentsPath: function(sessionId, ext) {
-		var experimentsPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.SESSION + "/" + sessionId + ModelPathUtils.EXPERIMENTS;
-		if(ext) {
-			experimentsPath += ext;
+	specialJoin: function(prefix, exts) {
+		var path = prefix;
+		if(exts) {
+			if(exts.join) { 
+				path += exts.join('');
+			} else { 
+				path += exts;
+			}
 		}
-		return experimentsPath;
-	},
-	
-	getExperimentPath: function(experimentId, ext) {
-		var experimentPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.EXPERIMENT + "/" + experimentId;
-		if(ext) {
-			experimentPath += ext;
-		}
-		return experimentPath;
-	},
-	
-	getScansPath: function(experimentId, ext) {
-		var scanPath =  ModelPathUtils.getExperimentPath(experimentId, ModelPathUtils.SCANS);
-		if(ext) {
-			scanPath += ext;
-		}
-		return scanPath;
-	},
-	
-	getScanPath: function(scanId, ext) {
-		var scanPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.SCAN + "/" + scanId;
-		if(ext) {
-			scanPath += ext;
-		}
-		return scanPath;
-	},
-	
-	getPersonPath: function(personId) {
-		var personPath = ModelPathUtils.MODEL_BASE_PATH + ModelPathUtils.PERSON;
-		if(personId) {
-			personPath += "/" + personId;
-		}
-		return personPath;	
+		return path;
 	}
 };
 

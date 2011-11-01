@@ -7,31 +7,23 @@
  */
 package ca.sciencestudio.service.session.controllers;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
-import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.SessionDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.AddResult;
+import ca.sciencestudio.model.EditResult;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
+
 import ca.sciencestudio.security.util.SecurityUtil;
-
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.SessionFormBacker;
-import ca.sciencestudio.service.session.validators.SessionFormBackerValidator;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.exceptions.AuthorizationException;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
@@ -40,109 +32,82 @@ import ca.sciencestudio.util.web.BindAndValidateUtils;
 @Controller
 public class SessionFormController extends AbstractModelController {
 
-	@Autowired
-	private ProjectDAO projectDAO;
-	
-	@Autowired
-	private SessionDAO sessionDAO;
-	
-	@Autowired
-	private SessionFormBackerValidator sessionFormBackerValidator;
-	
-	@RequestMapping(value = "/project/{projectId}/sessions/form/add.{format}", method = RequestMethod.POST)
-	public String postSessionsFormAdd(@PathVariable int projectId, @PathVariable String format, HttpServletRequest request, ModelMap model) {
+	private String facility;
+
+	private SessionAuthzDAO sessionAuthzDAO;	
+
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.SESSION_PATH + "/form/add*", method = RequestMethod.POST)
+	public FormResponseMap sessionsFormAdd(SessionFormBacker session, Errors errors) {
+		// Bind errors are intentionally ignored, however the argument must be 
+		// present to avoid automatic delegation to the exception handler.
+				
+		String user = SecurityUtil.getPersonGid();
 		
-		SessionFormBacker sessionFormBacker = new SessionFormBacker(projectId);
-		BindException errors  = BindAndValidateUtils.buildBindException(sessionFormBacker);
-		model.put("errors", errors);
+		AddResult result = sessionAuthzDAO.add(user, session, facility).get();
 		
-		String responseView = "response-" + format;
+		FormResponseMap response = new FormResponseMap(SessionFormBacker.transformResult(result));
 		
-		Project project = projectDAO.getProjectById(projectId);
-		if(project == null) {
-			errors.reject("project.notfound", "Project not found.");
-			return responseView;
+		if(response.isSuccess()) {				
+			response.put("viewUrl", ModelPathUtils.getModelSessionPath("/", session.getGid(), ".html"));
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		
-		if(!SecurityUtil.hasAuthority(admin)) {
-			errors.reject("permission.denied", "Permission denied.");
-			return responseView;
-		}
-		
-		errors = BindAndValidateUtils.bindAndValidate(sessionFormBacker, request, sessionFormBackerValidator);
-		if(errors.hasErrors()) {
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		Session session = sessionFormBacker.createSession(sessionDAO);
-		sessionDAO.addSession(session);
-		
-		Map<String,String> response = new HashMap<String,String>();
-		response.put("viewUrl", getModelPath(request) + ModelPathUtils.getSessionPath(session.getId(), ".html"));
-		
-		model.put("response", response);
-		return responseView;
+		return response;
 	}
 
-	@RequestMapping(value = "/session/{sessionId}/form/edit.{format}", method = RequestMethod.POST)
-	public String postSessionFormEdit(@PathVariable int sessionId, @PathVariable String format,
-														HttpServletRequest request, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.SESSION_PATH + "/form/edit*", method = RequestMethod.POST)
+	public FormResponseMap sessionFormEdit(SessionFormBacker session, Errors errors) {
+		// Bind errors are intentionally ignored, however the argument must be 
+		// present to avoid automatic delegation to the exception handler.
 		
-		BindException errors  = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
+		String user = SecurityUtil.getPersonGid();
 		
-		String responseView = "response-" + format;
+		EditResult result = sessionAuthzDAO.edit(user, session).get();
 		
-		Session session = sessionDAO.getSessionById(sessionId);
-		if(session == null) {
-			errors.reject("session.notfound", "Session not found");
-			return responseView;
-		}
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		if(!SecurityUtil.hasAuthority(admin)) {
-			errors.reject("permission.denied", "Permission denied.");
-			return responseView;
-		}
-	
-		SessionFormBacker sessionFormBacker = new SessionFormBacker(session);
+		FormResponseMap response = new FormResponseMap(SessionFormBacker.transformResult(result));
 
-		errors = BindAndValidateUtils.bindAndValidate(sessionFormBacker, request, sessionFormBackerValidator);
-		if(errors.hasErrors()) {
-			model.put("errors", errors);
-			return responseView;
+		if(response.isSuccess()) {
+			response.setMessage("Session Saved");
 		}
 		
-		sessionDAO.editSession(sessionFormBacker.createSession(sessionDAO));
-		
-		Map<String,String> response = new HashMap<String,String>();
-		response.put("message", "Session saved.");
-		
-		model.put("response", response);
-		return responseView;
+		return response;
 	}
 	
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.SESSION_PATH + "/form/remove*", method = RequestMethod.POST)
+	public FormResponseMap sessionFormRemove(@RequestParam String gid) {
+		
+		String user = SecurityUtil.getPersonGid();
+		
+		boolean success;
+		try {
+			success = sessionAuthzDAO.remove(user, gid).get();
+		}
+		catch(AuthorizationException e) {
+			return new FormResponseMap(false, "Not Permitted");
+		}
+		
+		FormResponseMap response = new FormResponseMap(success);
+		
+		if(response.isSuccess()) {				
+			response.put("viewUrl", ModelPathUtils.getModelSessionPath(".html"));
+		}
+		
+		return response;
 	}
 
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
+	public String getFacility() {
+		return facility;
 	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
+	public void setFacility(String facility) {
+		this.facility = facility;
 	}
 
-	public SessionFormBackerValidator getSessionFormBackerValidator() {
-		return sessionFormBackerValidator;
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
 	}
-	public void setSessionFormBackerValidator(SessionFormBackerValidator sessionFormBackerValidator) {
-		this.sessionFormBackerValidator = sessionFormBackerValidator;
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
 }

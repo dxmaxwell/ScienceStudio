@@ -7,25 +7,26 @@
  */
 package ca.sciencestudio.service.session.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import ca.sciencestudio.model.Permissions;
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
-import ca.sciencestudio.model.session.dao.ScanDAO;
-import ca.sciencestudio.model.session.dao.SessionDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.ScanFormBacker;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
 
 /**
  * @author maxweld
@@ -33,125 +34,124 @@ import ca.sciencestudio.service.session.backers.ScanFormBacker;
  */
 @Controller
 public class ScanPageController extends AbstractModelController {
-
-	private static final String ERROR_VIEW = "frag/error";
 	
-	@Autowired
-	private ScanDAO scanDAO;
+	private ScanAuthzDAO scanAuthzDAO;
 	
-	@Autowired
-	private ProjectDAO projectDAO;
+	private ProjectAuthzDAO projectAuthzDAO;
 	
-	@Autowired
-	private SessionDAO sessionDAO;
+	private SessionAuthzDAO sessionAuthzDAO;
 	
-	@Autowired
-	private ExperimentDAO experimentDAO;
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	
-	@RequestMapping(value = "/experiment/{experimentId}/scans.html", method = RequestMethod.GET)
-	public String getScansPage(@PathVariable int experimentId, ModelMap model) {
+	@RequestMapping(value = ModelPathUtils.SCAN_PATH + ".html", params = "experiment")
+	public String getScansPage(@RequestParam("experiment") String experimentGid, ModelMap model) {
 		
-		Experiment experiment = experimentDAO.getExperimentById(experimentId);
+		String user = SecurityUtil.getPersonGid();
+		
+		Data<Permissions> dataPermissions = scanAuthzDAO.permissions(user);
+		
+		Experiment experiment = experimentAuthzDAO.get(user, experimentGid).get();
 		if(experiment == null) {
 			model.put("error", "Experiment not found.");
 			return ERROR_VIEW;
 		}
 		
-		Session session = sessionDAO.getSessionById(experiment.getSessionId());
+		Session session = sessionAuthzDAO.get(user, experiment.getSessionGid()).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
 		
-		Project project = projectDAO.getProjectById(session.getProjectId());
+		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		
-		if(!SecurityUtil.hasAnyAuthority(admin, group)) {
-			model.put("error", "Permission denied.");
+		Permissions permissions = dataPermissions.get();
+		if(permissions == null) {
+			model.put("error", "Permissions not found.");
 			return ERROR_VIEW;
 		}
 		
+		model.put("permissions", permissions);
 		model.put("experiment", experiment);
 		model.put("project", project);
 		model.put("session", session);
 		return "frag/scans";
 	}
 	
-	@RequestMapping(value = "/scan/{scanId}.html", method = RequestMethod.GET)
-	public String getScanPage(@PathVariable int scanId, ModelMap model) {
+	
+	@RequestMapping(value = ModelPathUtils.SCAN_PATH + "/{scanGid}.html")
+	public String getScanPage(@PathVariable String scanGid, ModelMap model) {
 		
-		Scan scan = scanDAO.getScanById(scanId);
+		String user = SecurityUtil.getPersonGid();
+		
+		Data<Permissions> dataPermissions = scanAuthzDAO.permissions(user, scanGid);
+		
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
 		if(scan == null) {
 			model.put("error", "Scan not found!");
 			return ERROR_VIEW;
 		}
 		
-		Experiment experiment = experimentDAO.getExperimentById(scan.getExperimentId());
+		Experiment experiment = experimentAuthzDAO.get(user, scan.getExperimentGid()).get();
 		if(experiment == null) {
 			model.put("error", "Experiment not found.");
 			return ERROR_VIEW;
 		}
 		
-		Session session = sessionDAO.getSessionById(experiment.getSessionId());
+		Session session = sessionAuthzDAO.get(user, experiment.getSessionGid()).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
 		
-		Project project = projectDAO.getProjectById(session.getProjectId());
+		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		
-		if(!SecurityUtil.hasAnyAuthority(admin, group)) {
-			model.put("error", "Permission denied.");
+		Permissions permissions = dataPermissions.get();
+		if(permissions == null) {
+			model.put("error", "Permissions not found.");
 			return ERROR_VIEW;
 		}
 		
-		ScanFormBacker scanFormBacker = new ScanFormBacker(scan);
-		model.put("scanFormBacker", scanFormBacker);
+		model.put("scan", new ScanFormBacker(scan));
+		model.put("permissions", permissions);
 		model.put("experiment", experiment);
 		model.put("project", project);
 		model.put("session", session);
-		model.put("scan", scan);
 		return "frag/scan";
 	}
 
-	public ScanDAO getScanDAO() {
-		return scanDAO;
+	public ScanAuthzDAO getScanAuthzDAO() {
+		return scanAuthzDAO;
 	}
-	public void setScanDAO(ScanDAO scanDAO) {
-		this.scanDAO = scanDAO;
-	}
-
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setScanAuthzDAO(ScanAuthzDAO scanAuthzDAO) {
+		this.scanAuthzDAO = scanAuthzDAO;
 	}
 
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
 	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
+	}
+
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
+	}
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
 	}
 }

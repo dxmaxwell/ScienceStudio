@@ -7,17 +7,16 @@
  */
 package ca.sciencestudio.service.app.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import ca.sciencestudio.model.facility.Laboratory;
-import ca.sciencestudio.model.facility.dao.LaboratoryDAO;
+import ca.sciencestudio.model.facility.dao.LaboratoryAuthzDAO;
 import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.SessionDAO;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
+import ca.sciencestudio.security.util.SecurityUtil;
 
 /**
  * @author maxweld
@@ -26,48 +25,49 @@ import ca.sciencestudio.model.session.dao.SessionDAO;
 @Controller
 public class LaboratoryViewController {
 
-	@Autowired
-	private SessionDAO sessionDAO;
+	private static final String ERROR_VIEW = "page/error";
 	
-	@Autowired
-	private LaboratoryDAO laboratoryDAO;
+	private SessionAuthzDAO sessionAuthzDAO;	
+
+	private LaboratoryAuthzDAO laboratoryAuthzDAO;
 	
-	@RequestMapping(value = "/laboratory/view.html", method = RequestMethod.GET)
-	public String joinSession(@RequestParam int sessionId, ModelMap model) {
-				
-		Session session = sessionDAO.getSessionById(sessionId);
+	@RequestMapping(value = "/laboratory/view.html", params = "session")
+	public String joinSession(@RequestParam("session") String sessionGid, ModelMap model) {
+		
+		String user = SecurityUtil.getPersonGid();
+		
+		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
-			return "page/error";
+			return ERROR_VIEW;
 		}
 		
-		int laboratoryId = session.getLaboratoryId();
-		Laboratory laboratory = laboratoryDAO.getLaboratoryById(laboratoryId);
+		Laboratory laboratory = laboratoryAuthzDAO.get(user, session.getLaboratoryGid()).get();
 		if(laboratory == null) {
 			model.put("error", "Laboratory not found.");
-			return "page/error";
+			return ERROR_VIEW;
 		}
 		
 		String viewUrl = laboratory.getViewUrl();
 		if((viewUrl == null) || (viewUrl.length() == 0)) {
 			model.put("error", "Laboratory view URL not found.");
-			return "page/error";
+			return ERROR_VIEW;
 		}
 		
-		return "redirect:" + viewUrl + "?sessionId=" + sessionId;
+		return "redirect:" + viewUrl + "?session=" + sessionGid;
 	}
 
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
 	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
-	
-	public LaboratoryDAO getLaboratoryDAO() {
-		return laboratoryDAO;
+
+	public LaboratoryAuthzDAO getLaboratoryAuthzDAO() {
+		return laboratoryAuthzDAO;
 	}
-	public void setLaboratoryDAO(LaboratoryDAO laboratoryDAO) {
-		this.laboratoryDAO = laboratoryDAO;
+	public void setLaboratoryAuthzDAO(LaboratoryAuthzDAO laboratoryAuthzDAO) {
+		this.laboratoryAuthzDAO = laboratoryAuthzDAO;
 	}
 }

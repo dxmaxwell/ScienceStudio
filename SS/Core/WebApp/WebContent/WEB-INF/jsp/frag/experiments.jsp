@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -57,8 +57,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#sessions${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath(${project.id}, '.html'));",
+				href:"#sessions${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('/${project.gid}.html'));",
 				html:"Sessions"
 			}
 		},{
@@ -68,8 +68,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#session${session.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionPath(${session.id}, '.html'));",
+				href:"#session${session.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('/${session.gid}.html'));",
 				html:"${session.name}"
 			}
 		},{
@@ -88,24 +88,19 @@ Ext.onReady(function() {
 	Experiments Grid
 --%>
 	var experimentsGridStore = new Ext.data.JsonStore({
-		url: ModelPathUtils.getExperimentsPath(${session.id}, "/grid.json"),
+		url: ModelPathUtils.getModelExperimentPath('/grid.json?session=${session.gid}'),
 		autoDestroy: true,
 		autoLoad: false,
-		root:"response",
 		fields:[{
-			name:"id", mapping:"experimentGridBacker.id"
+			name:"gid"
 		},{
-			name:"projectId", mapping:"experimentGridBacker.projectId"
+			name:"name"
 		},{
-			name:"sessionId", mapping:"experimentGridBacker.sessionId"
+			name:"sampleName"
 		},{
-			name:"name", mapping:"experimentGridBacker.name"
+			name:"instrumentName"
 		},{
-			name:"sampleName", mapping:"experimentGridBacker.sampleName"
-		},{
-			name:"instrumentName", mapping:"experimentGridBacker.instrumentName"
-		},{
-			name:"techniqueName", mapping:"experimentGridBacker.techniqueName"
+			name:"techniqueName"
 		}]
 	});
 
@@ -122,7 +117,7 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"id", sortable:true
+			header: "GID", width:50, dataIndex:"gid", sortable:true
 		},{
 			header: "Name", width: 180, dataIndex: 'name', sortable: true
 		},{
@@ -139,9 +134,9 @@ Ext.onReady(function() {
 	experimentsGridPanel.on('rowclick', function(grid, index, event) {
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var experimentId = record.get("id");
-			if(experimentId) {
-				loadModelViewTab(ModelPathUtils.getExperimentPath(experimentId, '.html'));
+			var gid = record.get("gid");
+			if(gid) {
+				loadModelViewTab(ModelPathUtils.getModelExperimentPath(['/', gid, '.html']));
 			}
 		}
 	}, this);
@@ -179,9 +174,9 @@ Ext.onReady(function() {
 
 	Add Experiment Form
 --%>
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+	<c:if test="${permissions.add}">
 	var experimentForm = new Ext.ss.core.ExperimentFormPanel({
-		url: ModelPathUtils.getExperimentsPath(${session.id}, '/form/add.json'),
+		url: ModelPathUtils.getModelExperimentPath('/form/add.json'),
 		method: 'POST',
 		submitText: 'Add',
 		labelAlign: 'right',
@@ -192,32 +187,26 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 	
+	experimentForm.ss.fields.sessionGid.setValue('${session.gid}');
+
 	experimentForm.getForm().on('actioncomplete', function(form, action) {
 		if(action.type == 'submit' && action.result.success == true) {
-			if(action.result.response && action.result.response.viewUrl) {
-				loadModelViewTab(action.result.response.viewUrl);
+			if(action.result.viewUrl) {
+				loadModelViewTab(action.result.viewUrl);
 			}
 		}
 	}, this);
 	
 	<c:if test="${not empty sampleList}">
-	var sampleStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="sampleList"/>
-		</jsp:include>	
-	};
-	
-	experimentForm.ss.stores.sample.loadData(sampleStoreData);
+	experimentForm.ss.stores.sample.loadData(<hmc:write source="${sampleList}"/>);
 	</c:if>
 	
-	<c:if test="${not empty instrumentTechniqueOptionList}">
-	var instrumentTechniqueOptionStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="instrumentTechniqueOptionList"/>
-		</jsp:include>
-	};
-	
-	experimentForm.ss.stores.instrumentTechniqueOption.loadData(instrumentTechniqueOptionStoreData);
+	<c:if test="${not empty instrumentList}">
+	experimentForm.ss.stores.instrumentStore.loadData(<hmc:write source="${instrumentList}"/>);
+	</c:if>
+
+	<c:if test="${not empty instrumentTechniqueList}">
+	experimentForm.ss.stores.instrumentTechnique.loadData(<hmc:write source="${instrumentTechniqueList}"/>);
 	</c:if>
 	
 	var panel = new Ext.Panel({
@@ -228,7 +217,7 @@ Ext.onReady(function() {
 	});
 	
 	addItemModelViewTab(panel, true);
-	</sec:authorize>
+	</c:if>
 });
 </script>
 </div>

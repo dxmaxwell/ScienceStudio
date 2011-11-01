@@ -2,38 +2,23 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     SampleBacker class.
+ *     SampleFormBacker class.
  *     
  */
 package ca.sciencestudio.service.sample.backers;
 
-import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 import ca.sciencestudio.model.sample.Sample;
-import ca.sciencestudio.model.sample.SampleHazard;
-import ca.sciencestudio.model.sample.SampleState;
-import ca.sciencestudio.model.sample.dao.SampleDAO;
+import ca.sciencestudio.util.rest.ValidationResult;
 
 /**
  * @author maxweld
  *
  */
-public class SampleFormBacker implements Serializable {
+public class SampleFormBacker extends Sample {
 
 	private static final long serialVersionUID = 1L;
-	
-	private int id;
-	private int projectId;
-	
-	private String name;
-	private String description;
-	
-	private SampleState state;
-	private String quantity;
-	private String casNumber;
-	private String otherHazards;
 	
 	private boolean corrosive;
 	private boolean flammable;
@@ -42,65 +27,28 @@ public class SampleFormBacker implements Serializable {
 	private boolean toxic;
 	private boolean other;
 	
-	public SampleFormBacker(int projectId) {
-		setId(0);
-		setProjectId(projectId);
-		
-		setName("");
-		setDescription("");
-		
-		setState(SampleState.UNKNOWN);
-		setQuantity("");
-		setCasNumber("");
-		setOtherHazards("");
-		
-		clearHazards();
+	public static ValidationResult transformResult(ValidationResult result) {
+		return result;
+	}
+	
+	public SampleFormBacker() {
+		setCorrosive(false);
+		setFlammable(false);
+		setReactive(false);
+		setOxidizer(false);
+		setToxic(false);
+		setOther(false);
 	}
 	
 	public SampleFormBacker(Sample sample) {
-		setId(sample.getId());
-		setProjectId(sample.getProjectId());
-		
-		setName(sample.getName());
-		setDescription(sample.getDescription());
-		
-		setState(sample.getState());
-		setQuantity(sample.getQuantity());
-		setCasNumber(sample.getCasNumber());
-		setOtherHazards(sample.getOtherHazards());
-		
-		Set<SampleHazard> hazards = sample.getHazards();
-		setCorrosive(hazards.contains(SampleHazard.CORROSIVE));
-		setFlammable(hazards.contains(SampleHazard.FLAMMABLE));
-		setReactive(hazards.contains(SampleHazard.REACTIVE));
-		setOxidizer(hazards.contains(SampleHazard.OXIDIZER));
-		setToxic(hazards.contains(SampleHazard.TOXIC));
-		setOther(hazards.contains(SampleHazard.OTHER));
-	}
-
-	public Sample createSample(SampleDAO sampleDAO) {
-		Sample sample = sampleDAO.createSample();
-		sample.setId(getId());
-		sample.setProjectId(getProjectId());
-		
-		sample.setName(getName());
-		sample.setDescription(getDescription());
-		
-		sample.setState(getState());
-		sample.setQuantity(getQuantity());
-		sample.setCasNumber(getCasNumber());
-		sample.setOtherHazards(getOtherHazards());
-		
-		Set<SampleHazard> hazards = new HashSet<SampleHazard>();
-		if(isCorrosive()) { hazards.add(SampleHazard.CORROSIVE); }
-		if(isFlammable()) { hazards.add(SampleHazard.FLAMMABLE); }
-		if(isReactive()) { hazards.add(SampleHazard.REACTIVE); }
-		if(isOxidizer()) { hazards.add(SampleHazard.OXIDIZER); }
-		if(isToxic()) { hazards.add(SampleHazard.TOXIC); }
-		if(isOther()) { hazards.add(SampleHazard.OTHER); }
-		sample.setHazards(hazards);
-		
-		return sample;
+		super(sample);
+		Set<Hazard> hazards = getHazards();
+		setCorrosive(hazards.contains(Hazard.CORROSIVE));
+		setFlammable(hazards.contains(Hazard.FLAMMABLE));
+		setReactive(hazards.contains(Hazard.REACTIVE));
+		setOxidizer(hazards.contains(Hazard.OXIDIZER));
+		setToxic(hazards.contains(Hazard.TOXIC));
+		setOther(hazards.contains(Hazard.OTHER));
 	}
 	
 	public void clearHazards() {
@@ -111,67 +59,16 @@ public class SampleFormBacker implements Serializable {
 		setToxic(false);
 		setOther(false);
 	}
-	
-	public int getId() {
-		return id;
-	}
-	private void setId(int id) {
-		this.id = id;
-	}
-
-	public int getProjectId() {
-		return projectId;
-	}
-	private void setProjectId(int projectId) {
-		this.projectId = projectId;
-	}
-
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getQuantity() {
-		return quantity;
-	}
-	public void setQuantity(String quantity) {
-		this.quantity = quantity;
-	}
-
-	public String getCasNumber() {
-		return casNumber;
-	}
-	public void setCasNumber(String casNumber) {
-		this.casNumber = casNumber;
-	}
-
-	public SampleState getState() {
-		return state;
-	}
-	public void setState(SampleState state) {
-		this.state = state;
-	}
-
-	public String getOtherHazards() {
-		return otherHazards;
-	}
-	public void setOtherHazards(String otherHazards) {
-		this.otherHazards = otherHazards;
-	}
 
 	public boolean isCorrosive() {
 		return corrosive;
 	}
 	public void setCorrosive(boolean corrosive) {
+		if(corrosive) {
+			getHazards().add(Hazard.CORROSIVE);
+		} else {
+			getHazards().remove(Hazard.CORROSIVE);
+		}
 		this.corrosive = corrosive;
 	}
 
@@ -179,6 +76,11 @@ public class SampleFormBacker implements Serializable {
 		return reactive;
 	}
 	public void setReactive(boolean reactive) {
+		if(reactive) {
+			getHazards().add(Hazard.REACTIVE);
+		} else {
+			getHazards().remove(Hazard.REACTIVE);
+		}
 		this.reactive = reactive;
 	}
 
@@ -186,6 +88,11 @@ public class SampleFormBacker implements Serializable {
 		return flammable;
 	}
 	public void setFlammable(boolean flammable) {
+		if(flammable) {
+			getHazards().add(Hazard.FLAMMABLE);
+		} else {
+			getHazards().remove(Hazard.FLAMMABLE);
+		}
 		this.flammable = flammable;
 	}
 
@@ -193,6 +100,11 @@ public class SampleFormBacker implements Serializable {
 		return oxidizer;
 	}
 	public void setOxidizer(boolean oxidizer) {
+		if(oxidizer) {
+			getHazards().add(Hazard.OXIDIZER);
+		} else {
+			getHazards().remove(Hazard.OXIDIZER);
+		}
 		this.oxidizer = oxidizer;
 	}
 
@@ -200,6 +112,11 @@ public class SampleFormBacker implements Serializable {
 		return toxic;
 	}
 	public void setToxic(boolean toxic) {
+		if(toxic) {
+			getHazards().add(Hazard.TOXIC);
+		} else {
+			getHazards().remove(Hazard.TOXIC);
+		}
 		this.toxic = toxic;
 	}
 
@@ -207,6 +124,11 @@ public class SampleFormBacker implements Serializable {
 		return other;
 	}
 	public void setOther(boolean other) {
+		if(other) {
+			getHazards().add(Hazard.OTHER);
+		} else {
+			getHazards().remove(Hazard.OTHER);
+		}
 		this.other = other;
 	}
 }

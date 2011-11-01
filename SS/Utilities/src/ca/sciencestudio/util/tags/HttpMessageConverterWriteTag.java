@@ -10,8 +10,6 @@ package ca.sciencestudio.util.tags;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
@@ -20,6 +18,9 @@ import javax.servlet.jsp.tagext.TryCatchFinally;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+
+import ca.sciencestudio.util.http.ByteArrayHttpOutputMessage;
+import ca.sciencestudio.util.http.HttpMessageConvertersHolder;
 
 /**
  * @author maxweld
@@ -31,20 +32,11 @@ public class HttpMessageConverterWriteTag extends TagSupport implements TryCatch
 
 	private static String defaultType = "application/json";
 	
-	private static Collection<HttpMessageConverter<Object>> messageConverters = Collections.emptyList();
-	
 	public static String getDefaultType() {
 		return defaultType;
 	}
 	public static void setDefaultType(String defaultType) {
 		HttpMessageConverterWriteTag.defaultType = defaultType;
-	}
-	
-	public static Collection<HttpMessageConverter<Object>> getMessageConverters() {
-		return messageConverters;
-	}
-	public static void setMessageConverters(Collection<HttpMessageConverter<Object>> messageConverters) {
-		HttpMessageConverterWriteTag.messageConverters = messageConverters;
 	}
 	
 	private Object source = null;
@@ -56,7 +48,7 @@ public class HttpMessageConverterWriteTag extends TagSupport implements TryCatch
 		
 		MediaType mediaType = MediaType.parseMediaType(type);
 		
-		for(HttpMessageConverter<Object> messageConverter : messageConverters) {
+		for(HttpMessageConverter<Object> messageConverter : HttpMessageConvertersHolder.getMessageConverters()) {
 			if(messageConverter.canWrite(source.getClass(), mediaType)) {
 				ByteArrayHttpOutputMessage outputMessage = new ByteArrayHttpOutputMessage();
 				try {

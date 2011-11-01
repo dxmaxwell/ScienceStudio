@@ -2,26 +2,22 @@
  *   - see license.txt for details.
  *
  *  Description:
- *   ProjectTreeNodeController class.
+ *  	ProjectTreeNodeController class.
  *     
  */
 package ca.sciencestudio.service.tree.controllers;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.Project;
-import ca.sciencestudio.model.dao.ProjectDAO;
+import ca.sciencestudio.model.project.Project;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.security.util.SecurityUtil.ROLE;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
 
 /**
@@ -30,28 +26,22 @@ import ca.sciencestudio.service.utilities.ModelPathUtils;
  */
 @Controller
 public class ProjectTreeNodeController extends AbstractTreeNodeController {
-
-	@Autowired
-	private ProjectDAO projectDAO;
+	
+	private ProjectAuthzDAO projectAuthzDAO;
 	
 	@ResponseBody
-	@RequestMapping(value = "/projects*", method = RequestMethod.GET)
-	public TreeNodeList projects(HttpServletRequest request) {
+	@RequestMapping(value = ModelPathUtils.PROJECT_PATH + "*", method = RequestMethod.GET)
+	public TreeNodeList projects() {
 		
-		List<Project> projects;
-		if(SecurityUtil.hasAuthority(ROLE.ADMIN_PROJECTS)) {
-			projects = projectDAO.getAllByStatus(Project.Status.ACTIVE);
-		} else {
-			projects = projectDAO.getAllByPersonGidAndStatus(getPersonUid(), Project.Status.ACTIVE);
-		}
+		List<Project> projects = projectAuthzDAO.getAll(SecurityUtil.getPersonGid()).get();
 		
 		TreeNodeList treeNodes = new TreeNodeList();
 		
 		for(Project project : projects) {
 			TreeNodeMap treeNode = new TreeNodeMap();
 			treeNode.put(TREE_NODE_ID, "PROJECT_" +  project.getGid());
-			treeNode.put(TREE_NODE_DATA_URL, getTreePath(request) + ModelPathUtils.getProjectsPath(project.getGid(), ""));
-			treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getProjectsPath(project.getGid(), ".html"));
+			treeNode.put(TREE_NODE_DATA_URL, ModelPathUtils.getTreeProjectPath("/", project.getGid()));
+			treeNode.put(TREE_NODE_VIEW_URL, ModelPathUtils.getModelProjectPath("/", project.getGid(), ".html"));
 			treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-tree-node-icon");
 			treeNode.put(TREE_NODE_TEXT, project.getName());
 			treeNodes.add(treeNode);
@@ -61,50 +51,47 @@ public class ProjectTreeNodeController extends AbstractTreeNodeController {
 	}
 	
 	@ResponseBody
-	@RequestMapping(value = "/projects/{projectGid}*", method = RequestMethod.GET)
-	public TreeNodeList project(@PathVariable String projectGid, HttpServletRequest request) {
+	@RequestMapping(value = ModelPathUtils.PROJECT_PATH + "/{projectGid}*", method = RequestMethod.GET)
+	public TreeNodeList project(@PathVariable String projectGid) {
 		
 		TreeNodeList treeNodes = new TreeNodeList();
 		
-		boolean group = SecurityUtil.hasAnyProjectRole(projectGid);
-		boolean admin = SecurityUtil.hasAuthority(ROLE.ADMIN_PROJECTS);
+		// No restricted content ahead, so no security check required.
 		
-		if(group || admin) {
-			// Project Team
-			TreeNodeMap treeNode = new TreeNodeMap();
-			treeNode.put(TREE_NODE_ID, "PROJECT_PERSONS_" + projectGid);
-			treeNode.put(TREE_NODE_DATA_URL, getTreePath(request) + ModelPathUtils.getProjectPersonsPath(projectGid, ".json"));
-			treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getProjectPersonsPath(projectGid, ".html"));
-			treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-persons-tree-node-icon");
-			treeNode.put(TREE_NODE_TEXT, "Team");
-			treeNodes.add(treeNode);
-			
-			// Project Samples
-			treeNode = new TreeNodeMap();
-			treeNode.put(TREE_NODE_ID, "PROJECT_SAMPLES_" + projectGid);
-			treeNode.put(TREE_NODE_DATA_URL, getTreePath(request) + ModelPathUtils.getSamplesPath(projectGid, ".json"));
-			treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getSamplesPath(projectGid, ".html"));
-			treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-samples-tree-node-icon");
-			treeNode.put(TREE_NODE_TEXT, "Samples");
-			treeNodes.add(treeNode);
-			
-			// Project Sessions
-			treeNode = new TreeNodeMap();
-			treeNode.put(TREE_NODE_ID, "PROJECT_SESSIONS_" + projectGid);
-			treeNode.put(TREE_NODE_DATA_URL, getTreePath(request) + ModelPathUtils.getSessionsPath(projectGid, ".json"));
-			treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getSessionsPath(projectGid, ".html"));
-			treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-sessions-tree-node-icon");
-			treeNode.put(TREE_NODE_TEXT, "Sessions");
-			treeNodes.add(treeNode);
-		}
+		// Project Team
+		TreeNodeMap treeNode = new TreeNodeMap();
+		treeNode.put(TREE_NODE_ID, "PROJECT_PERSONS_" + projectGid);
+		treeNode.put(TREE_NODE_DATA_URL, ModelPathUtils.getTreeProjectPersonPath(".json", "?project=", projectGid));
+		treeNode.put(TREE_NODE_VIEW_URL, ModelPathUtils.getModelProjectPersonPath(".html", "?project=", projectGid));
+		treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-persons-tree-node-icon");
+		treeNode.put(TREE_NODE_TEXT, "Team");
+		treeNodes.add(treeNode);
+		
+		// Project Samples
+		treeNode = new TreeNodeMap();
+		treeNode.put(TREE_NODE_ID, "PROJECT_SAMPLES_" + projectGid);
+		treeNode.put(TREE_NODE_DATA_URL, ModelPathUtils.getTreeSamplePath(".json", "?project=", projectGid));
+		treeNode.put(TREE_NODE_VIEW_URL, ModelPathUtils.getModelSamplePath(".html", "?project=", projectGid));
+		treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-samples-tree-node-icon");
+		treeNode.put(TREE_NODE_TEXT, "Samples");
+		treeNodes.add(treeNode);
+		
+		// Project Sessions
+		treeNode = new TreeNodeMap();
+		treeNode.put(TREE_NODE_ID, "PROJECT_SESSIONS_" + projectGid);
+		treeNode.put(TREE_NODE_DATA_URL, ModelPathUtils.getTreeSessionPath(".json", "?project=", projectGid));
+		treeNode.put(TREE_NODE_VIEW_URL, ModelPathUtils.getModelSessionPath(".html", "?project=", projectGid));
+		treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-sessions-tree-node-icon");
+		treeNode.put(TREE_NODE_TEXT, "Sessions");
+		treeNodes.add(treeNode);
 
 		return treeNodes;
 	}
 
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 }

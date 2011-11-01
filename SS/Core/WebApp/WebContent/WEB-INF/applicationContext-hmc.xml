@@ -31,7 +31,7 @@
 		</constructor-arg>
 	</bean>
 
-	<bean class="ca.sciencestudio.util.tags.HttpMessageConverterTagsConfigBean">
+	<bean class="ca.sciencestudio.util.bean.HttpMessageConvertersHolderConfigBean">
    		<property name="messageConverters" ref="httpMessageConverters"/>
    	</bean>
 

@@ -7,15 +7,11 @@
  */
 package ca.sciencestudio.service.controllers;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * @author maxweld
  *
  */
 public abstract class AbstractModelController {
 
-	public String getModelPath(HttpServletRequest request) {
-		return request.getContextPath() + request.getServletPath();
-	}
+	public static final String ERROR_VIEW = "frag/error";
 }

@@ -1,3 +1,4 @@
 SS_Core_Model
 SS_Core_Rest_Service
+SS_Login_Model
 SS_Utilities

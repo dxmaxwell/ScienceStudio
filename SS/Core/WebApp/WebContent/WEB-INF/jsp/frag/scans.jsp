@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -57,8 +57,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#sessions${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath(${project.id}, '.html'));",
+				href:"#sessions${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('.html?proejct=${project.gid}'));",
 				html:"Sessions"
 			}
 		},{
@@ -68,8 +68,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#session${session.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionPath(${session.id}, '.html'));",
+				href:"#session${session.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('/${session.gid}.html'));",
 				html:"${session.name}"
 			}
 		},{
@@ -79,8 +79,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#experiments${session.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getExperimentsPath(${session.id}, '.html'));",
+				href:"#experiments${session.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelExperimentPath('.html?session=${session.gid}'));",
 				html:"Experiments"
 			}
 		},{
@@ -90,8 +90,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#experiment${experiment.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getExperimentPath(${experiment.id}, '.html'));",
+				href:"#experiment${experiment.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelExperimentPath('/${experiment.gid}.html'));",
 				html:"${experiment.name}"
 			}
 		},{
@@ -110,20 +110,17 @@ Ext.onReady(function() {
 	Scans Grid
 --%>
 	var scansGridStore = new Ext.data.JsonStore({
-		url: ModelPathUtils.getScansPath(${experiment.id}, ".json"),
+		url: ModelPathUtils.getModelScanPath('.json?experiment=${experiment.gid}'),
 		autoDestroy: true,
 		autoLoad: false,
-		root:"response",
 		fields:[{
-			name:"id", mapping:"scan.id"
+			name:"gid"
 		},{
-			name:"name", mapping:"scan.name"
+			name:"name"
 		},{
-			name:"startDate", mapping:"scan.startDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"startDate", type:"date", dateFormat:"c"
 		},{
-			name:"endDate", mapping:"scan.endDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"endDate", type:"date", dateFormat:"c"
 		}]
 	});
 
@@ -140,7 +137,7 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"id", sortable:true
+			header: "GID", width:50, dataIndex:"gid", sortable:true
 		},{
 			header: "Name", width: 180, dataIndex: 'name', sortable: true
 		},{
@@ -157,9 +154,9 @@ Ext.onReady(function() {
 	scansGridPanel.on('rowclick', function(grid, index, event) {
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var scanId = record.get("id");
-			if(scanId) {
-				loadModelViewTab(ModelPathUtils.getScanPath(scanId, ".html"));
+			var gid = record.get("gid");
+			if(gid) {
+				loadModelViewTab(ModelPathUtils.getModelScanPath(['/', gid, '.html']));
 			}
 		}
 	}, this);

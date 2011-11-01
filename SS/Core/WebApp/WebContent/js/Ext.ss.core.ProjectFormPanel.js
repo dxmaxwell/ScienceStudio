@@ -25,6 +25,11 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 		delete formPanelConfig.buttonDefaults;
 	}
 	
+	this.ss.fields.gid = new Ext.form.Hidden(Ext.applyIf({
+		name: 'gid',
+		disabled:false
+	}, defaults));
+	
 	this.ss.fields.name = new Ext.form.TextField(Ext.applyIf({
 		fieldLabel: 'Name',
 		name: 'name',
@@ -37,17 +42,17 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 		width: 150
 	}, defaults));
 	
-	this.ss.fields.startDate = new Ext.form.DateField(Ext.applyIf({
+	this.ss.fields.startDay = new Ext.form.DateField(Ext.applyIf({
 		fieldLabel: 'Start Date',
-		name: 'startDate',
+		name: 'startDay',
 		format:Date.patterns.ISO8601Short,
 		altFormats:Date.altFormats,
 		width: 150
 	}, defaults));
 	                
-	this.ss.fields.endDate = new Ext.form.DateField(Ext.applyIf({
+	this.ss.fields.endDay = new Ext.form.DateField(Ext.applyIf({
 		fieldLabel: 'End Date',
-		name: 'endDate',
+		name: 'endDay',
 		format:Date.patterns.ISO8601Short,
 		altFormats:Date.altFormats,
 		width: 150
@@ -117,25 +122,23 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 			waitMsg: waitMsg,
 			success: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.response && json.response.message) {
+				if(json && json.message) {
 					messagePanel.removeAll();
 					messagePanel.add({
-						html: json.response.message
+						html: json.message
 					});
 					messagePanel.doLayout();
 				}
 			},
 			failure: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.globalErrors) {
+				if(json && json.message) {
 					messagePanel.removeAll();
-					for(var idx=0; idx < json.globalErrors.length; idx++) {
-						messagePanel.add({
-							html: json.globalErrors[idx],
-							style: { 'color':'red' }
-						});
-						messagePanel.doLayout();
-					}
+					messagePanel.add({
+						html: json.message,
+						style: { 'color':'red' }
+					});
+					messagePanel.doLayout();
 				}
 			},
 			scope:this
@@ -143,10 +146,11 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 	}, this);
 	
 	formPanelConfig.items = [
+	     this.ss.fields.gid,
 	     this.ss.fields.name,
 	     this.ss.fields.description,
-	     this.ss.fields.startDate,
-	     this.ss.fields.endDate,
+	     this.ss.fields.startDay,
+	     this.ss.fields.endDay,
 	     this.ss.fields.status,
 	     messagePanel
 	];

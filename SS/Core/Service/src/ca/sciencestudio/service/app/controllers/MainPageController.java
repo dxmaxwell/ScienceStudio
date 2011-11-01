@@ -29,6 +29,6 @@ public class MainPageController {
 	
 	@ModelAttribute("username")
 	public String getUsername() {
-		return SecurityUtil.getUsername();
+		return SecurityUtil.getPersonGid();
 	}
 }

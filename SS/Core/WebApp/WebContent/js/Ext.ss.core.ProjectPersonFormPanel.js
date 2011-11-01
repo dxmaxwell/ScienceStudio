@@ -25,12 +25,14 @@ Ext.ss.core.ProjectPersonFormPanel = function(config) {
 		delete formPanelConfig.buttonDefaults;
 	}
 	
-	this.ss.fields.id = new Ext.form.Hidden(Ext.applyIf({
-		name:'id'
+	this.ss.fields.gid = new Ext.form.Hidden(Ext.applyIf({
+		name:'gid',
+		disabled:false
 	}, defaults));
 	
-	this.ss.fields.projectId = new Ext.form.Hidden(Ext.applyIf({
-		name:'projectId'
+	this.ss.fields.projectGid = new Ext.form.Hidden(Ext.applyIf({
+		name:'projectGid',
+		disabled:false
 	}, defaults));
 	
 	var projectPersonStore;
@@ -41,43 +43,43 @@ Ext.ss.core.ProjectPersonFormPanel = function(config) {
 	else {
 		projectPersonStore = new Ext.data.JsonStore({
 			autoDestroy:true,
-			root:'response',
 			fields: [{
-				name:'id', mapping:'projectPersonFormBacker.id'
+				name:'gid'
 			},{
-				name:'personUid', mapping:'projectPersonFormBacker.personUid'
+				name:'personGid'
 			},{
-				name:'projectId', mapping:'projectPersonFormBacker.projectId'			
+				name:'projectGid'
 			},{
-				name:'fullName', mapping:'projectPersonFormBacker.fullName'
+				name:'fullName'
 			},{
-				name:'emailAddress', mapping:'projectPersonFormBacker.emailAddress'
+				name:'emailAddress'
 			},{
-				name:'phoneNumber', mapping:'projectPersonFormBacker.phoneNumber'
+				name:'phoneNumber'
 			},{
-				name:'mobileNumber', mapping:'projectPersonFormBacker.mobileNumber'
+				name:'mobileNumber'
 			},{
-				name:'projectRole', mapping:'projectPersonFormBacker.projectRole'
+				name:'role'
 			}]
 		});
 	}
 	
-	this.ss.fields.personUid = new Ext.form.ComboBox(Ext.applyIf({
+	this.ss.fields.personGid = new Ext.form.ComboBox(Ext.applyIf({
 		fieldLabel:'Name',
-		hiddenName:'personUid',
+		hiddenName:'personGid',
 		store:projectPersonStore,
 		mode:'remote',
 		triggerAction:'all',
 		forceSelection:true,
 		editable:true,
 		minChars:2,
-		valueField:'personUid',
+		queryParam:'name',
+		valueField:'personGid',
 		displayField:'fullName',
 		emptyText:'Enter first or last name',
 		width: 200
 	}, defaults));
 	
-	this.ss.fields.personUid.on('select', function(combo, record, idx) {
+	this.ss.fields.personGid.on('select', function(combo, record, idx) {
 		this.getForm().loadRecord(record);
 	}, this);
 	
@@ -103,33 +105,32 @@ Ext.ss.core.ProjectPersonFormPanel = function(config) {
 		width: 200
 	}, defaults));
 	
-	var projectRoleStore;
-	if(formPanelConfig.projectRoleStore) {
-		projectRoleStore  = formPanelConfig.projectRoleStore;
-		delete formPanelConfig.projectRoleStore;
+	var roleStore;
+	if(formPanelConfig.roleStore) {
+		roleStore  = formPanelConfig.roleStore;
+		delete formPanelConfig.roleStore;
 	} 
 	else {
-		projectRoleStore = new Ext.data.JsonStore({
-			root:'response',
-			success:'success',
+		roleStore = new Ext.data.JsonStore({
+			autoDestroy:true,
 			fields: [{ 
-				name:'name', mapping:'projectRole.name'
+				name:'value'
 			},{
-				name:'longName', mapping:'projectRole.longName'
+				name:'display'
 			}]
 		});
 	}
 	
-	this.ss.fields.projectRole = new Ext.form.ComboBox(Ext.applyIf({
-		name:'projectRole',
+	this.ss.fields.role = new Ext.form.ComboBox(Ext.applyIf({
+		name:'role',
 		fieldLabel:'Role',
-		store:projectRoleStore,
+		store:roleStore,
 		mode:'local',
 		triggerAction:'all',
 		forceSelection:true,
 		editable:false,
-		valueField:'name',
-		displayField:'longName',
+		valueField:'value',
+		displayField:'display',
 		emptyText:'Select a role',
 		width: 200
 	}, defaults));
@@ -170,40 +171,38 @@ Ext.ss.core.ProjectPersonFormPanel = function(config) {
 			waitMsg: waitMsg,
 			success: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.response && json.response.message) {
+				if(json && json.message) {
 					messagePanel.removeAll();
 					messagePanel.add({
-						html: json.response.message
+						html: json.message
 					});
 					messagePanel.doLayout();
 				}
 			},
 			failure: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.globalErrors) {
+				if(json && json.message) {
 					messagePanel.removeAll();
-					for(var idx=0; idx < json.globalErrors.length; idx++) {
-						messagePanel.add({
-							html: json.globalErrors[idx],
-							style: { 'color':'red' }
-						});
-						messagePanel.doLayout();
-					}
+					messagePanel.add({
+						html: json.message,
+						style: { 'color':'red' }
+					});
+					messagePanel.doLayout();
 				}
 			},
 			scope:this
 		});
 	}, this);
 	
-	formPanelConfig.items = [                    
-	     this.ss.fields.id, 
-	     this.ss.fields.personUid,
-	     this.ss.fields.projectId,
+	formPanelConfig.items = [
+	     this.ss.fields.gid, 
+	     this.ss.fields.personGid,
+	     this.ss.fields.projectGid,
 	     this.ss.fields.fullName,
 	     this.ss.fields.phoneNumber,
 	     this.ss.fields.mobileNumber,
 	     this.ss.fields.emailAddress,
-	     this.ss.fields.projectRole,
+	     this.ss.fields.role,
 	     messagePanel
 	];
 	

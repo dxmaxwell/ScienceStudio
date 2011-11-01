@@ -15,63 +15,37 @@ import ca.sciencestudio.model.facility.Technique;
  * @author maxweld
  *
  */
-public class InstrumentTechniqueOption {
+public class InstrumentTechniqueOption extends InstrumentTechnique {
 
-	private int id;
-	private int instrumentId;
-	private int techniqueId;
+	private static final long serialVersionUID = 1L;
+	
 	private String instrumentName;
 	private String instrumentLongName;
 	private String techniqueName;
 	private String techniqueLongName;
 	
 	public InstrumentTechniqueOption() {
-		setId(0);
-		setInstrumentId(0);
-		setTechniqueId(0);
-		setInstrumentName("");
-		setInstrumentLongName("");
-		setTechniqueName("");
-		setTechniqueLongName("");
+		instrumentName = Instrument.DEFAULT_NAME;
+		instrumentLongName = Instrument.DEFAULT_LONG_NAME;
+		techniqueName = Technique.DEFAULT_NAME;
+		techniqueLongName = Technique.DEFAULT_LONG_NAME;
 	}
 	
-	public InstrumentTechniqueOption(InstrumentTechnique insttech, Instrument inst, Technique  tech) {
-		if(insttech.getInstrumentId() != inst.getId()) {
+	public InstrumentTechniqueOption(InstrumentTechnique instrumentTechnique, Instrument instrument, Technique technique) {
+		super(instrumentTechnique);
+		
+		if(!getInstrumentGid().equals(instrument.getGid())) {
 			throw new IllegalArgumentException();
 		}
 		
-		if(insttech.getTechniqueId() != tech.getId()) {
+		if(!getTechniqueGid().equals(technique.getGid())) {
 			throw new IllegalArgumentException();
 		}
-			
-		setId(insttech.getId());
-		setInstrumentId(inst.getId());
-		setTechniqueId(tech.getId());
-		setInstrumentName(inst.getName());
-		setInstrumentLongName(inst.getLongName());
-		setTechniqueName(tech.getName());
-		setTechniqueLongName(tech.getLongName());
-	}
-	
-	public int getId() {
-		return id;
-	}
-	public void setId(int id) {
-		this.id = id;
-	}
-	
-	public int getInstrumentId() {
-		return instrumentId;
-	}
-	public void setInstrumentId(int instrumentId) {
-		this.instrumentId = instrumentId;
-	}
-	
-	public int getTechniqueId() {
-		return techniqueId;
-	}
-	public void setTechniqueId(int techniqueId) {
-		this.techniqueId = techniqueId;
+		
+		setInstrumentName(instrument.getName());
+		setInstrumentLongName(instrument.getLongName());
+		setTechniqueName(technique.getName());
+		setTechniqueLongName(technique.getLongName());
 	}
 	
 	public String getInstrumentName() {

@@ -10,10 +10,6 @@ package ca.sciencestudio.service.tree.controllers;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import javax.servlet.http.HttpServletRequest;
-
-import ca.sciencestudio.security.util.SecurityUtil;
-
 /**
  * @author maxweld
  *
@@ -28,33 +24,6 @@ public abstract class AbstractTreeNodeController {
 	protected static final String TREE_NODE_LEAF = "leaf";
 	protected static final String TREE_NODE_VIEW_URL = "viewUrl";
 	protected static final String TREE_NODE_VIEW_TARGET = "viewTarget";
-	
-	protected static final String RESPONSE_VIEW = "treeNodes-";
-	
-	private String modelServletPath;
-	
-	protected String getPersonUid() {
-		return SecurityUtil.getPerson().getGid();
-	}
-	
-	protected String getResponseView(String format) {
-		return RESPONSE_VIEW + format;
-	}
-	
-	protected String getTreePath(HttpServletRequest request) {
-		return request.getContextPath() + request.getServletPath();
-	}
-	
-	protected String getModelPath(HttpServletRequest request) {
-		return request.getContextPath() + getModelServletPath();
-	}
-	
-	public String getModelServletPath() {
-		return modelServletPath;
-	}
-	public void setModelServletPath(String modelServletPath) {
-		this.modelServletPath = modelServletPath;
-	}
 	
 	protected static class TreeNodeMap extends HashMap<String,Object> {
 		

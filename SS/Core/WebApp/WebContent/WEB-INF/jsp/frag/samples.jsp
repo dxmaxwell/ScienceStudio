@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectsPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -66,22 +66,21 @@ Ext.onReady(function() {
 	Samples Grid
 --%>
 	var samplesGridStore = new Ext.data.JsonStore({
-		url: ModelPathUtils.getSamplesPath(${project.id}, ".json"),
+		url: ModelPathUtils.getModelSamplePath('.json?project=${project.gid}'),
 		autoDestroy: true,
 		autoLoad: false,
-		root:"response",
 		fields:[{
-			name:"id", mapping:"sample.id"
+			name:"gid"
 		},{
-			name:"projectId", mapping:"sample.projectId"
+			name:"projectGid"
 		},{
-			name:"name", mapping:"sample.name"
+			name:"name"
 		},{
-			name:"casNumber", mapping:"sample.casNumber"
+			name:"casNumber"
 		},{
-			name:"quantity", mapping:"sample.quantity"
+			name:"quantity"
 		},{
-			name:"state", mapping:"sample.state"
+			name:"state"
 		}]
 	});
 
@@ -98,7 +97,7 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"id", sortable:true
+			header: "GID", width:50, dataIndex:"gid", sortable:true
 		},{
 			header: "Name", width: 180, dataIndex: 'name', sortable: true
 		},{
@@ -115,9 +114,9 @@ Ext.onReady(function() {
 	samplesGridPanel.on('rowclick', function(grid, index, event) {
 		var  record = grid.getStore().getAt(index);
 		if(record) {
-			var sampleId = record.get("id");
-			if(sampleId) {
-				loadModelViewTab(ModelPathUtils.getSamplePath(sampleId, '.html'));
+			var gid = record.get("gid");
+			if(gid) {
+				loadModelViewTab(ModelPathUtils.getModelSamplePath(['/', gid, '.html']));
 			}
 		}
 	}, this);
@@ -155,10 +154,10 @@ Ext.onReady(function() {
 
 	Add Sample Form
 --%>
-<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+	<c:if test="${permissions.add}">
 
 	var sampleForm = new Ext.ss.core.SampleFormPanel({
-		url: ModelPathUtils.getSamplesPath(${project.id}, '/form/add.json'),
+		url: ModelPathUtils.getModelSamplePath('/form/add.json'),
 		method: 'POST',
 		submitText: 'Add',
 		labelAlign: 'right',
@@ -169,20 +168,16 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 	
-	<c:if test="${not empty sampleStateList}">
-	var stateStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="sampleStateList"/>
-		</jsp:include>
-	};
-	
-	sampleForm.ss.fields.state.getStore().loadData(stateStoreData);
+	sampleForm.ss.fields.projectGid.setValue('${project.gid}');
+
+	<c:if test="${not empty sampleStateOptions}">
+	sampleForm.ss.fields.state.getStore().loadData(<hmc:write source="${sampleStateOptions}"/>);
 	</c:if>	
 
 	sampleForm.getForm().on('actioncomplete', function(form, action) {
 		if(action.type == 'submit' && action.result.success == true) {
-			if(action.result.response && action.result.response.viewUrl) {
-				loadModelViewTab(action.result.response.viewUrl);
+			if(action.result.viewUrl) {
+				loadModelViewTab(action.result.viewUrl);
 			}
 		}
 	}, this);
@@ -196,7 +191,7 @@ Ext.onReady(function() {
 
 	addItemModelViewTab(panel, true);
 
-</sec:authorize>
+	</c:if>
 });
 </script>
 </div>

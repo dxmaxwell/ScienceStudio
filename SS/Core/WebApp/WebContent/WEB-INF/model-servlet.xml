@@ -8,14 +8,184 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-           				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	                    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 	
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:servlet.properties"/>
+	</bean>
+		
 	<context:annotation-config/>
 	
-	<import resource="model-validators.xml"/>
-	<import resource="model-controllers.xml"/>
+	<!-- ===================================================================
+  	-  Project Controllers
+  	-  =================================================================== -->
+	
+	<bean class="ca.sciencestudio.service.project.controllers.ProjectController">
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.project.controllers.ProjectPageController">
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.project.controllers.ProjectFormController">
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="facility" value="${model.gid.facility}"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.project.controllers.ProjectPersonPageController">
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.project.controllers.ProjectPersonGridController">
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+	</bean>
+	
+	<bean id="projectPersonFormController"
+		class="ca.sciencestudio.service.project.controllers.ProjectPersonFormController">
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="facility" value="${model.gid.facility}"/>
+	</bean>
+	
+	<!-- ===================================================================
+  	-  Sample Controllers
+  	-  =================================================================== -->
+  	
+  	<bean class="ca.sciencestudio.service.sample.controllers.SampleController">
+  		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.sample.controllers.SamplePageController">
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
+	</bean>
+	
+	<bean id="sampleFormController"
+		class="ca.sciencestudio.service.sample.controllers.SampleFormController">
+		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
+		<property name="facility" value="${model.gid.facility}"/>
+	</bean>
+	
+	<!-- ===================================================================
+  	-  Session Controllers
+  	-  =================================================================== -->
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.SessionController">
+  		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+  	</bean>
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.SessionPageController">
+  		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
+  		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+  		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+  	</bean>
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.SessionFormController">
+  		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+  		<property name="facility" value="${model.gid.facility}"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.session.controllers.SessionGridController">
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.session.controllers.SessionPersonPageController">
+		<property name="sessionPersonAuthzDAO" ref="sessionPersonAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.session.controllers.SessionPersonGridController">
+		<property name="sessionPersonAuthzDAO" ref="sessionPersonAuthzDAO"/>
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.session.controllers.SessionPersonFormController">
+		<property name="sessionPersonAuthzDAO" ref="sessionPersonAuthzDAO"/>
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="facility" value="${model.gid.facility}"/>
+	</bean>
+	
+	<!-- ===================================================================
+  	-  Experiment Controllers
+  	-  =================================================================== -->
+  	
+  	<!--<bean id="experimentController"
+  		class="ca.sciencestudio.service.session.controllers.ExperimentController">
+  	</bean>-->
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.ExperimentPageController">
+  		<property name="instrumentTechniqueAuthzDAO" ref="instrumentTechniqueAuthzDAO"/>
+  		<property name="instrumentAuthzDAO" ref="instrumentAuthzDAO"/>
+  		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+  		<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
+  		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+  		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+  		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.service.session.controllers.ExperimentFormController">
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+		<property name="facility" value="${model.gid.facility}"/>
+	</bean>
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.ExperimentGridController">
+  		<property name="instrumentTechniqueAuthzDAO" ref="instrumentTechniqueAuthzDAO"/>
+  		<property name="instrumentAuthzDAO" ref="instrumentAuthzDAO"/>
+  		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+  		<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
+  		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+  		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+  		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
+  	</bean>
+	
+	<!-- ===================================================================
+  	-  Scan Controllers
+  	-  =================================================================== -->
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.ScanController">
+  		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+  	</bean>
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.ScanFormController">
+  		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+  		<property name="facility" value="${model.gid.facility}"/>
+  	</bean>
+  	
+  	<bean class="ca.sciencestudio.service.session.controllers.ScanPageController">
+  		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+  		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+  		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+  		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+  	</bean>
+	
+	<!-- ===================================================================
+  	-  Person Controllers
+  	-  =================================================================== -->
+  	
+  	<!--<bean id="personPageController"
+  		class="ca.sciencestudio.service.person.controllers.PersonPageController">
+  	</bean>-->
+	
+	<!-- ================================================================================================== -->
+	<!-- These beans effectively replace '<mvc:annotation-driven/>' MVC context configuration option.       -->
+	<!-- See class for details: org.springframework.web.servlet.config.AnnotationDrivenBeanDefinitionParser -->
+	
+	<bean id="webBindingInitializer"
+		class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
+		<property name="conversionService" ref="conversionService"/>
+	</bean>
 	
 	<bean id="annotationMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
@@ -24,7 +194,10 @@
 	<bean id="annoationMethodHandler"
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
 		<property name="messageConverters" ref="httpMessageConverters"/>
+		<property name="webBindingInitializer" ref="webBindingInitializer"/>
 	</bean>
+
+	<!-- ================================================================================================== -->
 
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">

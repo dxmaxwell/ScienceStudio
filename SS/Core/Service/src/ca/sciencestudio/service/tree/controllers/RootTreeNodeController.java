@@ -30,8 +30,8 @@ public class RootTreeNodeController extends AbstractTreeNodeController {
 		
 		TreeNodeMap treeNode = new TreeNodeMap();
 		treeNode.put(TREE_NODE_ID, "PROJECTS");
-		treeNode.put(TREE_NODE_DATA_URL, getTreePath(request) + ModelPathUtils.getProjectsPath(""));
-		treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getProjectsPath(".html"));
+		treeNode.put(TREE_NODE_DATA_URL, ModelPathUtils.getTreeProjectPath());
+		treeNode.put(TREE_NODE_VIEW_URL, ModelPathUtils.getModelProjectPath(".html"));
 		treeNode.put(TREE_NODE_ICON_CLASS, "ss-projects-tree-node-icon");
 		treeNode.put(TREE_NODE_TEXT, "Projects");
 		treeNodes.add(treeNode);

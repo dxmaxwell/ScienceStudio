@@ -25,6 +25,16 @@ Ext.ss.core.SessionFormPanel = function(config) {
 		delete formPanelConfig.buttonDefaults;
 	}
 	
+	this.ss.fields.gid = new Ext.form.Hidden(Ext.applyIf({
+		name:'gid',
+		disabled:false
+	}, defaults));
+	
+	this.ss.fields.projectGid = new Ext.form.Hidden(Ext.applyIf({
+		name:'projectGid',
+		disabled:false
+	}, defaults));
+	
 	this.ss.fields.name = new Ext.form.TextField(Ext.applyIf({
 		fieldLabel: 'Name',
 		name: 'name',
@@ -51,41 +61,41 @@ Ext.ss.core.SessionFormPanel = function(config) {
 	else {
 		laboratoryStore = new Ext.data.JsonStore({
 			autoDestroy:true,
-			root:'response',
-			success: 'success',
 			fields:[{
-				name:'id', mapping:'laboratory.id'
+				name:'gid'
 			},{
-				name:'longName', mapping:'laboratory.longName'
+				name:'longName'
 			}]
 		});
 	}
 	
 	this.ss.fields.laboratory = new Ext.form.ComboBox(Ext.applyIf({
 		fieldLabel: 'Laboratory',
-		hiddenName: 'laboratoryId',
+		hiddenName: 'laboratoryGid',
 		store:laboratoryStore,
 		mode: 'local',
 		triggerAction:'all',
 		editable:false,
 		forceSelection:true,
-		valueField:'id',
+		valueField:'gid',
 		displayField:'longName',
 		emptyText:'Select a laboratory...',
 		width: 200
 	}, defaults));
 	
-	this.ss.fields.startDate = new Ext.form.DateField(Ext.applyIf({
+	this.ss.fields.startDay = new Ext.form.DateField(Ext.applyIf({
 		fieldLabel: 'Start Date',
-		name: 'startDate',
+		name: 'startDay',
 		format: Date.patterns.ISO8601Date,
+		altFormats:Date.altDateFormats,
 		width: 100
 	}, defaults));
 	                
-	this.ss.fields.endDate = new Ext.form.DateField(Ext.applyIf({
+	this.ss.fields.endDay = new Ext.form.DateField(Ext.applyIf({
 		fieldLabel: 'End Date',
-		name: 'endDate',
+		name: 'endDay',
 		format: Date.patterns.ISO8601Date,
+		altFormats:Date.altDateFormats,
 		width: 100
 	}, defaults));
 	
@@ -93,8 +103,9 @@ Ext.ss.core.SessionFormPanel = function(config) {
 		fieldLabel: 'Start Time',
 		name: 'startTime',
 		format: Date.patterns.ISO8601TimeShrt,
+		altFormats: Date.altTimeFormats,
 		minValue: '00:00',
-		maxValue: '23:00',
+		maxValue: '23:30',
 		increment: 30,
 		width: 100
 	}, defaults));
@@ -103,8 +114,9 @@ Ext.ss.core.SessionFormPanel = function(config) {
 		fieldLabel: 'End Time',
 		name: 'endTime',
 		format: Date.patterns.ISO8601TimeShrt,
+		altFormats: Date.altTimeFormats,
 		minValue: '00:00',
-		maxValue: '23:00',
+		maxValue: '23:30',
 		increment: 30,
 		width: 100
 	}, defaults));
@@ -144,25 +156,23 @@ Ext.ss.core.SessionFormPanel = function(config) {
 			waitMsg: waitMsg,
 			success: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.response && json.response.message) {
+				if(json && json.message) {
 					messagePanel.removeAll();
 					messagePanel.add({
-						html: json.response.message
+						html: json.message
 					});
 					messagePanel.doLayout();
 				}
 			},
 			failure: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.globalErrors) {
+				if(json && json.message) {
 					messagePanel.removeAll();
-					for(var idx=0; idx < json.globalErrors.length; idx++) {
-						messagePanel.add({
-							html: json.globalErrors[idx],
-							style: { 'color':'red' }
-						});
-						messagePanel.doLayout();
-					}
+					messagePanel.add({
+						html: json.message,
+						style: { 'color':'red' }
+					});
+					messagePanel.doLayout();
 				}
 			},
 			scope:this
@@ -170,13 +180,15 @@ Ext.ss.core.SessionFormPanel = function(config) {
 	}, this);
 	
 	formPanelConfig.items = [
+	     this.ss.fields.gid,
+	     this.ss.fields.projectGid,
 	     this.ss.fields.name,
 	     this.ss.fields.description,
 	     this.ss.fields.laboratory,
 	     this.ss.fields.proposal,
-	     this.ss.fields.startDate,
+	     this.ss.fields.startDay,
 	     this.ss.fields.startTime,
-	     this.ss.fields.endDate,
+	     this.ss.fields.endDay,
 	     this.ss.fields.endTime,
 	     messagePanel
 	];

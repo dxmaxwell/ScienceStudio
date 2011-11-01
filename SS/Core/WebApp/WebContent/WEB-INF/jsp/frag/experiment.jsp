@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -57,8 +57,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#sessions${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath(${project.id}, '.html'));",
+				href:"#sessions${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('.html?project=${project.gid}'));",
 				html:"Sessions"
 			}
 		},{
@@ -68,8 +68,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#session${session.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionPath(${session.id}, '.html'));",
+				href:"#session${session.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('/${session.gid}.html'));",
 				html:"${session.name}"
 			}
 		},{
@@ -79,8 +79,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#experiments${session.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getExperimentsPath(${session.id}, '.html'));",
+				href:"#experiments${session.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelExperimentPath('.html?session=${session.gid}'));",
 				html:"Experiments"
 			}
 		},{
@@ -99,19 +99,19 @@ Ext.onReady(function() {
 	Edit Experiment Form
 --%>
 	var experimentForm = new Ext.ss.core.ExperimentFormPanel({
-		url: ModelPathUtils.getExperimentPath(${experiment.id}, '/form/edit.json'),
+		url: ModelPathUtils.getModelExperimentPath('/form/edit.json'),
 		method: 'POST',
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
-		<sec:authorize ifNotGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+		<c:if test="${not permissions.edit}">
 		defaults: {
 			disabled:true
 		},
 		buttonDefaults: {
 			hidden:true,
 		},
-		</sec:authorize>
+		</c:if>
 		border: false,
 		waitMsg:'Saving Experiment...',
 		waitMsgTarget: true,
@@ -119,32 +119,19 @@ Ext.onReady(function() {
 	});
 	
 	<c:if test="${not empty sampleList}">
-	var sampleStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="sampleList"/>
-		</jsp:include>	
-	};
-	
-	experimentForm.ss.stores.sample.loadData(sampleStoreData);
+	experimentForm.ss.stores.sample.loadData(<hmc:write source="${sampleList}"/>);
 	</c:if>	
 
-	<c:if test="${not empty instrumentTechniqueOptionList}">
-	var instrumentTechniqueOptionStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="instrumentTechniqueOptionList"/>
-		</jsp:include>
-	};
-	
-	experimentForm.ss.stores.instrumentTechniqueOption.loadData(instrumentTechniqueOptionStoreData);
+	<c:if test="${not empty instrumentList}">
+	experimentForm.ss.stores.instrumentStore.loadData(<hmc:write source="${instrumentList}"/>);
+	</c:if>
+
+	<c:if test="${not empty instrumentTechniqueList}">
+	experimentForm.ss.stores.instrumentTechnique.loadData(<hmc:write source="${instrumentTechniqueList}"/>);
 	</c:if>	
 
-	<c:if test="${not empty experimentFormBacker}">
-	var experimentFormValues = 
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="experimentFormBacker"/>
-		</jsp:include>;
-	
-	experimentForm.getForm().setValues(experimentFormValues.experimentFormBacker);
+	<c:if test="${not empty experiment}">
+	experimentForm.getForm().setValues(<hmc:write source="${experiment}"/>);
 	</c:if>	
 
 	var linksPanel = new Ext.Panel({
@@ -155,8 +142,8 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: 'a',
 				html: 'Scans',
-				href:'#scans${experiment.id}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getScansPath(${experiment.id}, '.html'));"
+				href:'#scans${experiment.gid}',
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelScanPath('.html?experiment=${experiment.gid}'));"
 			}
 		}],
 		padding: '10px'
@@ -166,21 +153,28 @@ Ext.onReady(function() {
 		Ext.Msg.confirm('Question', 'Do you REALLY want to remove this experiment?', function(ans) {
 			if(ans == 'yes') {
 				Ext.Ajax.request({
-					url:ModelPathUtils.getExperimentPath(${experiment.id}, '/remove.json'),
+					method:'POST',
+					params:{ gid:'${experiment.gid}' },
+					url:ModelPathUtils.getModelExperimentPath('/form/remove.json'),
 					failure:function(response, options) {
 						Ext.Msg.alert('Error', 'Network connection problem.');
 					},
 					success:function(response, options) {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
- 							if(json.success && json.response.viewUrl) {
-								loadModelViewTab(json.response.viewUrl);
-							}
-							else if(json.globalErrors && json.globalErrors[0]) {
-								Ext.Msg.alert('Error', json.globalErrors[0]);
+ 							if(json.success) {
+								if(json.viewUrl) {
+									loadModelViewTab(json.viewUrl);
+								} else {
+									loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));
+								}
 							}
 							else {
-								Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+								if(json.message) {
+									Ext.Msg.alert('Error', json.message);
+								} else {
+									Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+								}
 							}
 						}
 					}
@@ -191,13 +185,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title: 'Experiment',
-		<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+		<c:if test="${permissions.remove}">
 		tools:[{
 			id:'close',
 			handler:removeExperiment,
 			scope:this
 		}],
-		</sec:authorize>
+		</c:if>
 		items:[
 			experimentForm,
 			linksPanel

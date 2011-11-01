@@ -7,22 +7,23 @@
  */
 package ca.sciencestudio.service.sample.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import ca.sciencestudio.model.Permissions;
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.sample.Sample;
-import ca.sciencestudio.model.sample.SampleState;
-import ca.sciencestudio.model.sample.dao.SampleDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.sample.dao.SampleAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.sample.backers.SampleFormBacker;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
+import ca.sciencestudio.util.web.EnumToOptionUtils;
 
 /**
  * @author maxweld
@@ -31,77 +32,78 @@ import ca.sciencestudio.service.sample.backers.SampleFormBacker;
 @Controller
 public class SamplePageController extends AbstractModelController {
 
-	private static final String ERROR_VIEW = "frag/error";
+	private SampleAuthzDAO sampleAuthzDAO;
 	
-	@Autowired
-	private ProjectDAO projectDAO;
+	private ProjectAuthzDAO projectAuthzDAO;
 	
-	@Autowired
-	private SampleDAO sampleDAO;
-	
-	@RequestMapping(value = "/project/{projectId}/samples.html", method = RequestMethod.GET)
-	public String getSamplesPage(@PathVariable int projectId, ModelMap model) {
+	@RequestMapping(value = ModelPathUtils.SAMPLE_PATH + ".html")
+	public String getSamplesPage(@RequestParam("project") String projectGid, ModelMap model) {
 		
-		Project project = projectDAO.getProjectById(projectId);
+		String user = SecurityUtil.getPersonGid();
+	
+		Data<Permissions> dataPermissions = sampleAuthzDAO.permissions(user);
+		
+		Project project = projectAuthzDAO.get(user, projectGid).get();
 		if(project == null) {
 			model.put("error", "Project not found.");	
 			return ERROR_VIEW;
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object team = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(admin, team)) { 
-			model.put("error", "Permission denied.");	
+		Permissions permissions = dataPermissions.get();
+		if(permissions == null) {
+			model.put("error", "Project not found.");	
 			return ERROR_VIEW;
 		}
 		
-		model.put("sampleStateList", SampleState.getMarshallableValues(SampleState.UNKNOWN));
+		model.put("sampleStateOptions", EnumToOptionUtils.toList(Sample.State.values()));
+		model.put("permissions", permissions);
 		model.put("project", project);
 		return "frag/samples";
 	}
 	
-	@RequestMapping(value = "/sample/{sampleId}.html", method = RequestMethod.GET)
-	public String getSamplePage(@PathVariable int sampleId, ModelMap model) {
+	@RequestMapping(value = ModelPathUtils.SAMPLE_PATH + "/{sampleGid}.html")
+	public String getSamplePage(@PathVariable String sampleGid, ModelMap model) {
 		
-		Sample sample = sampleDAO.getSampleById(sampleId);
+		String user = SecurityUtil.getPersonGid();
+		
+		Data<Permissions> dataPermissions = sampleAuthzDAO.permissions(user, sampleGid);
+		
+		Sample sample = sampleAuthzDAO.get(user, sampleGid).get();
 		if(sample == null) {
 			model.put("error", "Sample not found.");
 			return ERROR_VIEW;
 		}
-
-		Project project = projectDAO.getProjectById(sample.getProjectId());
+		
+		Project project = projectAuthzDAO.get(user, sample.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object team = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		
-		if(!SecurityUtil.hasAnyAuthority(admin, team)) {
-			model.put("error", "Permission denied.");	
+	
+		Permissions permissions = dataPermissions.get();
+		if(permissions == null) {
+			model.put("error", "Project not found.");	
 			return ERROR_VIEW;
 		}
 			
-		model.put("sampleStateList", SampleState.getMarshallableValues(SampleState.UNKNOWN));
-		model.put("sampleFormBacker", new SampleFormBacker(sample));
+		model.put("sampleStateOptions", EnumToOptionUtils.toList(Sample.State.values()));
+		model.put("sample", new SampleFormBacker(sample));
+		model.put("permissions", permissions);
 		model.put("project", project);
-		model.put("sample", sample);
 		return "frag/sample";
 	}
 
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 
-	public SampleDAO getSampleDAO() {
-		return sampleDAO;
+	public SampleAuthzDAO getSampleAuthzDAO() {
+		return sampleAuthzDAO;
 	}
-	public void setSampleDAO(SampleDAO sampleDAO) {
-		this.sampleDAO = sampleDAO;
+	public void setSampleAuthzDAO(SampleAuthzDAO sampleAuthzDAO) {
+		this.sampleAuthzDAO = sampleAuthzDAO;
 	}
 }

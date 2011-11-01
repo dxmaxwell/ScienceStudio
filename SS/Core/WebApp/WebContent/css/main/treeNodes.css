@@ -43,6 +43,14 @@
 	/* use ext-js default */
 }
 
+.ss-session-persons-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/group.png') !important;
+}
+
+.ss-session-person-tree-node-icon {
+	background-image:url('/ssstatic/img/tree/person.png') !important;
+}
+
 .ss-experiment-tree-node-icon {
 	background-image:url('/ssstatic/img/tree/spectrum.png') !important;
 }

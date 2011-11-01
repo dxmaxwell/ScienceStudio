@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href:"#projects",
-				onclick:"return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick:"return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html:"Projects"
 			}
 		},{
@@ -56,16 +56,16 @@ Ext.onReady(function() {
 	Edit/View Project Form
 --%>
 	var projectFormPanel = new Ext.ss.core.ProjectFormPanel({
-		url: ModelPathUtils.getProjectsPath('${project.gid}', '/form/edit.json'),
+		url: ModelPathUtils.getModelProjectPath('/form/edit.json'),
 		method: 'POST',
-		<sec:authorize ifNotGranted="ROLE_ADMIN_PROJECTS">
+		<c:if test="${not permissions.edit}">
 		defaults: {
 			disabled:true,
 		},
 		buttonDefaults: {
 			hidden:true
 		},
-		</sec:authorize>
+		</c:if>
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
@@ -75,14 +75,13 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 	
-	<c:if test="${not empty projectStatusList}">
-	projectFormPanel.ss.fields.status.getStore().loadData(<hmc:write source="${projectStatusList}" type="application/json"/>);
+	<c:if test="${not empty projectStatusOptions}">
+	projectFormPanel.ss.fields.status.getStore().loadData(<hmc:write source="${projectStatusOptions}" type="application/json"/>);
 	</c:if>
 	
 	<c:if test="${not empty project}">
 	projectFormPanel.getForm().setValues(<hmc:write source="${project}" type="application/json"/>);
 	</c:if>
-	
 
 	var linksPanel = new Ext.Panel({
 		border:false,
@@ -96,7 +95,7 @@ Ext.onReady(function() {
 				tag: 'a',
 				html: 'Team',
 				href:'#persons${project.gid}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPersonsPath('${project.gid}', '.html'));"
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPersonPath('.html?project=${project.gid}'));"
 			}
 		},{
 			xtype:'box',
@@ -107,7 +106,7 @@ Ext.onReady(function() {
 				tag: 'a',
 				html: 'Samples',
 				href:'#samples${project.gid}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getSamplesPath('${project.gid}', '.html'));"
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSamplePath('.html?project=${project.gid}'));"
 			}
 		},{
 			xtype:'box',
@@ -118,7 +117,7 @@ Ext.onReady(function() {
 				tag: 'a',
 				html: 'Sessions',
 				href:'#sessions${project.gid}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath('${project.gid}', '.html'));"
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('.html?project=${project.gid}'));"
 			}
 		},{
 			xtype:'box',
@@ -131,21 +130,28 @@ Ext.onReady(function() {
 		Ext.Msg.confirm('Question', 'Do you REALLY want to remove this project?', function(ans) {
 			if(ans == 'yes') {
 				Ext.Ajax.request({
-					url:ModelPathUtils.getProjectsPath('${project.gid}', '/remove.json'),
+					method:'POST',
+					params: { gid:'${project.gid}' },
+					url:ModelPathUtils.getModelProjectPath('/form/remove.json'),
 					failure:function(response, options) {
 						Ext.Msg.alert('Error', 'Network connection problem.');
 					},
 					success:function(response, options) {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
- 							if(json.success && json.response.viewUrl) { 
-								loadModelViewTab(json.response.viewUrl);
+ 							if(json.success) { 
+								if(json.viewUrl) {
+									loadModelViewTab(json.viewUrl);
+								} else {
+									loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));
+								}
 							}
-							else if(json.globalErrors && json.globalErrors[0]) {
-								Ext.Msg.alert('Error', json.globalErrors[0]);
-							}
-							else {
-								Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+							else { 
+								if(json.message) {
+									Ext.Msg.alert('Error', json.message);
+								} else {
+									Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+								}
 							}
 						}
 					}
@@ -156,13 +162,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title: 'Project (GID:${project.gid})',
-		<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
+		<c:if test="${permissions.remove}">		
 		tools:[{
 			id:'close',
 			handler:removeProject,
 			scope:this
 		}],
-		</sec:authorize>
+		</c:if>
 		items: [ 
 			projectFormPanel,
 			linksPanel

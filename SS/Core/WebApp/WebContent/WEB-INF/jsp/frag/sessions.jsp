@@ -37,7 +37,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -47,8 +47,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -67,22 +67,21 @@ Ext.onReady(function() {
 	Sessions Grid
 --%>
 	var sessionsGridStore = new Ext.data.JsonStore({
-		url: ModelPathUtils.getSessionsPath(${project.id}, ".json"),
+		url: ModelPathUtils.getModelSessionPath('.json?project=${project.gid}'),
 		autoDestroy: true,
 		autoLoad: false,
-		root:"response",
 		fields:[{
-			name:"id", mapping:"session.id"
+			name:"gid"
 		},{
-			name:"name", mapping:"session.name"
+			name:"name"
 		},{
-			name:"proposal", mapping:"session.proposal"
+			name:"proposal"
 		},{
-			name:"startDate", mapping:"session.startDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"startDate",
+			type:"date", dateFormat:"c"
 		},{
-			name:"endDate", mapping:"session.endDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Full
+			name:"endDate",
+			type:"date", dateFormat:"c"
 		}]
 	});
 
@@ -99,7 +98,7 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"id", sortable:true
+			header: "GID", width:50, dataIndex:"gid", sortable:true
 		},{
 			header: "Name", width: 180, dataIndex: 'name', sortable: true
 		},{
@@ -118,9 +117,9 @@ Ext.onReady(function() {
 	sessionsGridPanel.on('rowclick', function(grid, index, event) {
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var sessionId = record.get('id');
-			if(sessionId) {
-				loadModelViewTab(ModelPathUtils.getSessionPath(sessionId, '.html'));
+			var gid = record.get('gid');
+			if(gid) {
+				loadModelViewTab(ModelPathUtils.getModelSessionPath(['/', gid, '.html']));
 			}
 		}
 	}, this);
@@ -160,9 +159,9 @@ Ext.onReady(function() {
 
 	Add Session Form
 --%>
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
+	<c:if test="${permissions.add}">
 	var sessionForm = new Ext.ss.core.SessionFormPanel({
-		url: ModelPathUtils.getSessionsPath(${project.id}, '/form/add.json'),
+		url: ModelPathUtils.getModelSessionPath('/form/add.json'),
 		method: 'POST',
 		submitText: 'Add',
 		labelAlign: 'right',
@@ -173,22 +172,18 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 	
+	sessionForm.ss.fields.projectGid.setValue('${project.gid}');
+
 	sessionForm.getForm().on('actioncomplete', function(form, action) {
 		if(action.type == 'submit' && action.result.success == true) {
-			if(action.result.response && action.result.response.viewUrl) {
-				loadModelViewTab(action.result.response.viewUrl);
+			if(action.result && action.result.viewUrl) {
+				loadModelViewTab(action.result.viewUrl);
 			}
 		}
 	}, this);
 
 	<c:if test="${not empty laboratoryList}">
-	var laboratoryStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="laboratoryList"/>
-		</jsp:include>
-	};
-	
-	sessionForm.ss.fields.laboratory.getStore().loadData(laboratoryStoreData);
+	sessionForm.ss.fields.laboratory.getStore().loadData(<hmc:write source="${laboratoryList}"/>);
 	</c:if>
 
 	var panel = new Ext.Panel({
@@ -199,7 +194,7 @@ Ext.onReady(function() {
 	});
 
 	addItemModelViewTab(panel, true);
-	</sec:authorize>
+	</c:if>
 });
 </script>
 </div>

@@ -12,5 +12,6 @@
 <script type="text/javascript" src="/ss/js/Ext.ss.core.ProjectPersonFormPanel.js"></script>
 <script type="text/javascript" src="/ss/js/Ext.ss.core.SampleFormPanel.js"></script>
 <script type="text/javascript" src="/ss/js/Ext.ss.core.SessionFormPanel.js"></script>
+<script type="text/javascript" src="/ss/js/Ext.ss.core.SessionPersonFormPanel.js"></script>
 <script type="text/javascript" src="/ss/js/Ext.ss.core.PersonFormPanel.js"></script>
 <script type="text/javascript" src="/ss/js/Ext.ss.core.ScanFormPanel.js"></script>

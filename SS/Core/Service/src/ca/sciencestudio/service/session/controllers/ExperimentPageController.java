@@ -12,31 +12,32 @@ import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import ca.sciencestudio.model.Permissions;
+import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.facility.Instrument;
 import ca.sciencestudio.model.facility.InstrumentTechnique;
 import ca.sciencestudio.model.facility.Technique;
-import ca.sciencestudio.model.facility.dao.InstrumentDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentTechniqueDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.facility.dao.InstrumentAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentTechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.session.backers.ExperimentFormBacker;
 import ca.sciencestudio.service.session.backers.InstrumentTechniqueOption;
-import ca.sciencestudio.model.facility.dao.TechniqueDAO;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.sample.Sample;
-import ca.sciencestudio.model.sample.dao.SampleDAO;
+import ca.sciencestudio.model.sample.dao.SampleAuthzDAO;
 import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
-import ca.sciencestudio.model.session.dao.SessionDAO;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 
 /**
@@ -46,102 +47,110 @@ import ca.sciencestudio.service.controllers.AbstractModelController;
 @Controller
 public class ExperimentPageController extends AbstractModelController {
 	
-	private static final String ERROR_VIEW = "frag/error";
+	private SampleAuthzDAO sampleAuthzDAO;	
+
+	private ProjectAuthzDAO projectAuthzDAO;
 	
-	@Autowired
-	private SampleDAO sampleDAO;
+	private SessionAuthzDAO sessionAuthzDAO;
 	
-	@Autowired
-	private ProjectDAO projectDAO;
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	
-	@Autowired
-	private SessionDAO sessionDAO;
+	private InstrumentAuthzDAO instrumentAuthzDAO;
 	
-	@Autowired
-	private TechniqueDAO techniqueDAO;
+	private InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO;
+
+	private TechniqueAuthzDAO techniqueAuthzDAO;
 	
-	@Autowired
-	private ExperimentDAO experimentDAO;
-	
-	@Autowired
-	private InstrumentDAO instrumentDAO;
-	
-	@Autowired
-	private InstrumentTechniqueDAO instrumentTechniqueDAO;
-	
-	@RequestMapping(value = "/session/{sessionId}/experiments.html", method = RequestMethod.GET)
-	public String getExperimentsPage(@PathVariable int sessionId, HttpServletRequest request, ModelMap model) {
+	@RequestMapping(value = ModelPathUtils.EXPERIMENT_PATH + ".html")
+	public String getExperimentsPage(@RequestParam("session") String sessionGid, HttpServletRequest request, ModelMap model) {
 		
-		Session session = sessionDAO.getSessionById(sessionId);
+		String user = SecurityUtil.getPersonGid();
+		
+		Data<Permissions> dataPermissions = experimentAuthzDAO.permissions(user);
+		
+		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
 		
-		Project project = projectDAO.getProjectById(session.getProjectId());
+		Data<List<Sample>> dataSampleList = sampleAuthzDAO.getAllByProjectGid(user, session.getProjectGid());
+		Data<List<Technique>> dataTechniqueList = techniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<Instrument>> dataInstrumentList = instrumentAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<InstrumentTechnique>> dataInstrumentTechniqueList = instrumentTechniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		
+		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		if(!SecurityUtil.hasAnyAuthority(admin, group)) {
-			model.put("error", "Permission denied.");
-			return "frag/error";
-		}
-		
-		List<Sample> sampleList = sampleDAO.getSampleListByProjectId(project.getId());
-		List<Technique> techniqueList = techniqueDAO.getTechniqueListByLaboratoryId(session.getLaboratoryId());
-		List<Instrument> instrumentList = instrumentDAO.getInstrumentListByLaboratoryId(session.getLaboratoryId());
-		List<InstrumentTechnique> instrumentTechniqueList = instrumentTechniqueDAO.getInstrumentTechniqueListByLaboratoryId(session.getLaboratoryId());
+		List<Sample> sampleList = dataSampleList.get();
+		List<Technique> techniqueList = dataTechniqueList.get();
+		List<Instrument> instrumentList = dataInstrumentList.get();
+		List<InstrumentTechnique> instrumentTechniqueList = dataInstrumentTechniqueList.get();
 		List<InstrumentTechniqueOption> instrumentTechniqueOptionList = getInstrumentTechniqueOptionList(instrumentTechniqueList, instrumentList, techniqueList);
 		
-		model.put("instrumentTechniqueOptionList", instrumentTechniqueOptionList);
+		Permissions permissions = dataPermissions.get();
+		if(permissions == null) {
+			model.put("error", "Permissions not found.");
+			return ERROR_VIEW;
+		}
+		
+		model.put("instrumentTechniqueList", instrumentTechniqueOptionList);
 		model.put("instrumentList", instrumentList);
+		model.put("permissions", permissions);
 		model.put("sampleList", sampleList);
 		model.put("project", project);
 		model.put("session", session);
 		return "frag/experiments";
 	}
 	
-	@RequestMapping(value = "/experiment/{experimentId}.html", method = RequestMethod.GET)
-	public String getExperimentPage(@PathVariable int experimentId, HttpServletRequest request, ModelMap model) {
+	@RequestMapping(value = ModelPathUtils.EXPERIMENT_PATH + "/{experimentGid}.html")
+	public String getExperimentPage(@PathVariable String experimentGid, HttpServletRequest request, ModelMap model) {
 		
-		Experiment experiment = experimentDAO.getExperimentById(experimentId);
+		String user = SecurityUtil.getPersonGid();
+		
+		Data<Permissions> dataPermissions = experimentAuthzDAO.permissions(user, experimentGid);
+		
+		Experiment experiment = experimentAuthzDAO.get(user, experimentGid).get();
 		if(experiment == null) {
 			model.put("error", "Experiment not found.");
 			return ERROR_VIEW;
 		}
 		
-		Session session = sessionDAO.getSessionById(experiment.getSessionId());
+		Session session = sessionAuthzDAO.get(user, experiment.getSessionGid()).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
 		
-		Project project = projectDAO.getProjectById(session.getProjectId());
+		Data<List<Sample>> dataSampleList = sampleAuthzDAO.getAllByProjectGid(user, session.getProjectGid());
+		Data<List<Technique>> dataTechniqueList = techniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<Instrument>> dataInstrumentList = instrumentAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<InstrumentTechnique>> dataInstrumentTechniqueList = instrumentTechniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		
+		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		if(!SecurityUtil.hasAnyAuthority(admin, group)) {
-			model.put("error", "Permission denied.");
+		Permissions permissions = dataPermissions.get();
+		if(permissions == null) {
+			model.put("error", "Permissions not found.");
 			return ERROR_VIEW;
 		}
-	
-		List<Sample> sampleList = sampleDAO.getSampleListByProjectId(project.getId());
-		List<Technique> techniqueList = techniqueDAO.getTechniqueListByLaboratoryId(session.getLaboratoryId());
-		List<Instrument> instrumentList = instrumentDAO.getInstrumentListByLaboratoryId(session.getLaboratoryId());
-		List<InstrumentTechnique> instrumentTechniqueList = instrumentTechniqueDAO.getInstrumentTechniqueListByLaboratoryId(session.getLaboratoryId());
+		
+		List<Sample> sampleList = dataSampleList.get();
+		List<Technique> techniqueList = dataTechniqueList.get();
+		List<Instrument> instrumentList = dataInstrumentList.get();
+		List<InstrumentTechnique> instrumentTechniqueList = dataInstrumentTechniqueList.get();
 		List<InstrumentTechniqueOption> instrumentTechniqueOptionList = getInstrumentTechniqueOptionList(instrumentTechniqueList, instrumentList, techniqueList);
 		
 		ExperimentFormBacker experimentFormBacker = null;
 		for(InstrumentTechnique instrumentTechnique : instrumentTechniqueList) {
-			if(instrumentTechnique.getId() == experiment.getInstrumentTechniqueId()) {
+			if(instrumentTechnique.getGid().equals(experiment.getInstrumentTechniqueGid())) {
 				experimentFormBacker = new ExperimentFormBacker(experiment, instrumentTechnique);
 				break;
 			}
@@ -152,11 +161,11 @@ public class ExperimentPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		model.put("instrumentTechniqueOptionList", instrumentTechniqueOptionList);
-		model.put("experimentFormBacker", experimentFormBacker);
+		model.put("instrumentTechniqueList", instrumentTechniqueOptionList);
+		model.put("experiment", experimentFormBacker);
 		model.put("instrumentList", instrumentList);
+		model.put("permissions", permissions);
 		model.put("sampleList", sampleList);
-		model.put("experiment", experiment);
 		model.put("project", project);
 		model.put("session", session);
 		return "frag/experiment";
@@ -164,12 +173,11 @@ public class ExperimentPageController extends AbstractModelController {
 	
 	protected List<InstrumentTechniqueOption> getInstrumentTechniqueOptionList(List<InstrumentTechnique> instrumentTechniqueList, List<Instrument> instrumentList, List<Technique> techniqueList) {
 		List<InstrumentTechniqueOption> instrumentTechniqueOptionList = new ArrayList<InstrumentTechniqueOption>();
-		
 		for(InstrumentTechnique instrumentTechnique : instrumentTechniqueList) {
 			for(Instrument instrument : instrumentList) {
-				if(instrument.getId() == instrumentTechnique.getInstrumentId()) {
+				if(instrument.getGid().equals(instrumentTechnique.getInstrumentGid())) {
 					for(Technique technique : techniqueList) {
-						if(technique.getId() == instrumentTechnique.getTechniqueId()) {
+						if(technique.getGid().equals(instrumentTechnique.getTechniqueGid())) {
 							instrumentTechniqueOptionList.add(new InstrumentTechniqueOption(instrumentTechnique, instrument, technique));
 							break;
 						}
@@ -178,57 +186,55 @@ public class ExperimentPageController extends AbstractModelController {
 				}
 			}
 		}
-		
 		return instrumentTechniqueOptionList;
 	}
 
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
+	public SampleAuthzDAO getSampleAuthzDAO() {
+		return sampleAuthzDAO;
 	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
-	}
-
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
-	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
+	public void setSampleAuthzDAO(SampleAuthzDAO sampleAuthzDAO) {
+		this.sampleAuthzDAO = sampleAuthzDAO;
 	}
 
-	public TechniqueDAO getTechniqueDAO() {
-		return techniqueDAO;
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	public void setTechniqueDAO(TechniqueDAO techniqueDAO) {
-		this.techniqueDAO = techniqueDAO;
-	}
-
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
-	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 
-	public InstrumentDAO getInstrumentDAO() {
-		return instrumentDAO;
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
 	}
-	public void setInstrumentDAO(InstrumentDAO instrumentDAO) {
-		this.instrumentDAO = instrumentDAO;
-	}
-
-	public InstrumentTechniqueDAO getInstrumentTechniqueDAO() {
-		return instrumentTechniqueDAO;
-	}
-	public void setInstrumentTechniqueDAO(
-			InstrumentTechniqueDAO instrumentTechniqueDAO) {
-		this.instrumentTechniqueDAO = instrumentTechniqueDAO;
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
 
-	public SampleDAO getSampleDAO() {
-		return sampleDAO;
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
 	}
-	public void setSampleDAO(SampleDAO sampleDAO) {
-		this.sampleDAO = sampleDAO;
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
+	}
+
+	public InstrumentAuthzDAO getInstrumentAuthzDAO() {
+		return instrumentAuthzDAO;
+	}
+	public void setInstrumentAuthzDAO(InstrumentAuthzDAO instrumentAuthzDAO) {
+		this.instrumentAuthzDAO = instrumentAuthzDAO;
+	}
+	
+	public InstrumentTechniqueAuthzDAO getInstrumentTechniqueAuthzDAO() {
+		return instrumentTechniqueAuthzDAO;
+	}
+	public void setInstrumentTechniqueAuthzDAO(InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO) {
+		this.instrumentTechniqueAuthzDAO = instrumentTechniqueAuthzDAO;
+	}
+
+	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
+		return techniqueAuthzDAO;
+	}
+	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
+		this.techniqueAuthzDAO = techniqueAuthzDAO;
 	}
 }

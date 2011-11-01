@@ -14,20 +14,113 @@
 	
 	<context:annotation-config/>
 	
-	<bean class="ca.sciencestudio.rest.service.controllers.PersonController">
-		<property name="personDAO" ref="personDAO"/>
+	<!-- Person Controllers -->
+	
+	<bean class="ca.sciencestudio.rest.service.person.controllers.PersonAuthzController">
+		<property name="personBasicDAO" ref="personBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
-	<bean class="ca.sciencestudio.rest.service.controllers.ProjectController">
-		<property name="projectDAO" ref="projectDAO"/>
+	<!-- Project Controllers -->
+	
+	<bean class="ca.sciencestudio.rest.service.project.controllers.ProjectAuthzController">
+		<property name="projectPersonBasicDAO" ref="projectPersonBasicDAO"/>
+		<property name="projectBasicDAO" ref="projectBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="projectValidator">
+			<bean class="ca.sciencestudio.model.project.validators.ProjectValidator"/>
+		</property>
 	</bean>
 	
-	<bean class="ca.sciencestudio.rest.service.controllers.ScanController">
-		<property name="scanDAO" ref="scanDAO"/>
+	<bean class="ca.sciencestudio.rest.service.project.controllers.ProjectPersonAuthzController">
+		<property name="projectPersonBasicDAO" ref="projectPersonBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="projectPersonValidator">
+			<bean class="ca.sciencestudio.model.project.validators.ProjectPersonValidator"/>
+		</property>
 	</bean>
 	
-	<bean class="ca.sciencestudio.rest.service.controllers.ProjectPersonController">
-		<property name="projectPersonDAO" ref="projectPersonDAO"/>
+	<!-- Sample Controllers -->
+	
+	<bean class="ca.sciencestudio.rest.service.sample.controllers.SampleAuthzController">
+		<property name="projectPersonBasicDAO" ref="projectPersonBasicDAO"/>
+		<property name="sampleBasicDAO" ref="sampleBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="sampleValidator">
+			<bean class="ca.sciencestudio.model.sample.validators.SampleValidator"/>
+		</property>
+	</bean>
+	
+	<!-- Session Controllers -->
+	
+	<bean class="ca.sciencestudio.rest.service.session.controllers.SessionAuthzController">
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
+		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="sessionValidator">
+			<bean class="ca.sciencestudio.model.session.validators.SessionValidator"/>
+		</property>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.session.controllers.SessionPersonAuthzController">
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
+		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="sessionPersonValidator">
+			<bean class="ca.sciencestudio.model.session.validators.SessionPersonValidator"/>
+		</property>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.session.controllers.ExperimentAuthzController">
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
+		<property name="experimentBasicDAO" ref="experimentBasicDAO"/>
+		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="experimentValidator">
+			<bean class="ca.sciencestudio.model.session.validators.ExperimentValidator"/>
+		</property>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.session.controllers.ScanAuthzController">
+		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
+		<property name="sessionPersonBasicDAO" ref="sessionPersonBasicDAO"/>
+		<property name="experimentBasicDAO" ref="experimentBasicDAO"/>
+		<property name="sessionBasicDAO" ref="sessionBasicDAO"/>
+		<property name="scanBasicDAO" ref="scanBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+		<property name="scanValidator">
+			<bean class="ca.sciencestudio.model.session.validators.ScanValidator"/>
+		</property>
+	</bean>
+
+	<!-- Facility Controllers -->
+	
+	<bean class="ca.sciencestudio.rest.service.facility.controllers.FacilityAuthzController">
+		<property name="facilityBasicDAO" ref="facilityBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.facility.controllers.InstrumentAuthzController">
+		<property name="instrumentBasicDAO" ref="instrumentBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.facility.controllers.InstrumentTechniqueAuthzController">
+		<property name="instrumentTechniqueBasicDAO" ref="instrumentTechniqueBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.facility.controllers.LaboratoryAuthzController">
+		<property name="laboratoryBasicDAO" ref="laboratoryBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
+	</bean>
+	
+	<bean class="ca.sciencestudio.rest.service.facility.controllers.TechniqueAuthzController">
+		<property name="techniqueBasicDAO" ref="techniqueBasicDAO"/>
+		<property name="loginRoleDAO" ref="loginRoleDAO"/>
 	</bean>
 	
 	<bean id="annotationMapping"
@@ -36,17 +129,7 @@
 
 	<bean id="annoationMethodHandler"
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-		<property name="messageConverters">
-			<list>
-				<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
-					<property name="objectMapper">
-						<bean class="ca.sciencestudio.util.bean.JacksonObjectMapperFactoryBean">
-							<property name="writeDatesAsTimestamps" value="false"/>
-						</bean>
-					</property>
-				</bean>
-			</list>
-		</property>
+		<property name="messageConverters" ref="httpMessageConverters"/>
 	</bean>
 
 	<bean id="viewResolver"

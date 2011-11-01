@@ -25,6 +25,16 @@ Ext.ss.core.ExperimentFormPanel = function(config) {
 		delete formPanelConfig.buttonDefaults;
 	}
 	
+	this.ss.fields.gid = new Ext.form.Hidden(Ext.applyIf({
+		name: 'gid',
+		disabled:false
+	}, defaults));
+	
+	this.ss.fields.sessionGid = new Ext.form.Hidden(Ext.applyIf({
+		name: 'sessionGid',
+		disabled:false
+	}, defaults));
+	
 	this.ss.fields.name = new Ext.form.TextField(Ext.applyIf({
 		fieldLabel: 'Name',
 		name: 'name',
@@ -44,160 +54,109 @@ Ext.ss.core.ExperimentFormPanel = function(config) {
 	else {
 		this.ss.stores.sample = new Ext.data.JsonStore({
 			autoDestroy:true,
-			root:'response',
-			success: 'success',
 			fields:[{
-				name:'id', mapping:'sample.id'
+				name:'gid'
 			},{
-				name:'name', mapping:'sample.name'
+				name:'name'
 			}]
 		});
 	}
 	
 	this.ss.fields.sample = new Ext.form.ComboBox(Ext.applyIf({
 		fieldLabel: 'Sample',
-		hiddenName: 'sampleId',
+		hiddenName: 'sourceGid',
 		store:this.ss.stores.sample,
 		triggerAction:'all',
 		mode: 'local',
 		editable:false,
 		forceSelection:true,
-		valueField:'id',
+		valueField:'gid',
 		displayField:'name',
 		emptyText:'Select a sample...',
 		width: 150
 	}, defaults));
 	
-	if(formPanelConfig.instrumentTechniqueOptionStore) {
-		this.ss.stores.instrumentTechniqueOption = formPanelConfig.instrumentStore;
-		delete formPanelConfig.instrumentTechniqueOptionStore;
+	if(formPanelConfig.instrumentStore) {
+		this.ss.stores.instrumentStore = formPanelConfig.instrumentStore;
+		delete formPanelConfig.instrumentStore;
 	} 
 	else {
-		this.ss.stores.instrumentTechniqueOption = new Ext.data.JsonStore({
+		this.ss.stores.instrumentStore = new Ext.data.JsonStore({
 			autoDestroy:true,
-			root:'response',
-			success: 'success',
 			fields:[{
-				name:'id', mapping:'instrumentTechniqueOption.id'
+				name:'gid'
 			},{
-				name:'instrumentId', mapping:'instrumentTechniqueOption.instrumentId'
-			},{			
-				name:'techniqueId', mapping:'instrumentTechniqueOption.techniqueId'
-			},{	
-				name:'instrumentLongName', mapping:'instrumentTechniqueOption.instrumentLongName'	
+				name:'name'
 			},{
-				name:'techniqueLongName', mapping:'instrumentTechniqueOption.techniqueLongName'
+				name:'longName'
 			}]
 		});
-		
-		this.ss.stores.instrumentTechniqueOption.on('load', function(store, records, options) {
-			instrumentStore.removeAll();
-			instrumentStore.add(records);
-			techniqueStore.removeAll();
-			techniqueStore.add(records);
-		}, this);
 	}
-	
-	instrumentStore = new Ext.data.JsonStore({
-		autoDestroy:true,
-		root:'response',
-		success: 'success',
-		fields:[{
-			name:'id', mapping:'instrumentTechniqueOption.id'
-		},{
-			name:'instrumentId', mapping:'instrumentTechniqueOption.instrumentId'
-		},{			
-			name:'techniqueId', mapping:'instrumentTechniqueOption.techniqueId'
-		},{	
-			name:'instrumentLongName', mapping:'instrumentTechniqueOption.instrumentLongName'	
-		},{
-			name:'techniqueLongName', mapping:'instrumentTechniqueOption.techniqueLongName'
-		}]
-	});
 	
 	this.ss.fields.instrument = new Ext.form.ComboBox(Ext.applyIf({
 		fieldLabel: 'Instrument',
-		hiddenName: 'instrumentId',
-		store:instrumentStore,
+		hiddenName: 'instrumentGid',
+		store:this.ss.stores.instrumentStore,
 		triggerAction:'all',
 		mode: 'local',
 		editable:false,
 		forceSelection:true,
-		valueField:'instrumentId',
-		displayField:'instrumentLongName',
+		valueField:'gid',
+		displayField:'longName',
 		emptyText:'Select an instrument...',
 		width: 150
 	}, defaults));
 	
-	this.ss.fields.instrument.on('beforequery', function(queryEvent) {
-		
-		instrumentStore.removeAll();
-		
-		var records = [];
-		for(var idx = 0; idx < this.ss.stores.instrumentTechniqueOption.getCount(); idx++) {
-			
-			var record = this.ss.stores.instrumentTechniqueOption.getAt(idx);
-			if(record) {
-				var found = false;
-				for(var i = 0; i < records.length; i++) {
-					if(record.get('instrumentId') == records[i].get('instrumentId')) {
-						found = true;
-						break;
-					}
-				}
-				
-				if(!found) {
-					records.push(record);
-				}
-			}	
-		}
-		
-		instrumentStore.add(records);
-		
+	this.ss.fields.instrument.on('select', function(combo, record, index) {
+		this.ss.fields.instrumentTechnique.clearValue();
+		this.ss.stores.instrumentTechnique.clearFilter(false);
+		this.ss.stores.instrumentTechnique.filterBy(function(record, id) {
+			return (record.get('instrumentGid') == this.ss.fields.instrument.getValue());
+		}, this);
 	}, this);
+	
+	if(formPanelConfig.instrumentTechniqueStore) {
+		this.ss.stores.instrumentTechnique = formPanelConfig.instrumentTechniqueStore;
+		delete formPanelConfig.instrumentTechniqueStore;
+	} 
+	else {
+		this.ss.stores.instrumentTechnique = new Ext.data.JsonStore({
+			autoDestroy:true,
+			fields:[{
+				name:'gid'
+			},{
+				name:'instrumentGid'
+			},{
+				name:'techniqueGid'
+			},{
+				name:'instrumentLongName'
+			},{
+				name:'techniqueLongName'
+			}]
+		});
+		
+		this.ss.stores.instrumentTechnique.on('load', function(store, records, options) {
+			// Filter all InstrumentTechniques in store. //
+			store.filterBy(function(record, id) { 
+				return false;
+			}, this);
+		}, this);
+	}
 
-	techniqueStore = new Ext.data.JsonStore({
-		autoDestroy:true,
-		root:'response',
-		success: 'success',
-		fields:[{
-			name:'id', mapping:'instrumentTechniqueOption.id'
-		},{
-			name:'instrumentId', mapping:'instrumentTechniqueOption.instrumentId'
-		},{			
-			name:'techniqueId', mapping:'instrumentTechniqueOption.techniqueId'
-		},{	
-			name:'instrumentLongName', mapping:'instrumentTechniqueOption.instrumentLongName'	
-		},{
-			name:'techniqueLongName', mapping:'instrumentTechniqueOption.techniqueLongName'
-		}]
-	});
-
-	this.ss.fields.technique = new Ext.form.ComboBox(Ext.applyIf({
+	this.ss.fields.instrumentTechnique = new Ext.form.ComboBox(Ext.applyIf({
 		fieldLabel: 'Technique',
-		hiddenName: 'instrumentTechniqueId',
-		store:techniqueStore,
+		hiddenName: 'instrumentTechniqueGid',
+		store:this.ss.stores.instrumentTechnique,
+		lastQuery:'', /* Ensure the initial filter is not cleared. */
 		triggerAction:'all',
 		mode: 'local',
 		editable:false,
 		forceSelection:true,
-		valueField:'id',
+		valueField:'gid',
 		displayField:'techniqueLongName',
 		emptyText:'Select a technique...',
 		width: 150
 	}, defaults));
-	
-	this.ss.fields.technique.on('beforequery', function(queryEvent) {
-		
-		techniqueStore.removeAll();
-		
-		var instrumentId = this.ss.fields.instrument.getValue();
-		if(instrumentId) {
-			var records = this.ss.stores.instrumentTechniqueOption.query('instrumentId', instrumentId);
-			techniqueStore.add(records.getRange());
-		}
-		
-	}, this);
 	
 	var messagePanel = new Ext.Panel({ 
 		autoDestroy:true,
@@ -234,37 +193,37 @@ Ext.ss.core.ExperimentFormPanel = function(config) {
 			waitMsg: waitMsg,
 			success: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.response && json.response.message) {
+				if(json && json.message) {
 					messagePanel.removeAll();
 					messagePanel.add({
-						html: json.response.message
+						html: json.message
 					});
 					messagePanel.doLayout();
 				}
 			},
 			failure: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.globalErrors) {
+				if(json && json.message) {
 					messagePanel.removeAll();
-					for(var idx=0; idx < json.globalErrors.length; idx++) {
-						messagePanel.add({
-							html: json.globalErrors[idx],
-							style: { 'color':'red' }
-						});
-						messagePanel.doLayout();
-					}
+					messagePanel.add({
+						html: json.message,
+						style: { 'color':'red' }
+					});
+					messagePanel.doLayout();
 				}
 			},
 			scope:this
 		});
 	}, this);
 	
-	formPanelConfig.items = [ 
+	formPanelConfig.items = [
+         this.ss.fields.gid,
+         this.ss.fields.sessionGid,
 	     this.ss.fields.name,
 	     this.ss.fields.description,
 	     this.ss.fields.sample,
 	     this.ss.fields.instrument,
-	     this.ss.fields.technique,
+	     this.ss.fields.instrumentTechnique,
 	     messagePanel
 	];
 	

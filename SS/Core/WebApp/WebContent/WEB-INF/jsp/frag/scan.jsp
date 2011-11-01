@@ -5,7 +5,7 @@
 	Description:
 		Scan html fragment.
 --%>
-<%@ page language="java"  contentType="text/xml; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@ page session="true" language="java"  contentType="text/xml; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 <%@ include file="/WEB-INF/jsp/include/taglibs.jsp"%>
 <div>
 <script type="text/javascript">
@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -57,8 +57,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#sessions${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath(${project.id}, '.html'));",
+				href:"#sessions${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('.html?project=${project.gid}'));",
 				html:"Sessions"
 			}
 		},{
@@ -68,8 +68,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#session${session.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionPath(${session.id}, '.html'));",
+				href:"#session${session.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('/${session.gid}.html'));",
 				html:"${session.name}"
 			}
 		},{
@@ -79,8 +79,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#experiments${session.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getExperimentsPath(${session.id}, '.html'));",
+				href:"#experiments${session.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelExperimentPath('.html?session=${session.gid}'));",
 				html:"Experiments"
 			}
 		},{
@@ -90,8 +90,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#experiment${experiment.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getExperimentPath(${experiment.id}, '.html'));",
+				href:"#experiment${experiment.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelExperimentPath('/${experiment.gid}.html'));",
 				html:"${experiment.name}"
 			}
 		},{
@@ -101,8 +101,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#scans${experiment.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getScansPath(${experiment.id}, '.html'));",
+				href:"#scans${experiment.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelScanPath('.html?experiment=${experiment.gid}'));",
 				html:"Scans"
 			}
 		},{
@@ -121,46 +121,43 @@ Ext.onReady(function() {
 	Edit Scan Form
 --%>
 	var scanForm = new Ext.ss.core.ScanFormPanel({
-		url: ModelPathUtils.getScanPath(${scan.id}, '/form/edit.json'),
+		url: ModelPathUtils.getModelScanPath('/form/edit.json'),
 		method: 'POST',
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
-		<sec:authorize ifNotGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${project.id}">
+		<c:if test="${not permissions.edit}">
 		defaults: {
 			disabled:true
 		},
 		buttonDefaults: {
 			hidden:true
 		},
-		</sec:authorize>
+		</c:if>
 		border: false,
 		waitMsg:'Saving Session...',
 		waitMsgTarget: true,
 		padding: '5 5 5 5'
 	});
 
-	<c:if test="${not empty scanFormBacker}">
-	var scanFormData = 
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="scanFormBacker"/>
-		</jsp:include>;
+	<c:if test="${not empty scan}">
+	var scanFormData = <hmc:write source="${scan}"/>
 
-	//if(scanFormData.scan.startDate) {
-	//	var startDate = Date.parseDate(scanFormData.scan.startDate, Date.patterns.ISO8601Full);
-	//	if(startDate) {
-	//		scanFormData.scan.startDate = startDate.format(Date.patterns.ISO8601Long);
-	//	}
-	//}
+	if(scanFormData.startDate) {
+		var startDate = Date.parseDate(scanFormData.startDate, 'c');
+		if(startDate) {
+			scanFormData.startDate = startDate.format(Date.patterns.ISO8601Long);
+		}
+	}
 
-	//if(scanFormData.scan.endDate) {
-	//	var endDate = Date.parseDate(scanFormData.scan.endDate, Date.patterns.ISO8601Full);
-	//	if(endDate) {
-	//		scanFormData.scan.endDate = endDate.format(Date.patterns.ISO8601Long);
-	//	}
-	//}
+	if(scanFormData.endDate) {
+		var endDate = Date.parseDate(scanFormData.endDate, 'c');
+		if(endDate) {
+			scanFormData.endDate = endDate.format(Date.patterns.ISO8601Long);
+		}
+	}
 
-	scanForm.getForm().setValues(scanFormData.scanFormBacker);
+	scanForm.getForm().setValues(scanFormData);
 	</c:if>	
 
 
@@ -182,7 +179,7 @@ Ext.onReady(function() {
 	});
 
 	viewScanDataButton.on('click', function() {
-		openDataViewTab(${scan.id}, viewScanDataCheckbox.getValue());
+		openDataViewTab(${scan.gid}, viewScanDataCheckbox.getValue());
 	}, this);
 
 	var viewScanDataCheckbox = new Ext.form.Checkbox({

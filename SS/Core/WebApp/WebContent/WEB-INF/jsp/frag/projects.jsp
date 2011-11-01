@@ -44,8 +44,8 @@ Ext.onReady(function() {
 	Projects Grid
 --%>
 	var projectsGridStore = new Ext.data.JsonStore({
-		url: ModelPathUtils.getProjectsPath(".json"),
-		baseParams:{ 'role':'admin' },
+		url: ModelPathUtils.getModelProjectPath(".json"),
+		//baseParams:{ 'role':'admin' },
 		autoDestroy: true,
 		autoLoad: false,
 		fields:[{
@@ -95,7 +95,7 @@ Ext.onReady(function() {
 		if(record) {
 			var projectGid = record.get("gid");
 			if(projectGid) {
-				loadModelViewTab(ModelPathUtils.getProjectsPath(projectGid, '.html'));
+				loadModelViewTab(ModelPathUtils.getModelProjectPath(['/', projectGid, '.html']));
 			}
 		}
 	}, this);
@@ -137,10 +137,10 @@ Ext.onReady(function() {
 
 	Add Project Form
 --%>
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
+	<c:if test="${permissions.add}">
 
 	var projectFormPanel = new Ext.ss.core.ProjectFormPanel({
-		url: ModelPathUtils.getProjectsPath('/form/add.json'),
+		url: ModelPathUtils.getModelProjectPath('/form/add.json'),
 		method: 'POST', 
 		submitText: 'Add',
 		labelAlign: 'right',
@@ -153,14 +153,14 @@ Ext.onReady(function() {
 	
 	projectFormPanel.getForm().on('actioncomplete', function(form, action) {
 		if(action.type == 'submit' && action.result.success == true) {
-			if(action.result.response && action.result.response.viewUrl) {
-				loadModelViewTab(action.result.response.viewUrl);
+			if(action.result.viewUrl) {
+				loadModelViewTab(action.result.viewUrl);
 			}
 		}
 	}, this);
 
-	<c:if test="${not empty projectStatusList}">
-	projectFormPanel.ss.fields.status.getStore().loadData(<hmc:write source="${projectStatusList}"/>);
+	<c:if test="${not empty projectStatusOptions}">
+	projectFormPanel.ss.fields.status.getStore().loadData(<hmc:write source="${projectStatusOptions}"/>);
 	</c:if>
 	
 	var panel = new Ext.Panel({
@@ -171,7 +171,8 @@ Ext.onReady(function() {
 	});
 
 	addItemModelViewTab(panel, true);
-	</sec:authorize>
+
+	</c:if>
 });
 </script>
 </div>

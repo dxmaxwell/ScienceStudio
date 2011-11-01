@@ -8,35 +8,28 @@
 package ca.sciencestudio.service.project.controllers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.sciencestudio.model.AddResult;
+import ca.sciencestudio.model.EditResult;
 import ca.sciencestudio.model.person.Person;
-import ca.sciencestudio.model.person.dao.PersonDAO;
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.ProjectPerson;
-import ca.sciencestudio.model.project.ProjectRole;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
-import ca.sciencestudio.model.project.dao.ProjectPersonDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
+import ca.sciencestudio.model.project.ProjectPerson.Role;
+
+import ca.sciencestudio.model.project.dao.ProjectPersonAuthzDAO;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.project.backers.ProjectPersonFormBacker;
-import ca.sciencestudio.service.project.validators.ProjectPersonFormValidator;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.util.exceptions.AuthorizationException;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
@@ -45,169 +38,107 @@ import ca.sciencestudio.util.web.BindAndValidateUtils;
 @Controller
 public class ProjectPersonFormController extends AbstractModelController {
 
-	@Autowired
-	private PersonDAO personDAO;
+	private String facility;
 	
-	@Autowired
-	private ProjectDAO projectDAO;
-	
-	@Autowired
-	private ProjectPersonDAO projectPersonDAO;
-	
-	@Autowired
-	private ProjectPersonFormValidator projectPersonFormValidator;
-	
-	@RequestMapping(value = "/project/{projectId}/persons/form/add.{format}", method = RequestMethod.POST)
-	public String projectPersonFormAdd(@PathVariable int projectId, @PathVariable String format, HttpServletRequest request, ModelMap model) {
+	private PersonAuthzDAO personAuthzDAO;
 		
-		ProjectPersonFormBacker projectPersonFormBacker = new ProjectPersonFormBacker(projectId, ProjectRole.OBSERVER);
-		BindException errors = BindAndValidateUtils.buildBindException(projectPersonFormBacker);
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		Project project = projectDAO.getProjectById(projectId);
-		if(project == null) {
-			errors.reject("project.notfound", "Project not found.");
-			return responseView;
-		}
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object exptr = AuthorityUtil.buildProjectExperimenterAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(admin, exptr)) {
-			errors.reject("permission.denied", "Permission denied.");
-			return responseView;
-		}
-		
-		errors = BindAndValidateUtils.bindAndValidate(projectPersonFormBacker, request, projectPersonFormValidator);
-		model.put("errors", errors);
-		
-		if(errors.hasErrors()) {
-			return responseView;
-		}
-		
-		ProjectPerson projectPerson = 
-			projectPersonDAO.getProjectPersonByProjectIdAndPersonUid(projectId, projectPersonFormBacker.getPersonUid());
+	private ProjectPersonAuthzDAO projectPersonAuthzDAO;
 
-		if(projectPerson != null) {
-			errors.rejectValue("personUid", "", "Person is already a team member.");
-			return responseView;
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.PROJECT_PERSON_PATH + "/form/search*", method = RequestMethod.POST)
+	public List<ProjectPersonFormBacker> projectPersonFormSearch(@RequestParam String name, @RequestParam String project) {
+		
+		String user = SecurityUtil.getPersonGid();
+
+		List<ProjectPersonFormBacker> projectPersons = new ArrayList<ProjectPersonFormBacker>();
+		
+		List<Person> persons = personAuthzDAO.searchAllByName(user, name).get();
+		for(Person person : persons) {
+			projectPersons.add(new ProjectPersonFormBacker(project, Role.OBSERVER, person));
 		}
 		
-		if(!SecurityUtil.hasAuthority(admin) && (projectPersonFormBacker.getProjectRole() != ProjectRole.OBSERVER)) {
-			errors.rejectValue("projectRole", "", "Only permitted to add OBSERVERS.");
-			return responseView;
+		return projectPersons;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.PROJECT_PERSON_PATH + "/form/add*", method = RequestMethod.POST)
+	public FormResponseMap projectPersonFormAdd(ProjectPersonFormBacker projectPerson, Errors errors) {
+		// Bind errors are intentionally ignored, however the argument must be 
+		// present to avoid automatic delegation to the exception handler.
+				
+		String user = SecurityUtil.getPersonGid();
+		
+		AddResult result = projectPersonAuthzDAO.add(user, projectPerson, facility).get();
+		
+		FormResponseMap response = new FormResponseMap(ProjectPersonFormBacker.transformResult(result));
+		
+		if(response.isSuccess()) {				
+			response.put("viewUrl", ModelPathUtils.getModelProjectPersonPath("/", projectPerson.getGid(), ".html"));
 		}
 		
-		projectPerson = projectPersonFormBacker.createProjectPerson(projectPersonDAO);
-		projectPersonDAO.addProjectPerson(projectPerson);
-		
-		Map<String,Object> response = new HashMap<String,Object>();
-		response.put("viewUrl", getModelPath(request) + ModelPathUtils.getProjectPersonPath(projectPerson.getId(), ".html"));
-		
-		model.put("response", response);
-		return responseView;
+		return response;
 	}
 
-	@RequestMapping(value = "/project/person/{projectPersonId}/form/edit.{format}", method = RequestMethod.POST)
-	public String projectPersonEdit(@PathVariable int projectPersonId, @PathVariable String format, 
-															HttpServletRequest request, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.PROJECT_PERSON_PATH + "/form/edit*", method = RequestMethod.POST)
+	public FormResponseMap projectPersonFormEdit(ProjectPersonFormBacker projectPerson, Errors errors) {
+		// Bind errors are intentionally ignored, however the argument must be 
+		// present to avoid automatic delegation to the exception handler.
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
+		String user = SecurityUtil.getPersonGid();
 		
-		String responseView = "response-" + format;
+		EditResult result = projectPersonAuthzDAO.edit(user, projectPerson).get();
 		
-		ProjectPerson projectPerson = projectPersonDAO.getProjectPersonById(projectPersonId);
-		if(projectPerson == null) {
-			errors.reject("projectperson.notfound", "Project person not found.");
-			return responseView;
+		FormResponseMap response = new FormResponseMap(ProjectPersonFormBacker.transformResult(result));
+		
+		if(response.isSuccess()) {
+			response.put("message", "Person Saved");
 		}
 		
-		Person person = personDAO.getPersonByUid(projectPerson.getPersonUid());
-		if(person == null) {
-			errors.reject("person.notfound", "Person not found.");
-			return responseView;
-		}
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		
-		if(!SecurityUtil.hasAuthority(admin)) {
-			errors.reject("permission.denied", "Permission denied.");
-			return responseView;
-		}
-		
-		ProjectPersonFormBacker projectPersonFormBacker = new ProjectPersonFormBacker(projectPerson, person);
-		
-		errors = BindAndValidateUtils.bindAndValidate(projectPersonFormBacker, request, projectPersonFormValidator);
-		model.put("errors", errors);
-		
-		if(errors.hasErrors()) {
-			return responseView;
-		}
-		
-		// Ensure only project role modified //
-		projectPerson.setProjectRole(projectPersonFormBacker.getProjectRole());
-		///////////////////////////////////////
-		
-		projectPersonDAO.editProjectPerson(projectPerson);
-		
-		Map<String,Object> response = new HashMap<String,Object>();
-		response.put("message", "Person saved.");
-		
-		model.put("response", response);
-		return responseView;
+		return response;
 	}
 	
-	@RequestMapping(value = "/project/{projectId}/persons/form/query.{format}", method = RequestMethod.POST)
-	public String projectPersonQuery(@PathVariable int projectId, @PathVariable String format, @RequestParam String query, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.PROJECT_PERSON_PATH + "/form/remove*", method = RequestMethod.POST)
+	public FormResponseMap projectPersonFormRemove(@RequestParam String gid) {
 		
-		List<ProjectPersonFormBacker> projectPersonList = new ArrayList<ProjectPersonFormBacker>();
+		String user = SecurityUtil.getPersonGid();
 		
-		query = query.toLowerCase();
-		
-		if((query != null) && (query.length() > 0)) {
-			List<Person> personList = personDAO.getPersonList();
-			
-			for(Person person : personList) {
-				String firstName = person.getFirstName().toLowerCase();
-				String lastName = person.getLastName().toLowerCase();
-				if(firstName.startsWith(query) || lastName.startsWith(query)) {
-					projectPersonList.add(new ProjectPersonFormBacker(projectId, ProjectRole.OBSERVER, person));
-				}
-			}
+		boolean success;
+		try {
+			success = projectPersonAuthzDAO.remove(user, gid).get();
+		}
+		catch(AuthorizationException e) {
+			return new FormResponseMap(false, "Not Permitted");
 		}
 		
-		model.put("response", projectPersonList);
-		return "response-" + format;
+		FormResponseMap response = new FormResponseMap(success);
+		
+		if(response.isSuccess()) {				
+			response.put("viewUrl", ModelPathUtils.getModelProjectPersonPath(".html"));
+		}
+		
+		return response;
 	}
 	
-	public PersonDAO getPersonDAO() {
-		return personDAO;
+	public String getFacility() {
+		return facility;
 	}
-	public void setPersonDAO(PersonDAO personDAO) {
-		this.personDAO = personDAO;
-	}
-
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setFacility(String facility) {
+		this.facility = facility;
 	}
 
-	public ProjectPersonDAO getProjectPersonDAO() {
-		return projectPersonDAO;
+	public PersonAuthzDAO getPersonAuthzDAO() {
+		return personAuthzDAO;
 	}
-	public void setProjectPersonDAO(ProjectPersonDAO projectPersonDAO) {
-		this.projectPersonDAO = projectPersonDAO;
+	public void setPersonAuthzDAO(PersonAuthzDAO personAuthzDAO) {
+		this.personAuthzDAO = personAuthzDAO;
 	}
 
-	public ProjectPersonFormValidator getProjectPersonFormValidator() {
-		return projectPersonFormValidator;
+	public ProjectPersonAuthzDAO getProjectPersonAuthzDAO() {
+		return projectPersonAuthzDAO;
 	}
-	public void setProjectPersonFormValidator(ProjectPersonFormValidator projectPersonFormValidator) {
-		this.projectPersonFormValidator = projectPersonFormValidator;
+	public void setProjectPersonAuthzDAO(ProjectPersonAuthzDAO projectPersonAuthzDAO) {
+		this.projectPersonAuthzDAO = projectPersonAuthzDAO;
 	}
 }

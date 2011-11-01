@@ -37,7 +37,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -47,8 +47,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -58,8 +58,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#sessions${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getSessionsPath(${project.id}, '.html'));",
+				href:"#sessions${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('.html?project=${project.gid}'));",
 				html:"Sessions"
 			}
 		},{
@@ -79,42 +79,31 @@ Ext.onReady(function() {
 		Edit Session Form
 	--%>
 	var sessionForm = new Ext.ss.core.SessionFormPanel({
-		url: ModelPathUtils.getSessionPath(${session.id}, '/form/edit.json'),
+		url: ModelPathUtils.getModelSessionPath('/form/edit.json'),
 		method: 'POST',
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
-		<sec:authorize ifNotGranted="ROLE_ADMIN_PROJECTS">
+		<c:if test="${not permissions.edit}">
 		defaults: {
 			disabled:true
 		},
 		buttonDefaults: {
 			hidden:true
 		},
-		</sec:authorize>
+		</c:if>
 		border: false,
 		waitMsg:'Saving Session...',
 		waitMsgTarget: true,
 		padding: '5 5 5 5'
 	});
 
-	<c:if test="${not empty laboratoryList}">
-	var laboratoryStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="laboratoryList"/>
-		</jsp:include>
-	};
-	
-	sessionForm.ss.fields.laboratory.getStore().loadData(laboratoryStoreData);
-	</c:if>	
+	<c:if test="${not empty laboratoryList}">	
+	sessionForm.ss.fields.laboratory.getStore().loadData(<hmc:write source="${laboratoryList}"/>);
+	</c:if>
 
-	<c:if test="${not empty sessionFormBacker}">
-	var sessionFormData = 
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="sessionFormBacker"/>
-		</jsp:include>;
-	
-	sessionForm.getForm().setValues(sessionFormData.sessionFormBacker);
+	<c:if test="${not empty session}">
+	sessionForm.getForm().setValues(<hmc:write source="${session}"/>);
 	</c:if>	
 
 	var linksPanel = new Ext.Panel({
@@ -122,12 +111,29 @@ Ext.onReady(function() {
 		layout: 'hbox',
 		items: [{
 			xtype:'box',
+			flex:1
+		},{
+			xtype:'box',
+			autoEl:{
+				tag: 'a',
+				html: 'Team',
+				href:'#persons${session.gid}',
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPersonPath('.html?session=${session.gid}'));"
+			},
+		},{
+			xtype:'box',
+			flex:1
+		},{
+			xtype:'box',
 			autoEl:{
 				tag: 'a',
 				html: 'Experiments',
-				href:'#experiments${session.id}',
-				onclick: "return loadModelViewTab(ModelPathUtils.getExperimentsPath(${session.id}, '.html'));"
-			}
+				href:'#experiments${session.gid}',
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelExperimentPath('.html?session=${session.gid}'));"
+			},
+		},{
+			xtype:'box',
+			flex:1
 		}],
 		padding: '10px'
 	});
@@ -136,21 +142,28 @@ Ext.onReady(function() {
 		Ext.Msg.confirm('Question', 'Do you REALLY want to remove this session?', function(ans) {
 			if(ans == 'yes') {
 				Ext.Ajax.request({
-					url:ModelPathUtils.getSessionPath(${session.id}, '/remove.json'),
+					method:'POST',
+					params:{ gid:'${session.gid}' },
+					url:ModelPathUtils.getModelSessionPath('/form/remove.json'),
 					failure:function(response, options) {
 						Ext.Msg.alert('Error', 'Network connection problem.');
 					},
 					success:function(response, options) {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
- 							if(json.success && json.response.viewUrl) { 
-								loadModelViewTab(json.response.viewUrl);
+ 							if(json.success) {
+								if(json.viewUrl) {
+									loadModelViewTab(json.viewUrl);
+								} else {
+									loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));
+								}
 							}
-							else if(json.globalErrors && json.globalErrors[0]) {
-								Ext.Msg.alert('Error', json.globalErrors[0]);
-							}
-							else {
-								Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+							else  {
+								if(json.message) {
+									Ext.Msg.alert('Error', json.message);
+								} else {
+									Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+								}
 							}
 						}
 					}
@@ -160,14 +173,14 @@ Ext.onReady(function() {
 	};
 
 	var sessionPanel = new Ext.Panel({
-		title: 'Session (Id:${session.id})',
-		<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
+		title: 'Session (GID:${session.gid})',
+		<c:if test="${permissions.remove}">
 		tools:[{
 			id:'close',
 			handler:removeSession,
 			scope:this
 		}],
-		</sec:authorize>
+		</c:if>
 		items:[
 			sessionForm,
 			linksPanel
@@ -178,18 +191,18 @@ Ext.onReady(function() {
 		width: 400
 	});
 
-	addItemModelViewTab(sessionPanel);
+	addItemModelViewTab(sessionPanel, true);
 
 	<%--
 				
 		Join Session Form
 	--%>
-	var joinSessionButton = new Ext.Button({
+	<%--var joinSessionButton = new Ext.Button({
 		text:'Join Session'
 	});
 
 	joinSessionButton.on('click', function() {
-		openLabViewTab(${session.id}, joinSessionCheckbox.getValue());
+		openLabViewTab(${session.gid}, joinSessionCheckbox.getValue());
 	}, this);
 
 	var joinSessionCheckbox = new Ext.form.Checkbox({
@@ -232,7 +245,7 @@ Ext.onReady(function() {
 		width: 400
 	});
 
-	addItemModelViewTab(joinSessionPanel, true);
+	addItemModelViewTab(joinSessionPanel, true);--%>
 });
 </script>
 </div>

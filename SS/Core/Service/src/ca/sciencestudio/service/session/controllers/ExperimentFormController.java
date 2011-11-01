@@ -7,32 +7,22 @@
  */
 package ca.sciencestudio.service.session.controllers;
 
-import java.util.Map;
-import java.util.HashMap;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.facility.InstrumentTechnique;
-import ca.sciencestudio.model.facility.dao.InstrumentTechniqueDAO;
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
-import ca.sciencestudio.model.session.Experiment;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.AddResult;
+import ca.sciencestudio.model.EditResult;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.ExperimentFormBacker;
-import ca.sciencestudio.service.session.validators.ExperimentFormBackerValidator;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.exceptions.AuthorizationException;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
@@ -41,134 +31,82 @@ import ca.sciencestudio.util.web.BindAndValidateUtils;
 @Controller
 public class ExperimentFormController extends AbstractModelController {
 
-	@Autowired
-	private ProjectDAO projectDAO;
+	private String facility;
 	
-	@Autowired
-	private ExperimentDAO experimentDAO;
-	
-	@Autowired
-	private InstrumentTechniqueDAO instrumentTechniqueDAO;
-	
-	@Autowired
-	private ExperimentFormBackerValidator ExperimentFormBackerValidator;
-	
-	@RequestMapping(value = "/session/{sessionId}/experiments/form/add.{format}", method = RequestMethod.POST)
-	public String postExperimentFormAdd(@PathVariable int sessionId, @PathVariable String format, 
-															HttpServletRequest request, ModelMap model) {
-		
-		ExperimentFormBacker experimentFormBacker = new ExperimentFormBacker(sessionId);
-		BindException errors = BindAndValidateUtils.buildBindException(experimentFormBacker);
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		Project project = projectDAO.getProjectBySessionId(sessionId);
-		if(project == null) {
-			errors.reject("project.notfound", "Project not found.");
-			return responseView;
-		}
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object exptr = AuthorityUtil.buildProjectExperimenterAuthority(project.getId());
-		
-		if(!SecurityUtil.hasAnyAuthority(exptr, admin)) {
-			errors.reject("", "Permission denied");
-			return responseView;
-		}
-		
-		errors = BindAndValidateUtils.bindAndValidate(experimentFormBacker, request, ExperimentFormBackerValidator);
-		if(errors.hasErrors()) {
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		Experiment experiment = experimentFormBacker.createExperiment(experimentDAO);
-		experimentDAO.addExperiment(experiment);
-		
-		Map<String,String> response = new HashMap<String, String>();
-		response.put("viewUrl", getModelPath(request) + ModelPathUtils.getExperimentPath(experiment.getId(), ".html"));
+	private ExperimentAuthzDAO experimentAuthzDAO;
 
-		model.put("response", response);
-		return responseView;
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.EXPERIMENT_PATH + "/form/add*", method = RequestMethod.POST)
+	public FormResponseMap experimentFormAdd(ExperimentFormBacker experiment, Errors errors) {
+		// Bind errors are intentionally ignored, however the argument must be 
+		// present to avoid automatic delegation to the exception handler.
+				
+		String user = SecurityUtil.getPersonGid();
+		
+		AddResult result = experimentAuthzDAO.add(user, experiment, facility).get();
+		
+		FormResponseMap response = new FormResponseMap(ExperimentFormBacker.transformResult(result));
+		
+		if(response.isSuccess()) {				
+			response.put("viewUrl", ModelPathUtils.getModelExperimentPath("/", experiment.getGid(), ".html"));
+		}
+		
+		return response;
 	}
 
-	@RequestMapping(value = "/experiment/{experimentId}/form/edit.{format}", method = RequestMethod.POST)
-	public String postExperimentFormEdit(@PathVariable int experimentId, @PathVariable String format,
-																HttpServletRequest request, ModelMap model) {
-	
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.EXPERIMENT_PATH + "/form/edit*", method = RequestMethod.POST)
+	public FormResponseMap experimentFormEdit(ExperimentFormBacker experiment, Errors errors) {
+		// Bind errors are intentionally ignored, however the argument must be 
+		// present to avoid automatic delegation to the exception handler.
 		
-		String responseView = "response-" + format;
+		String user = SecurityUtil.getPersonGid();
 		
-		Project project = projectDAO.getProjectByExperimentId(experimentId);
-		if(project == null) {
-			errors.reject("project.notfound", "Project not found.");
-			return responseView;
+		EditResult result = experimentAuthzDAO.edit(user, experiment).get();
+		
+		FormResponseMap response = new FormResponseMap(ExperimentFormBacker.transformResult(result));
+		
+		if(response.isSuccess()) {
+			response.setMessage("Experiment Saved");
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object exptr = AuthorityUtil.buildProjectExperimenterAuthority(project.getId());
+		return response;
+	}
+
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.EXPERIMENT_PATH + "/form/remove*", method = RequestMethod.POST)
+	public FormResponseMap removeExperiment(@RequestParam String gid) {
 		
-		if(!SecurityUtil.hasAnyAuthority(exptr, admin)) {
-			errors.reject("permission.denied", "Permission denied.");
-			return responseView;
+		String user = SecurityUtil.getPersonGid();
+		
+		boolean success;
+		try {
+			success = experimentAuthzDAO.remove(user, gid).get();
+		}
+		catch(AuthorizationException e) {
+			return new FormResponseMap(false, "Not Permitted");
 		}
 		
-		Experiment experiment = experimentDAO.getExperimentById(experimentId);
-		if(experiment == null) {
-			errors.reject("experiment.notfound", "Experiment not found.");
-			return responseView;
+		FormResponseMap response = new FormResponseMap(success);
+		
+		if(response.isSuccess()) {				
+			response.put("viewUrl", ModelPathUtils.getModelExperimentPath(".html"));
 		}
 		
-		InstrumentTechnique instrumentTechnique = instrumentTechniqueDAO.getInstrumentTechniqueById(experiment.getInstrumentTechniqueId()); 
-		if(instrumentTechnique == null) {
-			errors.reject("instrumenttechnique.notfound", "Instrument technique not found.");
-			return responseView;
-		}
-		
-		ExperimentFormBacker experimentFormBacker = new ExperimentFormBacker(experiment, instrumentTechnique);
-		errors = BindAndValidateUtils.bindAndValidate(experimentFormBacker, request, ExperimentFormBackerValidator);
-		if(errors.hasErrors()) {
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		experimentDAO.editExperiment(experimentFormBacker.createExperiment(experimentDAO));
-		
-		Map<String,String> response = new HashMap<String, String>();
-		response.put("message", "Experiment saved.");
-
-		model.put("response", response);
-		return responseView;
+		return response;
 	}
 
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
+	public String getFacility() {
+		return facility;
 	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
-	}
-
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
-	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
+	public void setFacility(String facility) {
+		this.facility = facility;
 	}
 
-	public InstrumentTechniqueDAO getInstrumentTechniqueDAO() {
-		return instrumentTechniqueDAO;
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
 	}
-	public void setInstrumentTechniqueDAO(InstrumentTechniqueDAO instrumentTechniqueDAO) {
-		this.instrumentTechniqueDAO = instrumentTechniqueDAO;
-	}
-
-	public ExperimentFormBackerValidator getExperimentFormBackerValidator() {
-		return ExperimentFormBackerValidator;
-	}
-	public void setExperimentFormBackerValidator(ExperimentFormBackerValidator experimentFormBackerValidator) {
-		ExperimentFormBackerValidator = experimentFormBackerValidator;
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
 	}
 }

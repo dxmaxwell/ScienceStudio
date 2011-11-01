@@ -2,27 +2,23 @@
  *   - see license.txt for details.
  *
  *  Description:
- *   ProjectPersonTreeNodeController class.
+ *  	ProjectPersonTreeNodeController class.
  *     
  */
 package ca.sciencestudio.service.tree.controllers;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.person.Person;
-import ca.sciencestudio.model.person.dao.PersonDAO;
+import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 import ca.sciencestudio.model.project.ProjectPerson;
-import ca.sciencestudio.model.project.dao.ProjectPersonDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.project.dao.ProjectPersonAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
 
@@ -33,60 +29,55 @@ import ca.sciencestudio.service.utilities.ModelPathUtils;
 @Controller
 public class ProjectPersonTreeNodeController extends AbstractTreeNodeController {
 
-	@Autowired
-	private PersonDAO personDAO;
+	private static final String PERSON_NAME_UNKNOWN = "Unknown Person";
 	
-	@Autowired
-	private ProjectPersonDAO projectPersonDAO;
+	private PersonAuthzDAO personAuthzDAO;
 	
-	@RequestMapping(value = "/project/{projectId}/persons.{format}", method = RequestMethod.GET)
-	public String projectPersons(@PathVariable int projectId, @PathVariable String format, HttpServletRequest request, ModelMap model) {
-		
+	private ProjectPersonAuthzDAO projectPersonAuthzDAO;
+	
+	@ResponseBody
+	@RequestMapping(value = ModelPathUtils.PROJECT_PERSON_PATH + "*", method = RequestMethod.GET)
+	public TreeNodeList projectPersons(@RequestParam("project") String projectGid) {
+
+		String user = SecurityUtil.getPersonGid();
+
 		TreeNodeList treeNodes = new TreeNodeList();
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_PROJECTS;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(SecurityUtil.hasAnyAuthority(group, admin)) {
+				
+		List<ProjectPerson> projectPersonList = projectPersonAuthzDAO.getAllByProjectGid(user, projectGid).get();
 			
-			List<ProjectPerson> projectPersonList = projectPersonDAO.getProjectPersonListByProjectId(projectId);
-			
-			for(ProjectPerson projectPerson : projectPersonList) {
-				TreeNodeMap treeNode = new TreeNodeMap();
-				treeNode.put(TREE_NODE_ID, "PROJECT_PERSON_" + projectPerson.getId());
-				treeNode.put(TREE_NODE_VIEW_URL, getModelPath(request) + ModelPathUtils.getProjectPersonPath(projectPerson.getId(), ".html"));
-				treeNode.put(TREE_NODE_TEXT, buildTreeNodeText(projectPerson.getPersonUid()));
-				treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-person-tree-node-icon");
-				treeNode.put(TREE_NODE_LEAF, true);
-				treeNodes.add(treeNode);
-			}
+		for(ProjectPerson projectPerson : projectPersonList) {
+			TreeNodeMap treeNode = new TreeNodeMap();
+			treeNode.put(TREE_NODE_ID, "PROJECT_PERSON_" + projectPerson.getGid());
+			treeNode.put(TREE_NODE_VIEW_URL, ModelPathUtils.getModelProjectPersonPath("/", projectPerson.getGid(), ".html"));
+			treeNode.put(TREE_NODE_TEXT, buildTreeNodeText(user, projectPerson.getPersonGid()));
+			treeNode.put(TREE_NODE_ICON_CLASS, "ss-project-person-tree-node-icon");
+			treeNode.put(TREE_NODE_LEAF, true);
+			treeNodes.add(treeNode);
 		}
 		
-		model.put("treeNodes", treeNodes);
-		return getResponseView(format);
+		return treeNodes;
 	}
 	
-	protected String buildTreeNodeText(String personUid) {
-		Person person = personDAO.getPersonByUid(personUid);
-		
+	protected String buildTreeNodeText(String user, String personGid) {
+		Person person = personAuthzDAO.get(user, personGid).get();
 		if(person == null) {
-			return personUid;
+			return PERSON_NAME_UNKNOWN;
 		}
-		
-		return person.getFirstName() + "_" + person.getLastName();
+		String fullName = Person.getFullName(person);
+		return fullName.replaceAll("\\s", "_");
 	}
-
-	public PersonDAO getPersonDAO() {
-		return personDAO;
+	
+	public void setPersonAuthzDAO(PersonAuthzDAO personAuthzDAO) {
+		this.personAuthzDAO = personAuthzDAO;
 	}
-	public void setPersonDAO(PersonDAO personDAO) {
-		this.personDAO = personDAO;
+	public void setProjectPersonAuthzDAO(ProjectPersonAuthzDAO projectPersonAuthzDAO) {
+		this.projectPersonAuthzDAO = projectPersonAuthzDAO;
 	}
-
-	public ProjectPersonDAO getProjectPersonDAO() {
-		return projectPersonDAO;
+	
+	public ProjectPersonAuthzDAO getProjectPersonAuthzDAO() {
+		return projectPersonAuthzDAO;
 	}
-	public void setProjectPersonDAO(ProjectPersonDAO projectPersonDAO) {
-		this.projectPersonDAO = projectPersonDAO;
+	public PersonAuthzDAO getPersonAuthzDAO() {
+		return personAuthzDAO;
 	}
 }

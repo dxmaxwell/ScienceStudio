@@ -66,9 +66,9 @@ Ext.onReady(function() {
 
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var projectGid = record.get("gid");
-			if(projectGid) {
-				loadModelViewTab(ModelPathUtils.getProjectsPath(projectGid, '.html'));
+			var gid = record.get("gid");
+			if(gid) {
+				loadModelViewTab(ModelPathUtils.getModelProjectPath(['/', gid, '.html']));
 			}
 		}
 	}, this);
@@ -91,27 +91,80 @@ Ext.onReady(function() {
 		],
 		height:200
 	});
+/*
+	var scansGridStore = new Ext.data.ArrayStore({
+		autoDestroy:true,
+		fields:[{
+			name:"id"
+		},{
+			name:"gid"
+		},{
+			name:"name"
+		},{
+			name:"startDate", type:"date",
+			dateFormat:Date.patterns.ISO8601Full
+		},{
+			name:"endDate", type:"date",
+			dateFormat:Date.patterns.ISO8601Full
+		}],
+		data:[
+			["2", "CLSI2N", "Initial Test Scan", "2011-03-15 02:30:00.0 CST", "2011-03-15 10:30:00.0 CST"]
+		]
+	});
+	
+	var scansGridPanel = new Ext.grid.GridPanel({
+		store:scansGridStore,
+		deferRowRender: false,
+		viewConfig:{
+			forceFit:true
+		},
+		columns: [{
+			header: "GID", width:30, dataIndex:"gid", sortable:true
+		},{
+			header: "Name", width: 180, dataIndex: 'name', sortable: true
+		},{
+			header: "Start", width: 80, dataIndex: 'startDate', sortable: true,
+			xtype:'datecolumn', format:Date.patterns.ISO8601Shrt
+		},{
+			header: "End", width: 80, dataIndex: 'endDate', sortable: true,
+			xtype:'datecolumn', format:Date.patterns.ISO8601Shrt
+		}],
+		border:false,
+		height:400
+	});
+
+	scansGridPanel.on('rowclick', function(grid, index, event) {
+		var sm = grid.getSelectionModel();
+		if(sm && sm.deselectRow) {
+			sm.deselectRow(index);
+		}
+
+		var record = grid.getStore().getAt(index);
+		if(record) {
+			var scanId = record.get("id");
+			if(scanId) {
+				loadModelViewTab('/ss/model/scan/' + scanId + '.html');
+			}
+		}
+	}, this);
+*/
 
 	var sessionsGridStore = new Ext.data.JsonStore({
 		url: '/ss/model/sessions/grid.json',
 		autoDestroy:true,
 		autoLoad:false,
-		root:"response",
-		success: "success",
 		fields:[{
-			name:"sessionId", mapping:"sessionGridBacker.sessionId"
+			name:"gid"
 		},{
-			name:"sessionName", mapping:"sessionGridBacker.sessionName"
+			name:"name"
 		},{
-			name:"projectName", mapping:"sessionGridBacker.projectName"
+			name:"projectName"
 		},{
-			name:"proposal", mapping:"sessionGridBacker.proposal"
+			name:"proposal"
 		},{
-			name:"startDate", mapping:"sessionGridBacker.startDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Shrt
+			name:"startDate", type:"date", dateFormat:"c"
 		},{
-			name:"endDate", mapping:"sessionGridBacker.endDate",
-			type:"date", dateFormat:Date.patterns.ISO8601Shrt
+			name:"endDate", type:"date", dateFormat:"c"
 		}]
 	});
 
@@ -128,9 +181,9 @@ Ext.onReady(function() {
 			forceFit:true
 		},
 		columns: [{
-			header: "Id", width:30, dataIndex:"sessionId", sortable:true
+			header: "GID", width:50, dataIndex:'gid', sortable:true
 		},{
-			header: "Name", width: 180, dataIndex: 'sessionName', sortable: true
+			header: "Name", width: 180, dataIndex: 'name', sortable: true
 		},{
 			header: "Project", width: 180, dataIndex: 'projectName', sortable: true
 		},{
@@ -154,9 +207,9 @@ Ext.onReady(function() {
 
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var sessionId = record.get("sessionId");
-			if(sessionId) {
-				loadModelViewTab(ModelPathUtils.getSessionPath(sessionId, '.html'));
+			var gid = record.get("sessionId");
+			if(gid) {
+				loadModelViewTab(ModelPathUtils.getModelSessionPath(['/', gid, '.html']));
 			}
 		}
 	}, this);
@@ -222,7 +275,7 @@ Ext.onReady(function() {
 					tag: 'a',
 					href:'#projects',
 					html:'Show Projects',
-					onclick:"return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));"
+					onclick:"return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));"
 				}]
 			},
 			margins:'0px 5px'
@@ -234,7 +287,7 @@ Ext.onReady(function() {
 					tag:'a',
 					href:'#projects',
 					html:'Add Project',
-					onclick:"return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));"
+					onclick:"return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));"
 				}]
 			},
 			margins:'0px 5px'
@@ -245,8 +298,17 @@ Ext.onReady(function() {
 	var instrumentAdminPanel = new Ext.Panel({
 		items: [{ xtype:'box' }
 	<sec:authorize ifAnyGranted="ROLE_ADMIN_VESPERS">
+			,{
+				xtype: 'box',
+				autoEl: {
+					tag: 'a',
+					target: '_BLANK',
+					href: '/ssvespers/admin/main.html',
+					html: 'VESPERS'
+				}
+			}
 	<%-- Vespers Simulation --%>
-	<%--	,{
+			,{
 				xtype: 'box',
 				autoEl: {
 					tag:'span',
@@ -258,9 +320,9 @@ Ext.onReady(function() {
 					tag: 'a',
 					target: '_BLANK',
 					href: '/ssvespers/simadmin/main.html',
-					html: 'VESPERS Simulation'
+					html: '(Simulated)'
 				}
-			} 				--%>
+			}
 	<%-- ================== --%>
 	</sec:authorize>
 		]

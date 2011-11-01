@@ -25,6 +25,16 @@ Ext.ss.core.SampleFormPanel = function(config) {
 		delete formPanelConfig.buttonDefaults;
 	}
 	
+	this.ss.fields.gid = new Ext.form.Hidden(Ext.applyIf({
+		name:'gid',
+		disabled:false
+	}, defaults));
+	
+	this.ss.fields.projectGid = new Ext.form.Hidden(Ext.applyIf({
+		name:'projectGid',
+		disabled:false
+	}, defaults));
+	
 	this.ss.fields.name = new Ext.form.TextField(Ext.applyIf({
 		fieldLabel: 'Name',
 		name: 'name',
@@ -57,12 +67,10 @@ Ext.ss.core.SampleFormPanel = function(config) {
 	else {
 		stateStore = new Ext.data.JsonStore({
 			autoDestroy:true,
-			root:'response',
-			success: 'success',
 			fields:[{
-				name:'name', mapping:'sampleState.name'
+				name:'value'
 			},{
-				name:'longName', mapping:'sampleState.longName'
+				name:'display'
 			}]
 		});
 	}
@@ -75,8 +83,8 @@ Ext.ss.core.SampleFormPanel = function(config) {
 		triggerAction:'all',
 		editable:false,
 		forceSelection:true,
-		valueField:'name',
-		displayField:'longName',
+		valueField:'value',
+		displayField:'display',
 		width: 200
 	}, defaults));
 	
@@ -157,25 +165,23 @@ Ext.ss.core.SampleFormPanel = function(config) {
 			waitMsg:waitMsg,
 			success: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.response && json.response.message) {
+				if(json && json.message) {
 					messagePanel.removeAll();
 					messagePanel.add({
-						html: json.response.message
+						html: json.message
 					});
 					messagePanel.doLayout();
 				}
 			},
 			failure: function(form, action) {
 				var json = action.response.responseJson||Ext.decode(action.response.responseText);
-				if(json && json.globalErrors) {
+				if(json && json.message) {
 					messagePanel.removeAll();
-					for(var idx=0; idx < json.globalErrors.length; idx++) {
-						messagePanel.add({
-							html: json.globalErrors[idx],
-							style: { 'color':'red' }
-						});
-						messagePanel.doLayout();
-					}
+					messagePanel.add({
+						html: json.message,
+						style: { 'color':'red' }
+					});
+					messagePanel.doLayout();
 				}
 			},
 			scope:this
@@ -183,6 +189,8 @@ Ext.ss.core.SampleFormPanel = function(config) {
 	}, this);
 	
 	formPanelConfig.items = [
+	     this.ss.fields.gid,
+	     this.ss.fields.projectGid,
 	     this.ss.fields.name,
 	     this.ss.fields.description,
 	     this.ss.fields.casNumber,

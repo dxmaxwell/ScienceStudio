@@ -36,7 +36,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href: "#projects",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectsPath('.html'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));",
 				html: "Projects"
 			}
 		},{
@@ -46,8 +46,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#project${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPath(${project.id}, '.html'));",
+				href:"#project${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPath('/${project.gid}.html'));",
 				html:"${project.name}"
 			}
 		},{
@@ -57,8 +57,8 @@ Ext.onReady(function() {
 			xtype:"box",
 			autoEl:{
 				tag: "a",
-				href:"#persons${project.id}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getProjectPersonsPath(${project.id}, '.html'));",
+				href:"#persons${project.gid}",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelProjectPersonPath('.html?project=${project.gid}'));",
 				html:"Team"
 			}
 		},{
@@ -78,7 +78,7 @@ Ext.onReady(function() {
 	Edit Project Person
 --%>
 	var projectPersonForm = new Ext.ss.core.ProjectPersonFormPanel({
-		url: ModelPathUtils.getProjectPersonPath(${projectPersonFormBacker.id}, '/form/edit.json'),
+		url: ModelPathUtils.getModelProjectPersonPath('/form/edit.json'),
 		method: 'POST', 
 		defaults: {
 			disabled:true
@@ -95,51 +95,49 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
-	projectPersonForm.ss.fields.projectRole.setDisabled(false);
+	<c:if test="${permissions.edit}">
+	projectPersonForm.ss.fields.role.setDisabled(false);
+	projectPersonForm.ss.fields.personGid.setDisabled(false);
+	projectPersonForm.ss.fields.personGid.setReadOnly(true);
 	projectPersonForm.ss.buttons.submit.setVisible(true);
-	</sec:authorize>
+	</c:if>
 
-	<c:if test="${not empty projectRoleList}">
-	var projectRoleStoreData = { response:
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="projectRoleList"/>
-		</jsp:include>
-	};
-	
-	projectPersonForm.ss.fields.projectRole.getStore().loadData(projectRoleStoreData);
+	<c:if test="${not empty projectRoleOptions}">
+	projectPersonForm.ss.fields.role.getStore().loadData(<hmc:write source="${projectRoleOptions}"/>);
 	</c:if>	
 
-	<c:if test="${not empty projectPersonFormBacker}">
-	var ProjectPersonStoreData = { response:[
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="projectPersonFormBacker"/>
-		</jsp:include>
-	]};
-	
-	projectPersonForm.ss.fields.personUid.getStore().loadData(ProjectPersonStoreData);
-	projectPersonForm.getForm().setValues(ProjectPersonStoreData.response[0].projectPersonFormBacker);
+	<c:if test="${not empty projectPerson}">
+	var ProjectPersonStoreData = [ <hmc:write source="${projectPerson}"/> ];	
+	projectPersonForm.ss.fields.personGid.getStore().loadData(ProjectPersonStoreData);
+	projectPersonForm.getForm().setValues(ProjectPersonStoreData[0]);
 	</c:if>
 
 	function removeProjectPerson() {
 		Ext.Msg.confirm('Question', 'Do you REALLY want to remove this person?', function(ans) {
 			if(ans == 'yes') {
 				Ext.Ajax.request({
-					url:ModelPathUtils.getProjectPersonPath(${projectPersonFormBacker.id}, '/remove.json'),
+					method:'POST',
+					params:{ gid:'${projectPerson.gid}' },
+					url:ModelPathUtils.getModelProjectPersonPath('/form/remove.json'),
 					failure:function(response, options) {
 						Ext.Msg.alert('Error', 'Network connection problem.');
 					},
 					success:function(response, options) {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
- 							if(json.success && json.response.viewUrl) { 
-								loadModelViewTab(json.response.viewUrl);
-							}
-							else if(json.globalErrors && json.globalErrors[0]) {
-								Ext.Msg.alert('Error', json.globalErrors[0]);
+ 							if(json.success) {
+								if(json.response.viewUrl) {
+									loadModelViewTab(json.response.viewUrl);
+								} else {
+									loadModelViewTab(ModelPathUtils.getModelProjectPersonPath('.html'));
+								}
 							}
 							else {
-								Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+								if(json.message) {
+									Ext.Msg.alert('Error', json.message);
+								} else {
+									Ext.Msg.alert('Error', 'An unspecified error has occurred.');
+								}
 							}
 						}
 					}
@@ -150,13 +148,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title: 'Person',
-		<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS,PROJECT_ROLE_EXPERIMENTER_${projectPersonFormBacker.projectId}">
+		<c:if test="${permissions.remove}">
 		tools:[{
 			id:'close',
 			handler:removeProjectPerson,
 			scope:this
 		}],
-		</sec:authorize>
+		</c:if>
 		items:[
 			projectPersonForm
 		],
