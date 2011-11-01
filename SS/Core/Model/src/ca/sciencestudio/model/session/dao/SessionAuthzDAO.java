@@ -9,6 +9,7 @@ package ca.sciencestudio.model.session.dao;
 
 import java.util.List;
 
+import ca.sciencestudio.model.dao.AuthoritiesDAO;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
 import ca.sciencestudio.model.session.Session;
@@ -17,8 +18,8 @@ import ca.sciencestudio.model.session.Session;
  * @author maxweld
  *
  */
-public interface SessionAuthzDAO extends ModelAuthzDAO<Session> {
-	
+public interface SessionAuthzDAO extends ModelAuthzDAO<Session>, AuthoritiesDAO {
+		
 	public Data<List<Session>> getAll(String user);
 	public Data<List<Session>> getAllByProjectGid(String user, String projectGid);
 	//public List<Session> getSessionListByLaboratoryId(int laboratoryId);

@@ -18,22 +18,23 @@ import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.project.dao.rest.support.RestProject;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.SimpleData;
-import ca.sciencestudio.model.dao.rest.AbstractRestModelAuthzDAO;
+import ca.sciencestudio.model.dao.rest.RestAuthoritiesModelAuthzDAO;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
  * @author maxweld
  *
  */
-public class RestProjectAuthzDAO extends AbstractRestModelAuthzDAO<Project> implements ProjectAuthzDAO {
+public class RestProjectAuthzDAO extends RestAuthoritiesModelAuthzDAO<Project> implements ProjectAuthzDAO {
 	
-	public static final String PROJECT_MODEL_PATH = "/projects";
+	public static final String PROJECT_AUTHZ_PATH = "/authz/projects";
+	public static final String PROJECT_MODEL_PATH = "/model/projects";
 	
 	@Override
 	public Data<List<Project>> getAll(String personGid) {
 		List<Project> projects;
 		try {
-			projects = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}"), getModelArrayClass(), personGid));
+			projects = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}"), getModelArrayClass(), personGid));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
@@ -45,18 +46,24 @@ public class RestProjectAuthzDAO extends AbstractRestModelAuthzDAO<Project> impl
 		}
 		return new SimpleData<List<Project>>(Collections.unmodifiableList(projects));
 	}
-	
+
 	@Override
 	protected RestProject toRestModel(Project project) {
 		RestProject restProject = new RestProject();
 		restProject.setName(project.getName());
 		restProject.setDescription(project.getDescription());
+		restProject.setFacilityGid(project.getFacilityGid());
 		restProject.setStartDate(project.getStartDate());
 		restProject.setEndDate(project.getEndDate());
 		restProject.setStatus(project.getStatus());	
 		return restProject;
 	}
 
+	@Override
+	protected String getAuthzPath() {
+		return PROJECT_AUTHZ_PATH;
+	}
+	
 	@Override
 	protected String getModelPath() {
 		return PROJECT_MODEL_PATH;

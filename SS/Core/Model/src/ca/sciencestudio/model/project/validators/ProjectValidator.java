@@ -14,7 +14,6 @@ import org.springframework.validation.Errors;
 
 import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.model.facility.Facility;
-import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.Project.Status;
 import ca.sciencestudio.model.validators.AbstractModelValidator;
@@ -67,7 +66,7 @@ public class ProjectValidator extends AbstractModelValidator<Project> {
 		if(gid == null) {
 			errors.rejectValue(null, EC_REQUIRED, "Facility GID field is required.");
 		}
-		else if(!gid.isType(Laboratory.GID_TYPE)) {
+		else if(!gid.isType(Facility.GID_TYPE)) {
 			errors.rejectValue(null, EC_INVALID, "Facility GID field must have type: " + Facility.GID_TYPE);
 		}
 		else if(gid.isLocal()) {

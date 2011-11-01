@@ -27,13 +27,13 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  */
 public class RestTechniqueAuthzDAO extends AbstractRestModelAuthzDAO<Technique> implements TechniqueAuthzDAO {
 
-	public static final String TECHNIQUE_MODEL_PATH = "/techniques";
+	public static final String TECHNIQUE_MODEL_PATH = "/model/techniques";
 	
 	@Override
 	public Data<List<Technique>> getAllByLaboratoryGid(String laboratoryGid) {
 		List<Technique> techniques;
 		try {
-			techniques = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "laboratory={laboratory}"), getModelArrayClass(), laboratoryGid));
+			techniques = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "laboratory={laboratory}"), getModelArrayClass(), laboratoryGid));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());

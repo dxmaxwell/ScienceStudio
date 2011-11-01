@@ -10,6 +10,7 @@ package ca.sciencestudio.model.facility.dao;
 import java.util.List;
 
 import ca.sciencestudio.model.facility.Facility;
+import ca.sciencestudio.model.dao.AuthoritiesDAO;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
 
@@ -17,7 +18,7 @@ import ca.sciencestudio.model.dao.ModelAuthzDAO;
  * @author maxweld
  * 
  */
-public interface FacilityAuthzDAO extends ModelAuthzDAO<Facility> {
+public interface FacilityAuthzDAO extends ModelAuthzDAO<Facility>, AuthoritiesDAO {
 	
 	public Data<Facility> get(String gid);
 	

@@ -32,7 +32,7 @@
 		(
 			#name:VARCHAR#,
 			#description:VARCHAR#,
-			#facilityId:INT#
+			#facilityId:INT#,
 			#startDate:DATETIME#,
 			#endDate:DATETIME#,
 			#status:VARCHAR#
@@ -47,7 +47,7 @@
 			SET
 				name = #name:VARCHAR#,
 				description = #description:VARCHAR#,
-				facility_id = #facilityId:INT#
+				facility_id = #facilityId:INT#,
 				start_date = #startDate:DATETIME#,
 				end_date = #endDate:DATETIME#,
 				status = #status:VARCHAR#

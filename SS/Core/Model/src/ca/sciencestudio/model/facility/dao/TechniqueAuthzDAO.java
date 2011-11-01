@@ -19,7 +19,8 @@ import ca.sciencestudio.model.facility.Technique;
  */
 public interface TechniqueAuthzDAO extends ModelAuthzDAO<Technique> {
 	
-	//public Data<Technique> get(String techniqueGid);
+	public Data<Technique> get(String gid);
+	
 	public Data<List<Technique>> getAll();
 	public Data<List<Technique>> getAllByLaboratoryGid(String laboratoryGid);
 }

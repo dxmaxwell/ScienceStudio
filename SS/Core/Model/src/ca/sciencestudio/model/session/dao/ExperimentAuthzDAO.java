@@ -20,4 +20,5 @@ import ca.sciencestudio.model.session.Experiment;
 public interface ExperimentAuthzDAO extends ModelAuthzDAO<Experiment> {
 	
 	public Data<List<Experiment>> getAllBySessionGid(String user, String sessionGid);
+	public Data<List<Experiment>> getAllBySourceGid(String user, String soruceGid);
 }

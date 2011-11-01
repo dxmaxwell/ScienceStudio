@@ -19,7 +19,9 @@ import ca.sciencestudio.model.facility.Laboratory;
  */
 public interface LaboratoryAuthzDAO extends ModelAuthzDAO<Laboratory> {
 	
-	public Data<List<Laboratory>> getAll(String user); 
+	public Data<Laboratory> get(String gid);
+	
+	public Data<List<Laboratory>> getAll(); 
 	//public Laboratory getLaboratoryByNameAndFacilityId(String laboratoryName, int facilityId);
 	//public List<Laboratory> getLaboratoryListByName(String laboratoryName);
 	//public List<Laboratory> getLaboratoryListByFacilityId(int facilityId);

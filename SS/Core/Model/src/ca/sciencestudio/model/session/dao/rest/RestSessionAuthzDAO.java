@@ -18,7 +18,7 @@ import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.model.session.dao.rest.support.RestSession;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.SimpleData;
-import ca.sciencestudio.model.dao.rest.AbstractRestModelAuthzDAO;
+import ca.sciencestudio.model.dao.rest.RestAuthoritiesModelAuthzDAO;
 import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 /**
@@ -26,15 +26,16 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  * 
  *
  */
-public class RestSessionAuthzDAO extends AbstractRestModelAuthzDAO<Session> implements SessionAuthzDAO {
+public class RestSessionAuthzDAO extends RestAuthoritiesModelAuthzDAO<Session> implements SessionAuthzDAO {
 
-	public static final String SESSION_MODEL_PATH = "/sessions";
+	public static final String SESSION_AUTHZ_PATH = "/authz/sessions";
+	public static final String SESSION_MODEL_PATH = "/model/sessions";
 	
 	@Override
 	public Data<List<Session>> getAllByProjectGid(String user, String projectGid) {
 		List<Session> sessions;
 		try {
-			sessions = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "project={project}"), getModelArrayClass(), user, projectGid));
+			sessions = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}", "project={project}"), getModelArrayClass(), user, projectGid));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
@@ -58,6 +59,11 @@ public class RestSessionAuthzDAO extends AbstractRestModelAuthzDAO<Session> impl
 		restSession.setStartDate(session.getStartDate());
 		restSession.setEndDate(session.getEndDate());
 		return restSession;
+	}
+	
+	@Override
+	protected String getAuthzPath() {
+		return SESSION_AUTHZ_PATH;
 	}
 
 	@Override

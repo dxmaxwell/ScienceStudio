@@ -20,6 +20,7 @@ public class RestProject {
 
 	private String name = ProjectValidator.DEFAULT_NAME;
 	private String description = ProjectValidator.DEFAULT_DESCRIPTION;
+	private String facilityGid = ProjectValidator.DEFAULT_FACILITY_GID;
 	private Date startDate = ProjectValidator.DEFAULT_START_DATE;
 	private Date endDate = ProjectValidator.DEFAULT_END_DATE;
 	private Status status = ProjectValidator.DEFAULT_STATUS;
@@ -36,6 +37,13 @@ public class RestProject {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public String getFacilityGid() {
+		return facilityGid;
+	}
+	public void setFacilityGid(String facilityGid) {
+		this.facilityGid = facilityGid;
 	}
 	
 	public Date getStartDate() {

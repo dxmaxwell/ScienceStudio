@@ -19,7 +19,7 @@ import ca.sciencestudio.model.facility.dao.rest.support.RestLaboratory;
  */
 public class RestLaboratoryAuthzDAO extends AbstractRestModelAuthzDAO<Laboratory> implements LaboratoryAuthzDAO {
 
-	public static final String LABORATORY_MODEL_PATH = "/laboratories";
+	public static final String LABORATORY_MODEL_PATH = "/model/laboratories";
 
 	@Override
 	protected Object toRestModel(Laboratory laboratory) {

@@ -23,20 +23,23 @@ import org.springframework.validation.ObjectError;
  */
 public class ValidationResult {
 
-	private List<ValidationError> globalErrors;
-	private Map<String,ValidationError> fieldErrors;
+	private List<ValidationError> globalErrors = new ArrayList<ValidationError>();
+	private Map<String,ValidationError> fieldErrors = new HashMap<String,ValidationError>();
 	
-	public ValidationResult() {
-		globalErrors = new ArrayList<ValidationError>();
-		fieldErrors = new HashMap<String,ValidationError>();
+	public ValidationResult() {}
+	
+	public ValidationResult(String defaultMessage) {
+		this(new ValidationError(defaultMessage));
+	}
+	
+	public ValidationResult(ValidationError globalError) {
+		globalErrors.add(globalError);
 	}
 	
 	public ValidationResult(Errors errors) {
-		globalErrors = new ArrayList<ValidationError>();
 		for(ObjectError error : errors.getGlobalErrors()) {
 			globalErrors.add(new ValidationError(error));
 		}
-		fieldErrors = new HashMap<String,ValidationError>();
 		for(FieldError error : errors.getFieldErrors()) {
 			fieldErrors.put(error.getField(), new ValidationError(error));
 		}

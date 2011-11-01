@@ -28,13 +28,13 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  */
 public class RestProjectPersonAuthzDAO extends AbstractRestModelAuthzDAO<ProjectPerson> implements ProjectPersonAuthzDAO {
 	
-	public static final String PROJECT_PERSON_MODEL_PATH = "/project/persons";
+	public static final String PROJECT_PERSON_MODEL_PATH = "/model/project/persons";
 	
 	@Override
 	public Data<List<ProjectPerson>> getAllByPersonGid(String user, String personGid) {
 		List<ProjectPerson> projectPersons;
 		try {
-			projectPersons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "person={person}"), getModelArrayClass(), user, personGid));
+			projectPersons = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}", "person={person}"), getModelArrayClass(), user, personGid));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Project Person list: " + e.getMessage());
@@ -52,7 +52,7 @@ public class RestProjectPersonAuthzDAO extends AbstractRestModelAuthzDAO<Project
 	public Data<List<ProjectPerson>> getAllByProjectGid(String user, String projectGid) {
 		List<ProjectPerson> projectPersons;
 		try {
-			projectPersons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "project={project}"), getModelArrayClass(), user, projectGid));
+			projectPersons = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}", "project={project}"), getModelArrayClass(), user, projectGid));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Project Person list: " + e.getMessage());

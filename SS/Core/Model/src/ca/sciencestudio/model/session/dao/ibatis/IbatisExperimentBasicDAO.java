@@ -62,6 +62,23 @@ public class IbatisExperimentBasicDAO extends AbstractIbatisModelBasicDAO<Experi
 	}
 	
 	@Override
+	public List<Experiment> getAllBySourceGid(String sourceGid) {
+		List<Experiment> experiments;
+		try {
+			experiments = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListBySourceGid"), sourceGid));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Experiments by source GID: " + sourceGid + ", size: " + experiments.size());
+		}
+		return Collections.unmodifiableList(experiments);
+	}
+	
+	@Override
 	protected IbatisExperiment toIbatisModel(Experiment experiment) {
 		if(experiment == null) {
 			return null;

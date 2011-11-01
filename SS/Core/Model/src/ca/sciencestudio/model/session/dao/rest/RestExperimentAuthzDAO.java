@@ -27,13 +27,13 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  */
 public class RestExperimentAuthzDAO extends AbstractRestModelAuthzDAO<Experiment> implements ExperimentAuthzDAO {
 	
-	public static final String EXPERIMENT_MODEL_PATH = "/experiments";
+	public static final String EXPERIMENT_MODEL_PATH = "/model/experiments";
 	
 	@Override
 	public Data<List<Experiment>> getAllBySessionGid(String user, String sessionGid) {
 		List<Experiment> experiments;
 		try {
-			experiments = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "session={session}"), getModelArrayClass(), user, sessionGid));
+			experiments = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}", "session={session}"), getModelArrayClass(), user, sessionGid));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
@@ -42,6 +42,23 @@ public class RestExperimentAuthzDAO extends AbstractRestModelAuthzDAO<Experiment
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug("Get all Experiments by Session GID: " + sessionGid + ", size: " + experiments.size());
+		}
+		return new SimpleData<List<Experiment>>(Collections.unmodifiableList(experiments));
+	}
+	
+	@Override
+	public Data<List<Experiment>> getAllBySourceGid(String user, String sourceGid) {
+		List<Experiment> experiments;
+		try {
+			experiments = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}", "source={source}"), getModelArrayClass(), user, sourceGid));
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
+			return new SimpleData<List<Experiment>>(new ModelAccessException(e));
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Experiments by source GID: " + sourceGid + ", size: " + experiments.size());
 		}
 		return new SimpleData<List<Experiment>>(Collections.unmodifiableList(experiments));
 	}

@@ -18,6 +18,6 @@ import ca.sciencestudio.model.session.Experiment;
  */
 public interface ExperimentBasicDAO extends ModelBasicDAO<Experiment> {
 	
-	//public List<Experiment> getExperimentListBySampleId(int sampleId);
 	public List<Experiment> getAllBySessionGid(String sessionGid);
+	public List<Experiment> getAllBySourceGid(String sourceGid);
 }

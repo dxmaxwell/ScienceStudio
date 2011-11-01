@@ -29,13 +29,13 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  */
 public class RestPersonAuthzDAO extends AbstractRestModelAuthzDAO<Person> implements PersonAuthzDAO {
 
-	public static final String PERSON_MODEL_PATH = "/persons";
+	public static final String PERSON_MODEL_PATH = "/model/persons";
 	
 	@Override
 	public Data<Person> getByUsername(String username, String facility) {
 		Person t;
 		try {
-			t = getRestTemplate().getForObject(getRestUrl("/whois", "username={username}", "facility={facility}"), getModelClass(), username, facility);
+			t = getRestTemplate().getForObject(getModelUrl("/whois", "username={username}", "facility={facility}"), getModelClass(), username, facility);
 		}
 		catch(HttpClientErrorException e) {
 			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
@@ -56,7 +56,7 @@ public class RestPersonAuthzDAO extends AbstractRestModelAuthzDAO<Person> implem
 	public Data<List<Person>> getAllByName(String user, String name) {
 		List<Person> persons;
 		try {
-			persons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "name={name}"), getModelArrayClass(), user, name));
+			persons = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}", "name={name}"), getModelArrayClass(), user, name));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());

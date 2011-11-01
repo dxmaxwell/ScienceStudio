@@ -7,7 +7,7 @@
  */
 package ca.sciencestudio.model.facility.dao.rest;
 
-import ca.sciencestudio.model.dao.rest.AbstractRestModelAuthzDAO;
+import ca.sciencestudio.model.dao.rest.RestAuthoritiesModelAuthzDAO;
 import ca.sciencestudio.model.facility.Facility;
 import ca.sciencestudio.model.facility.dao.FacilityAuthzDAO;
 import ca.sciencestudio.model.facility.dao.rest.support.RestFacility;
@@ -16,9 +16,10 @@ import ca.sciencestudio.model.facility.dao.rest.support.RestFacility;
  * @author maxweld
  *
  */
-public class RestFacilityAuthzDAO extends AbstractRestModelAuthzDAO<Facility> implements FacilityAuthzDAO {
+public class RestFacilityAuthzDAO extends RestAuthoritiesModelAuthzDAO<Facility> implements FacilityAuthzDAO {
 
-	public static final String FACILITY_MODEL_PATH = "/facilities";
+	public static final String FACILITY_AUTHZ_PATH = "/authz/facilities";
+	public static final String FACILITY_MODEL_PATH = "/model/facilities";
 	
 	@Override
 	protected Object toRestModel(Facility facility) {
@@ -34,6 +35,12 @@ public class RestFacilityAuthzDAO extends AbstractRestModelAuthzDAO<Facility> im
 		return restFacility;
 	}
 
+
+	@Override
+	protected String getAuthzPath() {
+		return FACILITY_AUTHZ_PATH;
+	}
+	
 	@Override
 	protected String getModelPath() {
 		return FACILITY_MODEL_PATH;

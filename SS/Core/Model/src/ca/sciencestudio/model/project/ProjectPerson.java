@@ -20,7 +20,7 @@ public class ProjectPerson implements Model {
 
 	public static final String GID_TYPE = "K";
 	
-	public static enum Role { OBSERVER, EXPERIMENTER }
+	public static enum Role { COLLABORATOR, RESEARCHER }
 	
 	public static final String DEFAULT_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_PERSON_GID = GID.DEFAULT_GID;

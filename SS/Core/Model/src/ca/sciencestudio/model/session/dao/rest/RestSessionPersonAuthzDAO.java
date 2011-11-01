@@ -28,13 +28,13 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  */
 public class RestSessionPersonAuthzDAO extends AbstractRestModelAuthzDAO<SessionPerson> implements SessionPersonAuthzDAO {
 
-	public static final String SESSION_PERSON_MODEL_PATH = "/session/persons";
+	public static final String SESSION_PERSON_MODEL_PATH = "/model/session/persons";
 	
 	@Override
 	public Data<List<SessionPerson>> getAllBySessionGid(String user, String sessionGid) {
 		List<SessionPerson> sessionPersons;
 		try {
-			sessionPersons = Arrays.asList(getRestTemplate().getForObject(getRestUrl("", "user={user}", "session={session}"), getModelArrayClass(), user, sessionGid));
+			sessionPersons = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "user={user}", "session={session}"), getModelArrayClass(), user, sessionGid));
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());

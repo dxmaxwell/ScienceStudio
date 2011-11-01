@@ -18,6 +18,8 @@ import ca.sciencestudio.model.facility.InstrumentTechnique;
  */
 public interface InstrumentTechniqueAuthzDAO extends ModelAuthzDAO<InstrumentTechnique> {
 	
+	public Data<InstrumentTechnique> get(String gid);
+	
 	public Data<List<InstrumentTechnique>> getAll();
 	public Data<List<InstrumentTechnique>> getAllByLaboratoryGid(String laboratoryGid);
 }
