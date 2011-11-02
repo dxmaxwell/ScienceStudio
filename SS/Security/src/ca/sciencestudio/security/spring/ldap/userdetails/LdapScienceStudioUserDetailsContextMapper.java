@@ -28,18 +28,27 @@ import ca.sciencestudio.security.spring.ldap.authentication.LdapContextAuthentic
  */
 public class LdapScienceStudioUserDetailsContextMapper implements UserDetailsContextMapper {
 	
+	private String authenticator;
+	
 	private AuthenticationUserDetailsService ldapContextUserDetailsService;
 	
 	protected Log logger = LogFactory.getLog(getClass());
 	
 	@Override
 	public UserDetails mapUserFromContext(DirContextOperations ctx, String username, Collection<GrantedAuthority> authorities) {
-		return ldapContextUserDetailsService.loadUserDetails(new LdapContextAuthenticationToken(ctx, username, authorities));
+		return ldapContextUserDetailsService.loadUserDetails(new LdapContextAuthenticationToken(ctx, username, authenticator, authorities));
 	}
 
 	@Override
 	public void mapUserToContext(UserDetails userDetails, DirContextAdapter ctx) {
 		// Not supported. User details are not stored in LDAP server. //
+	}
+
+	public String getAuthenticator() {
+		return authenticator;
+	}
+	public void setAuthenticator(String authenticator) {
+		this.authenticator = authenticator;
 	}
 
 	public AuthenticationUserDetailsService getLdapContextUserDetailsService() {

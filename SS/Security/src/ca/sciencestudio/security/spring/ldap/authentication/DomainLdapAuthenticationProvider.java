@@ -3,7 +3,9 @@
  *
  *  Description:
  *     	 DomainLdapAuthenticationProvider class.
- *     
+ *  
+ *  Use of LDAP for authentication has been depreciated in favour of CAS.
+ *  
  */
 package ca.sciencestudio.security.spring.ldap.authentication;
 

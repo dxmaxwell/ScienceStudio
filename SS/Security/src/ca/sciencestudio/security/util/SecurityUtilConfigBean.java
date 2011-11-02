@@ -7,7 +7,7 @@
  */
 package ca.sciencestudio.security.util;
 
-import ca.sciencestudio.model.dao.ProjectPersonDAO;
+import ca.sciencestudio.security.Strategy;
 
 /**
  * @author maxweld
@@ -15,12 +15,8 @@ import ca.sciencestudio.model.dao.ProjectPersonDAO;
  *
  */
 public class SecurityUtilConfigBean {
-
-	public void setProjectPersonDAO(ProjectPersonDAO projectPersonDAO) {
-		SecurityUtil.setProjectPersonDAO(projectPersonDAO);
-	}
 	
-	public void setSecurityStrategy(SecurityStrategy securityStrategy) {
+	public void setSecurityStrategy(Strategy securityStrategy) {
 		SecurityUtil.setSecurityStrategy(securityStrategy);
 	}
 }

@@ -2,7 +2,7 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     ScienceStudioUserDetails class.
+ *     ScienceStudioUserDetails abstract class.
  *     
  */
 package ca.sciencestudio.security.spring.core.userdetails;
@@ -15,31 +15,29 @@ import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import ca.sciencestudio.login.model.Account;
-import ca.sciencestudio.model.Person;
-
 /**
  * @author maxweldd
  *
  */
-public class ScienceStudioUserDetails implements UserDetails, CredentialsContainer, Serializable {
+public abstract class ScienceStudioUserDetails implements UserDetails, CredentialsContainer, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private Person person;
-
-	private String username;
-	private String password;
-	private boolean enabled;
-	private boolean accountNonLocked;
-	private boolean accountNonExpired;
-	private boolean credentialsNonExpired;
-	private Collection<GrantedAuthority> authorities; 
+	protected String username;
+	protected String password;
+	protected String personGid;
+	protected String authenticator;
+	protected boolean enabled;
+	protected boolean accountNonLocked;
+	protected boolean accountNonExpired;
+	protected boolean credentialsNonExpired;
+	protected Collection<GrantedAuthority> authorities;
 
 	public ScienceStudioUserDetails(ScienceStudioUserDetails userDetails) {
-		this.person = userDetails.getPerson();
 		this.username = userDetails.getUsername();
 		this.password = userDetails.getPassword();
+		this.personGid = userDetails.getPersonGid();
+		this.authenticator = userDetails.getAuthenticator();
 		this.enabled = userDetails.isEnabled();
 		this.accountNonLocked = userDetails.isAccountNonLocked();
 		this.accountNonExpired = userDetails.isAccountNonExpired();
@@ -47,56 +45,21 @@ public class ScienceStudioUserDetails implements UserDetails, CredentialsContain
 		this.authorities = new HashSet<GrantedAuthority>(userDetails.getAuthorities());
 	}
 	
-	public ScienceStudioUserDetails(Account account, Person person, Collection<GrantedAuthority> authorities) {
-		username = account.getUsername();
-		password = account.getPassword();
-		
-		Account.Status status;
-		try {
-			status = Account.Status.valueOf(account.getStatus());
-		}
-		catch(IllegalArgumentException e) {
-			status = Account.Status.DISABLED;
-		}
-			
-		switch(status) {
-			case ACTIVE:
-				enabled = true;
-				accountNonLocked = true;
-				accountNonExpired = true;
-				credentialsNonExpired = true;
-				break;
-				
-			case DISABLED:
-				enabled = false;
-				accountNonLocked = true;
-				accountNonExpired = true;
-				credentialsNonExpired = true;
-				break;
-				
-			case EXPIRED:
-				enabled = false;
-				accountNonLocked = true;
-				accountNonExpired = true;
-				credentialsNonExpired = false;
-				break;
-		}
-		
-		if(person == null) {
-			throw new NullPointerException();
-		}
-		this.person = person;
-		
+	public ScienceStudioUserDetails(String username, String password, String personGid, String authenticator, Collection<GrantedAuthority> authorities) {
+		this.username = username; 
+		this.password = password;
+		this.personGid = personGid;
+		this.authenticator = authenticator;
+		this.enabled = true;
+		this.accountNonLocked = true;
+		this.accountNonExpired = true;
+		this.credentialsNonExpired = true;
 		this.authorities = new HashSet<GrantedAuthority>(authorities);
 	}
 
 	@Override
 	public void eraseCredentials() {
-		password = "";
-	}
-	
-	public Person getPerson() {
-		return person;
+		password = "ERASED_CREDENTIALS";
 	}
 
 	@Override
@@ -107,6 +70,14 @@ public class ScienceStudioUserDetails implements UserDetails, CredentialsContain
 	@Override
 	public String getPassword() {
 		return password;
+	}
+	
+	public String getPersonGid() {
+		return personGid;
+	}
+
+	public String getAuthenticator() {
+		return authenticator;
 	}
 
 	@Override

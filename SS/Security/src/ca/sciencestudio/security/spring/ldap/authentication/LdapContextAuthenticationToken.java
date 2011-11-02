@@ -22,11 +22,13 @@ public class LdapContextAuthenticationToken implements Authentication {
 	private static final long serialVersionUID = 1L;
 	
 	private String principal;
+	private String authenticator;
 	private DirContextOperations details;
 	private Collection<GrantedAuthority> authorities;
 	
-	public LdapContextAuthenticationToken(DirContextOperations ldapContext, String username, Collection<GrantedAuthority> authorities) {
+	public LdapContextAuthenticationToken(DirContextOperations ldapContext, String username, String authenticator, Collection<GrantedAuthority> authorities) {
 		this.principal = username;
+		this.authenticator = authenticator;
 		this.details = ldapContext;
 		this.authorities = authorities;
 	}
@@ -45,6 +47,10 @@ public class LdapContextAuthenticationToken implements Authentication {
 		return principal;
 	}
 	
+	public String getAuthenticator() {
+		return authenticator;
+	}
+
 	@Override
 	public Object getCredentials() {
 		return "";

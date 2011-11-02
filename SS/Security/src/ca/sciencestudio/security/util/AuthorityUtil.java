@@ -14,7 +14,7 @@ import ca.sciencestudio.login.model.LoginGroup;
 import ca.sciencestudio.login.model.LoginRole;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.ProjectPerson;
-import ca.sciencestudio.model.project.ProjectRole;
+import ca.sciencestudio.model.project.ProjectPerson.Role;
 
 /**
  * @author maxweld
@@ -58,37 +58,37 @@ public abstract class AuthorityUtil {
 	}
 	
 	// Utilities for building project role authorities. //
-	public static Object buildProjectObserverAuthority(int projectId) {
-		return buildProjectRoleAuthority(projectId, ProjectRole.OBSERVER.name());
+	public static Object buildProjectObserverAuthority(String projectGid) {
+		return buildProjectRoleAuthority(projectGid, Role.COLLABORATOR.name());
 	}
 	
-	public static Object buildProjectExperimenterAuthority(int projectId) {
-		return buildProjectRoleAuthority(projectId, ProjectRole.EXPERIMENTER.name());
+	public static Object buildProjectExperimenterAuthority(String projectGid) {
+		return buildProjectRoleAuthority(projectGid, Role.RESEARCHER.name());
 	}
 	
-	public static Object buildProjectRoleAuthority(int projectId, String projectRoleName) {
-		return PROJECT_ROLE_AUTHORITY_PREFIX + sanitize(projectRoleName) + "_" + projectId;
+	public static Object buildProjectRoleAuthority(String projectGid, String projectRoleName) {
+		return PROJECT_ROLE_AUTHORITY_PREFIX + sanitize(projectRoleName) + "_" + projectGid;
 	}
 	
 	public static Object buildProjectRoleAuthority(ProjectPerson projectPerson) {
-		return buildProjectRoleAuthority(projectPerson.getProjectId(), projectPerson.getProjectRole().name());
+		return buildProjectRoleAuthority(projectPerson.getProjectGid(), projectPerson.getRole().name());
 	}
 	
-	public static Object buildProjectRoleAuthority(Project project, ProjectRole projectRole) {
-		return buildProjectRoleAuthority(project.getId(), projectRole.name());
+	public static Object buildProjectRoleAuthority(Project project, Role role) {
+		return buildProjectRoleAuthority(project.getGid(), role.name());
 	}
 	
 	// Utilities for building project group authorities. //
-	public static Object buildProjectGroupAuthority(int projectId) {
-		return  PROJECT_GROUP_AUTHORITY_PREFIX + projectId;
+	public static Object buildProjectGroupAuthority(String projectGid) {
+		return  PROJECT_GROUP_AUTHORITY_PREFIX + projectGid;
 	}
 	
 	public static Object buildProjectGroupAuthority(Project project) {
-		return buildProjectGroupAuthority(project.getId());
+		return buildProjectGroupAuthority(project.getGid());
 	}
 	
 	public static Object buildProjectGroupAuthority(ProjectPerson projectPerson) {
-		return buildProjectGroupAuthority(projectPerson.getProjectId());
+		return buildProjectGroupAuthority(projectPerson.getProjectGid());
 	}
 	
 	public static String sanitize(Object authority) {

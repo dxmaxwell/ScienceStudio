@@ -7,6 +7,9 @@
  */
 package ca.sciencestudio.security.spring.ldap.userdetails;
 
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.ldap.userdetails.LdapUserDetails;
 
 import ca.sciencestudio.security.spring.core.userdetails.ScienceStudioUserDetails;
@@ -19,15 +22,24 @@ public class LdapScienceStudioUserDetails extends ScienceStudioUserDetails imple
 
 	private static final long serialVersionUID = 1L;
 	
-	private String dn;
+	private String domainName;
 	
-	public LdapScienceStudioUserDetails(String dn, ScienceStudioUserDetails userDetails) {
+	public LdapScienceStudioUserDetails(LdapScienceStudioUserDetails userDetails) {
 		super(userDetails);
-		this.dn = dn;
+		this.domainName = userDetails.getDomainName();
+	}
+
+	public LdapScienceStudioUserDetails(String username, String domainName, String personGid, String authenticator, Collection<GrantedAuthority> authorities) {
+		super(username, "LDAP_PASSWORD", personGid, authenticator, authorities);
+		this.domainName = domainName;
+	}
+
+	public String getDomainName() {
+		return domainName;
 	}
 
 	@Override
 	public String getDn() {
-		return dn;
+		return domainName;
 	}
 }
