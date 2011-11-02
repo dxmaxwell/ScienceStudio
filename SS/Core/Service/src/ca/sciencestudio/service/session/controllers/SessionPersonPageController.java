@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.person.Person;
 import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
@@ -27,6 +26,7 @@ import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.SessionPersonFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
+import ca.sciencestudio.util.authz.Authorities;
 import ca.sciencestudio.util.web.EnumToOptionUtils;
 
 /**
@@ -49,13 +49,15 @@ public class SessionPersonPageController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		Data<Permissions> dataPermissions = sessionPersonAuthzDAO.permissions(user);
-		
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, sessionGid);
+				
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
+		
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
 		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
@@ -63,14 +65,10 @@ public class SessionPersonPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
 				
 		model.put("sessionRoleOptions", EnumToOptionUtils.toList(SessionPerson.Role.values()));
-		model.put("permissions", permissions);
+		model.put("authorities", authorities);
 		model.put("project", project);
 		model.put("session", session);
 		return "frag/sessionPersons";
@@ -81,8 +79,6 @@ public class SessionPersonPageController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		Data<Permissions> dataPermissions = sessionPersonAuthzDAO.permissions(user, sessionPersonGid);
-		
 		SessionPerson sessionPerson = sessionPersonAuthzDAO.get(user, sessionPersonGid).get();
 		if(sessionPerson == null) {
 			model.put("error", "Session person not found.");
@@ -91,11 +87,15 @@ public class SessionPersonPageController extends AbstractModelController {
 		
 		Data<Person> dataPerson = personAuthzDAO.get(user, sessionPerson.getPersonGid());
 		
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, sessionPerson.getSessionGid());
+		
 		Session session = sessionAuthzDAO.get(user, sessionPerson.getSessionGid()).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
+		
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
 		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
@@ -109,15 +109,12 @@ public class SessionPersonPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
+		
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
 				
 		model.put("sessionPerson", new SessionPersonFormBacker(sessionPerson, person));
 		model.put("sessionRoleOptions", EnumToOptionUtils.toList(SessionPerson.Role.values()));
-		model.put("permissions", permissions);
+		model.put("authorities", authorities);
 		model.put("project", project);
 		model.put("session", session);
 		return "frag/sessionPerson";

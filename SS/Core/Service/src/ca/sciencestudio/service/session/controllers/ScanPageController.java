@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
@@ -27,6 +26,7 @@ import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.ScanFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
+import ca.sciencestudio.util.authz.Authorities;
 
 /**
  * @author maxweld
@@ -48,7 +48,6 @@ public class ScanPageController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		Data<Permissions> dataPermissions = scanAuthzDAO.permissions(user);
 		
 		Experiment experiment = experimentAuthzDAO.get(user, experimentGid).get();
 		if(experiment == null) {
@@ -56,11 +55,15 @@ public class ScanPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, experiment.getSessionGid());
+		
 		Session session = sessionAuthzDAO.get(user, experiment.getSessionGid()).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
+		
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid()); 
 		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
@@ -68,13 +71,9 @@ public class ScanPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
 		
-		model.put("permissions", permissions);
+		model.put("authorities", authorities);
 		model.put("experiment", experiment);
 		model.put("project", project);
 		model.put("session", session);
@@ -86,8 +85,6 @@ public class ScanPageController extends AbstractModelController {
 	public String getScanPage(@PathVariable String scanGid, ModelMap model) {
 		
 		String user = SecurityUtil.getPersonGid();
-		
-		Data<Permissions> dataPermissions = scanAuthzDAO.permissions(user, scanGid);
 		
 		Scan scan = scanAuthzDAO.get(user, scanGid).get();
 		if(scan == null) {
@@ -101,11 +98,15 @@ public class ScanPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, experiment.getSessionGid());
+		
 		Session session = sessionAuthzDAO.get(user, experiment.getSessionGid()).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
+		
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
 		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
@@ -113,14 +114,10 @@ public class ScanPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
 		
 		model.put("scan", new ScanFormBacker(scan));
-		model.put("permissions", permissions);
+		model.put("authorities", authorities);
 		model.put("experiment", experiment);
 		model.put("project", project);
 		model.put("session", session);

@@ -18,6 +18,7 @@ import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.person.backers.PersonFormBacker;
+import ca.sciencestudio.service.utilities.ModelPathUtils;
 
 /**
  * @author maxweld
@@ -28,7 +29,7 @@ public class PersonPageController extends AbstractModelController {
 	
 	private PersonAuthzDAO personAuthzDAO;
 	
-	@RequestMapping(value = "/person/self.html", method = RequestMethod.GET)
+	@RequestMapping(value = ModelPathUtils.PERSON_PATH + "/self.html", method = RequestMethod.GET)
 	public String getPersonSelfPage(ModelMap model) {
 		String user = SecurityUtil.getPersonGid();
 		Person person = personAuthzDAO.get(user, user).get();

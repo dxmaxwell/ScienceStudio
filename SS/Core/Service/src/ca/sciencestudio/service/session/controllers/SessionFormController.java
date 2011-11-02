@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.AddResult;
-import ca.sciencestudio.model.EditResult;
 import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 
 import ca.sciencestudio.security.util.SecurityUtil;
@@ -23,6 +21,9 @@ import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.SessionFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
 import ca.sciencestudio.util.exceptions.AuthorizationException;
+import ca.sciencestudio.util.rest.AddResult;
+import ca.sciencestudio.util.rest.EditResult;
+import ca.sciencestudio.util.rest.RemoveResult;
 import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
@@ -31,8 +32,6 @@ import ca.sciencestudio.util.web.FormResponseMap;
  */
 @Controller
 public class SessionFormController extends AbstractModelController {
-
-	private String facility;
 
 	private SessionAuthzDAO sessionAuthzDAO;	
 
@@ -44,7 +43,7 @@ public class SessionFormController extends AbstractModelController {
 				
 		String user = SecurityUtil.getPersonGid();
 		
-		AddResult result = sessionAuthzDAO.add(user, session, facility).get();
+		AddResult result = sessionAuthzDAO.add(user, session).get();
 		
 		FormResponseMap response = new FormResponseMap(SessionFormBacker.transformResult(result));
 		
@@ -80,28 +79,15 @@ public class SessionFormController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		boolean success;
+		RemoveResult result;
 		try {
-			success = sessionAuthzDAO.remove(user, gid).get();
+			result = sessionAuthzDAO.remove(user, gid).get();
 		}
 		catch(AuthorizationException e) {
 			return new FormResponseMap(false, "Not Permitted");
 		}
 		
-		FormResponseMap response = new FormResponseMap(success);
-		
-		if(response.isSuccess()) {				
-			response.put("viewUrl", ModelPathUtils.getModelSessionPath(".html"));
-		}
-		
-		return response;
-	}
-
-	public String getFacility() {
-		return facility;
-	}
-	public void setFacility(String facility) {
-		this.facility = facility;
+		return new FormResponseMap(result);
 	}
 
 	public SessionAuthzDAO getSessionAuthzDAO() {

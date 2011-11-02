@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
@@ -23,6 +22,7 @@ import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.sample.backers.SampleFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
+import ca.sciencestudio.util.authz.Authorities;
 import ca.sciencestudio.util.web.EnumToOptionUtils;
 
 /**
@@ -40,8 +40,8 @@ public class SamplePageController extends AbstractModelController {
 	public String getSamplesPage(@RequestParam("project") String projectGid, ModelMap model) {
 		
 		String user = SecurityUtil.getPersonGid();
-	
-		Data<Permissions> dataPermissions = sampleAuthzDAO.permissions(user);
+		
+		Data<Authorities> authoritiesData = projectAuthzDAO.getAuthorities(user, projectGid);
 		
 		Project project = projectAuthzDAO.get(user, projectGid).get();
 		if(project == null) {
@@ -49,14 +49,8 @@ public class SamplePageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Project not found.");	
-			return ERROR_VIEW;
-		}
-		
 		model.put("sampleStateOptions", EnumToOptionUtils.toList(Sample.State.values()));
-		model.put("permissions", permissions);
+		model.put("authorities", authoritiesData.get());
 		model.put("project", project);
 		return "frag/samples";
 	}
@@ -66,29 +60,25 @@ public class SamplePageController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		Data<Permissions> dataPermissions = sampleAuthzDAO.permissions(user, sampleGid);
-		
 		Sample sample = sampleAuthzDAO.get(user, sampleGid).get();
 		if(sample == null) {
 			model.put("error", "Sample not found.");
 			return ERROR_VIEW;
 		}
 		
-		Project project = projectAuthzDAO.get(user, sample.getProjectGid()).get();
+		Data<Project> projectData = projectAuthzDAO.get(user, sample.getProjectGid());
+		
+		Data<Authorities> authoritiesData = projectAuthzDAO.getAuthorities(user, sample.getProjectGid());
+		
+		Project project = projectData.get();
 		if(project == null) {
 			model.put("error", "Project not found.");
-			return ERROR_VIEW;
-		}
-	
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Project not found.");	
 			return ERROR_VIEW;
 		}
 			
 		model.put("sampleStateOptions", EnumToOptionUtils.toList(Sample.State.values()));
 		model.put("sample", new SampleFormBacker(sample));
-		model.put("permissions", permissions);
+		model.put("authorities", authoritiesData.get());
 		model.put("project", project);
 		return "frag/sample";
 	}

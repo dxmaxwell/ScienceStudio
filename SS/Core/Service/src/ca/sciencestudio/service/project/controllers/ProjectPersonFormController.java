@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.AddResult;
-import ca.sciencestudio.model.EditResult;
 import ca.sciencestudio.model.person.Person;
 import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 import ca.sciencestudio.model.project.ProjectPerson.Role;
@@ -29,6 +27,9 @@ import ca.sciencestudio.service.project.backers.ProjectPersonFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.exceptions.AuthorizationException;
+import ca.sciencestudio.util.rest.AddResult;
+import ca.sciencestudio.util.rest.EditResult;
+import ca.sciencestudio.util.rest.RemoveResult;
 import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
@@ -37,8 +38,6 @@ import ca.sciencestudio.util.web.FormResponseMap;
  */
 @Controller
 public class ProjectPersonFormController extends AbstractModelController {
-
-	private String facility;
 	
 	private PersonAuthzDAO personAuthzDAO;
 		
@@ -54,7 +53,7 @@ public class ProjectPersonFormController extends AbstractModelController {
 		
 		List<Person> persons = personAuthzDAO.getAllByName(user, name).get();
 		for(Person person : persons) {
-			projectPersons.add(new ProjectPersonFormBacker(project, Role.OBSERVER, person));
+			projectPersons.add(new ProjectPersonFormBacker(project, Role.COLLABORATOR, person));
 		}
 		
 		return projectPersons;
@@ -68,7 +67,7 @@ public class ProjectPersonFormController extends AbstractModelController {
 				
 		String user = SecurityUtil.getPersonGid();
 		
-		AddResult result = projectPersonAuthzDAO.add(user, projectPerson, facility).get();
+		AddResult result = projectPersonAuthzDAO.add(user, projectPerson).get();
 		
 		FormResponseMap response = new FormResponseMap(ProjectPersonFormBacker.transformResult(result));
 		
@@ -104,28 +103,15 @@ public class ProjectPersonFormController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		boolean success;
+		RemoveResult result;
 		try {
-			success = projectPersonAuthzDAO.remove(user, gid).get();
+			result = projectPersonAuthzDAO.remove(user, gid).get();
 		}
 		catch(AuthorizationException e) {
 			return new FormResponseMap(false, "Not Permitted");
 		}
 		
-		FormResponseMap response = new FormResponseMap(success);
-		
-		if(response.isSuccess()) {				
-			response.put("viewUrl", ModelPathUtils.getModelProjectPersonPath(".html"));
-		}
-		
-		return response;
-	}
-	
-	public String getFacility() {
-		return facility;
-	}
-	public void setFacility(String facility) {
-		this.facility = facility;
+		return new FormResponseMap(result);
 	}
 
 	public PersonAuthzDAO getPersonAuthzDAO() {

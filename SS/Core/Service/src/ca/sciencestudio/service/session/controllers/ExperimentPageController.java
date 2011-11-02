@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.facility.Instrument;
 import ca.sciencestudio.model.facility.InstrumentTechnique;
@@ -39,6 +38,7 @@ import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
 import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.service.controllers.AbstractModelController;
+import ca.sciencestudio.util.authz.Authorities;
 
 /**
  * @author maxweld
@@ -66,7 +66,7 @@ public class ExperimentPageController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		Data<Permissions> dataPermissions = experimentAuthzDAO.permissions(user);
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, sessionGid);
 		
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
@@ -74,10 +74,12 @@ public class ExperimentPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Data<List<Sample>> dataSampleList = sampleAuthzDAO.getAllByProjectGid(user, session.getProjectGid());
-		Data<List<Technique>> dataTechniqueList = techniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
-		Data<List<Instrument>> dataInstrumentList = instrumentAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
-		Data<List<InstrumentTechnique>> dataInstrumentTechniqueList = instrumentTechniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
+		
+		Data<List<Sample>> sampleListData = sampleAuthzDAO.getAllByProjectGid(user, session.getProjectGid());
+		Data<List<Technique>> techniqueListData = techniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<Instrument>> instrumentListData = instrumentAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<InstrumentTechnique>> instrumentTechniqueListData = instrumentTechniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
 		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
@@ -85,22 +87,15 @@ public class ExperimentPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		List<Sample> sampleList = dataSampleList.get();
-		List<Technique> techniqueList = dataTechniqueList.get();
-		List<Instrument> instrumentList = dataInstrumentList.get();
-		List<InstrumentTechnique> instrumentTechniqueList = dataInstrumentTechniqueList.get();
-		List<InstrumentTechniqueOption> instrumentTechniqueOptionList = getInstrumentTechniqueOptionList(instrumentTechniqueList, instrumentList, techniqueList);
+		List<InstrumentTechniqueOption> instrumentTechniqueOptionList = 
+				getInstrumentTechniqueOptionList(instrumentTechniqueListData.get(), instrumentListData.get(), techniqueListData.get());
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
-		
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
+	
 		model.put("instrumentTechniqueList", instrumentTechniqueOptionList);
-		model.put("instrumentList", instrumentList);
-		model.put("permissions", permissions);
-		model.put("sampleList", sampleList);
+		model.put("instrumentList", instrumentListData.get());
+		model.put("sampleList", sampleListData.get());
+		model.put("authorities", authorities);
 		model.put("project", project);
 		model.put("session", session);
 		return "frag/experiments";
@@ -111,13 +106,13 @@ public class ExperimentPageController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		Data<Permissions> dataPermissions = experimentAuthzDAO.permissions(user, experimentGid);
-		
 		Experiment experiment = experimentAuthzDAO.get(user, experimentGid).get();
 		if(experiment == null) {
 			model.put("error", "Experiment not found.");
 			return ERROR_VIEW;
 		}
+		
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, experiment.getSessionGid());
 		
 		Session session = sessionAuthzDAO.get(user, experiment.getSessionGid()).get();
 		if(session == null) {
@@ -125,31 +120,24 @@ public class ExperimentPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Data<List<Sample>> dataSampleList = sampleAuthzDAO.getAllByProjectGid(user, session.getProjectGid());
-		Data<List<Technique>> dataTechniqueList = techniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
-		Data<List<Instrument>> dataInstrumentList = instrumentAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
-		Data<List<InstrumentTechnique>> dataInstrumentTechniqueList = instrumentTechniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
+		
+		Data<List<Sample>> sampleListData = sampleAuthzDAO.getAllByProjectGid(user, session.getProjectGid());
+		Data<List<Technique>> techniqueListData = techniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<Instrument>> instrumentListData = instrumentAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
+		Data<List<InstrumentTechnique>> instrumentTechniqueListData = instrumentTechniqueAuthzDAO.getAllByLaboratoryGid(session.getLaboratoryGid());
 		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
-		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
-		
-		List<Sample> sampleList = dataSampleList.get();
-		List<Technique> techniqueList = dataTechniqueList.get();
-		List<Instrument> instrumentList = dataInstrumentList.get();
-		List<InstrumentTechnique> instrumentTechniqueList = dataInstrumentTechniqueList.get();
-		List<InstrumentTechniqueOption> instrumentTechniqueOptionList = getInstrumentTechniqueOptionList(instrumentTechniqueList, instrumentList, techniqueList);
+				
+		List<InstrumentTechniqueOption> instrumentTechniqueOptionList =
+				getInstrumentTechniqueOptionList(instrumentTechniqueListData.get(), instrumentListData.get(), techniqueListData.get());
 		
 		ExperimentFormBacker experimentFormBacker = null;
-		for(InstrumentTechnique instrumentTechnique : instrumentTechniqueList) {
+		for(InstrumentTechnique instrumentTechnique : instrumentTechniqueListData.get()) {
 			if(instrumentTechnique.getGid().equals(experiment.getInstrumentTechniqueGid())) {
 				experimentFormBacker = new ExperimentFormBacker(experiment, instrumentTechnique);
 				break;
@@ -161,11 +149,13 @@ public class ExperimentPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
+		
 		model.put("instrumentTechniqueList", instrumentTechniqueOptionList);
+		model.put("instrumentList", instrumentListData.get());
+		model.put("sampleList", sampleListData.get());
 		model.put("experiment", experimentFormBacker);
-		model.put("instrumentList", instrumentList);
-		model.put("permissions", permissions);
-		model.put("sampleList", sampleList);
+		model.put("authorities", authorities);
 		model.put("project", project);
 		model.put("session", session);
 		return "frag/experiment";

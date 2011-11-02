@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.model.Permissions;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.facility.Laboratory;
+import ca.sciencestudio.model.facility.dao.FacilityAuthzDAO;
 import ca.sciencestudio.model.facility.dao.LaboratoryAuthzDAO;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
@@ -27,6 +27,7 @@ import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.SessionFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
 import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.util.authz.Authorities;
 
 /**
  * @author maxweld
@@ -34,10 +35,14 @@ import ca.sciencestudio.security.util.SecurityUtil;
  */
 @Controller
 public class SessionPageController extends AbstractModelController {
-			
+	
+	private String facility;
+	
 	private ProjectAuthzDAO projectAuthzDAO;
 	
 	private SessionAuthzDAO sessionAuthzDAO;
+	
+	private FacilityAuthzDAO facilityAuthzDAO;
 	
 	private LaboratoryAuthzDAO laboratoryAuthzDAO;
 	
@@ -46,30 +51,22 @@ public class SessionPageController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		Data<Permissions> dataPermissions = sessionAuthzDAO.permissions(user);
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, projectGid);
 		
-		Data<List<Laboratory>> dataLaboratoryList = laboratoryAuthzDAO.getAll(user);
-	
+		Data<Authorities> facilityAuthoritiesData = facilityAuthzDAO.getAuthorities(user, facility);
+		
+		Data<List<Laboratory>> laboratoryListData = laboratoryAuthzDAO.getAll(); //ByFacility??
+			
 		Project project = projectAuthzDAO.get(user, projectGid).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
 		
-		List<Laboratory> laboratoryList = dataLaboratoryList.get();
-		if(laboratoryList == null) {
-			model.put("error", "Laboratories not found.");
-			return ERROR_VIEW;
-		}
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), facilityAuthoritiesData.get());
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
-		
-		model.put("laboratoryList", laboratoryList);
-		model.put("permissions", permissions);
+		model.put("laboratoryList", laboratoryListData.get());
+		model.put("authorities", authorities);
 		model.put("project", project);
 		return "frag/sessions";
 	}
@@ -78,40 +75,46 @@ public class SessionPageController extends AbstractModelController {
 	public String getSessionPage(@PathVariable String sessionGid, ModelMap model) {
 
 		String user = SecurityUtil.getPersonGid();
-		
-		Data<Permissions> dataPermissions = sessionAuthzDAO.permissions(user, sessionGid);
-		
-		Data<List<Laboratory>> dataLaboratoryList = laboratoryAuthzDAO.getAll(user);
-		
+
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
 			model.put("error", "Session not found.");
 			return ERROR_VIEW;
 		}
 		
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
+		
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, session.getGid());
+		
+		Data<List<Laboratory>> laboratoryListData = laboratoryAuthzDAO.getAll(); //ByFacility??
+		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
-				
-		List<Laboratory> laboratoryList = dataLaboratoryList.get();
-		if(laboratoryList == null) {
-			model.put("error", "Laboratories not found.");
-			return ERROR_VIEW;
-		}
 		
-		Permissions permissions = dataPermissions.get();
-		if(permissions == null) {
-			model.put("error", "Permissions not found.");
-			return ERROR_VIEW;
-		}
-				
+		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
+		
 		model.put("session", new SessionFormBacker(session));
-		model.put("laboratoryList", laboratoryList);
-		model.put("permissions", permissions);
+		model.put("laboratoryList", laboratoryListData.get());
+		model.put("authorities", authorities);
 		model.put("project", project);
 		return "frag/session";
+	}
+
+	public String getFacility() {
+		return facility;
+	}
+	public void setFacility(String facility) {
+		this.facility = facility;
+	}
+	
+	public FacilityAuthzDAO getFacilityAuthzDAO() {
+		return facilityAuthzDAO;
+	}
+	public void setFacilityAuthzDAO(FacilityAuthzDAO facilityAuthzDAO) {
+		this.facilityAuthzDAO = facilityAuthzDAO;
 	}
 
 	public ProjectAuthzDAO getProjectAuthzDAO() {

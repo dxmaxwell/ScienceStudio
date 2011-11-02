@@ -13,6 +13,7 @@ package ca.sciencestudio.service.utilities;
  */
 public abstract class ModelPathUtils {
 	
+	public static final String PERSON_PATH = "/persons";
 	public static final String PROJECT_PATH = "/projects";
 	public static final String PROJECT_PERSON_PATH = "/project/persons";
 	public static final String SESSION_PATH = "/sessions";

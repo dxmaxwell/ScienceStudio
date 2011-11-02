@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.EditResult;
 import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.session.backers.ScanFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
+import ca.sciencestudio.util.rest.EditResult;
 import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
@@ -26,8 +26,6 @@ import ca.sciencestudio.util.web.FormResponseMap;
  */
 @Controller
 public class ScanFormController {
-	
-	private String facility;
 	
 	private ScanAuthzDAO scanAuthzDAO;
 	
@@ -97,13 +95,6 @@ public class ScanFormController {
 //		
 //		return response;
 //	}
-	
-	public String getFacility() {
-		return facility;
-	}
-	public void setFacility(String facility) {
-		this.facility = facility;
-	}
 	
 	public ScanAuthzDAO getScanAuthzDAO() {
 		return scanAuthzDAO;

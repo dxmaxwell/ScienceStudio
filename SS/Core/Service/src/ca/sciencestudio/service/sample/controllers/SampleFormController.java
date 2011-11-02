@@ -14,14 +14,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.model.AddResult;
-import ca.sciencestudio.model.EditResult;
 import ca.sciencestudio.model.sample.dao.SampleAuthzDAO;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.sample.backers.SampleFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
 import ca.sciencestudio.util.exceptions.AuthorizationException;
 import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.util.rest.AddResult;
+import ca.sciencestudio.util.rest.EditResult;
+import ca.sciencestudio.util.rest.RemoveResult;
 import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
@@ -30,8 +31,6 @@ import ca.sciencestudio.util.web.FormResponseMap;
  */
 @Controller
 public class SampleFormController extends AbstractModelController {
-
-	private String facility;
 	
 	private SampleAuthzDAO sampleAuthzDAO;
 		
@@ -43,7 +42,7 @@ public class SampleFormController extends AbstractModelController {
 				
 		String user = SecurityUtil.getPersonGid();
 		
-		AddResult result = sampleAuthzDAO.add(user, sample, facility).get();
+		AddResult result = sampleAuthzDAO.add(user, sample).get();
 		
 		FormResponseMap response = new FormResponseMap(SampleFormBacker.transformResult(result));
 		
@@ -79,28 +78,15 @@ public class SampleFormController extends AbstractModelController {
 		
 		String user = SecurityUtil.getPersonGid();
 		
-		boolean success;
+		RemoveResult result;
 		try {
-			success = sampleAuthzDAO.remove(user, gid).get();
+			result = sampleAuthzDAO.remove(user, gid).get();
 		}
 		catch(AuthorizationException e) {
 			return new FormResponseMap(false, "Not Permitted");
 		}
 		
-		FormResponseMap response = new FormResponseMap(success);
-		
-		if(response.isSuccess()) {				
-			response.put("viewUrl", ModelPathUtils.getModelSamplePath(".html"));
-		}
-		
-		return response;
-	}
-
-	public String getFacility() {
-		return facility;
-	}
-	public void setFacility(String facility) {
-		this.facility = facility;
+		return new FormResponseMap(result);
 	}
 
 	public SampleAuthzDAO getSampleAuthzDAO() {
