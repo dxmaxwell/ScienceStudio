@@ -21,11 +21,10 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
 			/WEB-INF/applicationContext-general.xml
+			/WEB-INF/applicationContext-hmc.xml
 			/WEB-INF/applicationContext-rest.xml
 			/WEB-INF/applicationContext-ibatis.xml
 			/WEB-INF/applicationContext-security.xml
-			/WEB-INF/applicationContext-security-cas.xml
-			/WEB-INF/applicationContext-security-ldap.xml
 			/WEB-INF/applicationContext-dao.xml
 		</param-value>
 	</context-param>

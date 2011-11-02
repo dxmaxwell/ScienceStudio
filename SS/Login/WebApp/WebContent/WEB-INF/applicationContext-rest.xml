@@ -12,11 +12,14 @@
 
 	<bean id="restTemplate"
 		class="org.springframework.web.client.RestTemplate">
-		<property name="messageConverters">
-			<list>
-				<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
-			</list>
-		</property>
+		<property name="requestFactory" ref="basicAuthClientRequestFactory"/>
+		<property name="messageConverters" ref="httpMessageConverters"/>
+	</bean>
+	
+	<bean id="basicAuthClientRequestFactory"
+		class="ca.sciencestudio.util.rest.BasicAuthClientRequestFactory">
+		<property name="username" value="${dao.rest.username}"/>
+		<property name="password" value="${dao.rest.password}"/>
 	</bean>
 	
 </beans>

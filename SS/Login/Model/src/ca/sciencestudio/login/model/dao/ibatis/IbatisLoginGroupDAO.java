@@ -24,7 +24,7 @@ public class IbatisLoginGroupDAO extends AbstractIbatisModelDAO<LoginGroup> impl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<LoginGroup> getAllByPersonGid(Object personGid) {
+	public List<LoginGroup> getAllByPersonGid(String personGid) {
 		
 		List<LoginGroup> loginGroups;
 		try {

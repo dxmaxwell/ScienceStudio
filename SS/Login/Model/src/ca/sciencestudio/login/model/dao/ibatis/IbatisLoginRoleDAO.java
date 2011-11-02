@@ -42,7 +42,7 @@ public class IbatisLoginRoleDAO extends AbstractIbatisModelDAO<LoginRole> implem
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<LoginRole> getAllByPersonGid(Object personGid) {
+	public List<LoginRole> getAllByPersonGid(String personGid) {
 		
 		List<LoginRole> loginRoles;
 		try {

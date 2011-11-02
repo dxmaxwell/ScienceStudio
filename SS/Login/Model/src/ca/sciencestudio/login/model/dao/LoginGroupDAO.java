@@ -19,5 +19,5 @@ import ca.sciencestudio.login.model.dao.ModelDAO;
  */
 public interface LoginGroupDAO extends ModelDAO<LoginGroup> {
 	
-	public List<LoginGroup> getAllByPersonGid(Object personGid);
+	public List<LoginGroup> getAllByPersonGid(String personGid);
 }

@@ -20,5 +20,5 @@ public interface LoginRoleDAO extends ModelDAO<LoginRole> {
 	
 	public LoginRole getByName(String name);
 	
-	public List<LoginRole> getAllByPersonGid(Object personGid);
+	public List<LoginRole> getAllByPersonGid(String personGid);
 }

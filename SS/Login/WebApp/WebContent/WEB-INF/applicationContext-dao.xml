@@ -13,40 +13,27 @@
 <!---  ===================================================================
   	-  DAOs
   	-  =================================================================== -->
-	<bean id="accountDAO"
-		class="ca.sciencestudio.login.model.dao.ibatis.IbatisAccountDAO">
-		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
-	</bean>
 	
-	<bean id="loginRoleDAO"
-		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginRoleDAO">
+	<!--<bean id="accountBasicDAO"
+		class="ca.sciencestudio.model.person.dao.ibatis.IbatisAccountBasicDAO">
 		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
-	</bean>
-	
-	<bean id="loginGroupDAO"
-		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginGroupDAO">
-		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
-	</bean>
-	
-	<bean id="loginGroupMemberDAO"
-		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginGroupMemberDAO">
-		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
-	</bean>
+	</bean>-->
 	
 	<bean id="loginSessionDAO"
 		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginSessionDAO">
 		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
 	</bean>
 	
-	<bean id="projectPersonDAO"
-		class="ca.sciencestudio.model.project.dao.ibatis.IbatisProjectPersonDAO">
-		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
+	<bean id="personAuthzDAO"
+		class="ca.sciencestudio.model.person.dao.rest.RestPersonAuthzDAO">
+		<property name="restTemplate" ref="restTemplate"/>
+		<property name="baseUrl" value="${dao.rest.url}"/>
 	</bean>
 	
-	<bean id="personDAO"
-		class="ca.sciencestudio.model.dao.rest.RestPersonDAO">
+	<bean id="facilityAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.rest.RestFacilityAuthzDAO">
 		<property name="restTemplate" ref="restTemplate"/>
-		<property name="baseUrl" value="http://localhost:8080/ssrest/model"/>
+		<property name="baseUrl" value="${dao.rest.url}"/>
 	</bean>
 	
 </beans>

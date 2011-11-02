@@ -6,86 +6,52 @@
 	Description:
 		Application Context file - security.
 -->
-<beans:beans xmlns="http://www.springframework.org/schema/security"
-	xmlns:beans="http://www.springframework.org/schema/beans"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
 
-
-	<http
-		entry-point-ref="loginUrlAuthenticationEntryPoint"
+	<sec:http
+		entry-point-ref="http403ForbiddenEntryPoint"
 		security-context-repository-ref="daoSecurityContextRepository">
-		<intercept-url pattern="/authc/login*" access="IS_AUTHENTICATED_ANONYMOUSLY" requires-channel="https"/>
-		<intercept-url pattern="/authc/logout*" access="IS_AUTHENTICATED_ANONYMOUSLY" requires-channel="any"/>
-		
-		<custom-filter position="LOGOUT_FILTER" ref="logoutFilter"/>
-		<custom-filter position="CAS_FILTER" ref="casAuthenticationFilter"/>
-		<custom-filter position="FORM_LOGIN_FILTER"  ref="domainUsernamePasswordAuthenticationFilter"/>
-		<!--<port-mappings><port-mapping http="8080" https="8443"/></port-mappings>--><!-- Used for development environments. -->
-	</http>
+		<sec:logout logout-url="${security.logout.processUrl}"
+			success-handler-ref="casAuthcRedirectLogoutSuccessHandler"/>
+		<sec:custom-filter position="FIRST" ref="redirectContextRootFilter"/>
+		<sec:intercept-url pattern="/authc/login*" access="IS_AUTHENTICATED_ANONYMOUSLY" requires-channel="any"/>
+		<sec:intercept-url pattern="/authc/logout*" access="IS_AUTHENTICATED_ANONYMOUSLY" requires-channel="any"/>
+		<!--<sec:port-mappings><sec:port-mapping http="8080" https="8443"/></sec:port-mappings>-->
+	</sec:http>
   
-  	<!-- #### Configure entry point for form-based authentication #### -->
-  
-  	<beans:bean id="loginUrlAuthenticationEntryPoint"
-  		class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
-  		<beans:property name="loginFormUrl" value="${security.login.formUrl}"/>
-  	</beans:bean>
-  
-  	<!-- #### Configure Security Context repository (instead of using <session-management/>) #### -->
+  	<!-- ### Custom filter to redirect context root. Avoids the use of welcome file (index.jsp). ### -->
   	
-  	<beans:bean id="daoSecurityContextRepository"
+  	<bean id="redirectContextRootFilter"
+  		class="ca.sciencestudio.util.servlet.RedirectContextRootFilter">
+  		<property name="redirectUrl" value="${security.login.url}"/>
+  	</bean>
+  
+  	<!-- #### Configure entry point for authentication #### -->
+  
+  	<bean id="http403ForbiddenEntryPoint"
+  		class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint">
+  	</bean>
+  
+  	<!-- #### Configure Security Context repository #### -->
+  	
+  	<bean id="daoSecurityContextRepository"
   		class="ca.sciencestudio.security.spring.web.context.DaoSecurityContextRepository">
-  		<beans:property name="loginSessionDAO" ref="loginSessionDAO"/>
-  	</beans:bean>
+  		<property name="loginSessionDAO" ref="loginSessionDAO"/>
+  	</bean>
 	
-	<!-- #### Conigure logout filter (instead of using <login/>) #### -->
+	<!-- #### Configure logout success handler #### -->
 	
-	<beans:bean id="logoutFilter"
-		class="org.springframework.security.web.authentication.logout.LogoutFilter">
-		<beans:constructor-arg value="${security.logout.successUrl}"/>
-		<beans:constructor-arg ref="securityContextLogoutHandler"/>
-		<beans:property name="filterProcessesUrl" value="${security.logout.processUrl}"/>
-	</beans:bean>
-	
-	<beans:bean id="securityContextLogoutHandler"
-		class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler">
-		<beans:property name="invalidateHttpSession" value="true"/>
-	</beans:bean>
+	<bean id="casAuthcRedirectLogoutSuccessHandler"
+		class="ca.sciencestudio.security.spring.web.authentication.cas.CasAuthcRedirectLogoutSuccessHandler">
+		<property name="redirectUrl" value="${security.logout.successUrl}"/>
+	</bean>
 	
 	<!-- #################### Authentication Manager ########################## -->
   
-	<authentication-manager alias="authenticationManager">
-		<authentication-provider ref="casAuthenticationProvider"/>
-	</authentication-manager >
+	<sec:authentication-manager/>
 	
-	<!-- #### Common Science Studio user details service #### -->
-	
-	<beans:bean id="scienceStudioUserDetailsService"
-		class="ca.sciencestudio.security.spring.core.userdetails.ScienceStudioUserDetailsService">
-		<beans:property name="personDAO" ref="personDAO"/>
-		<beans:property name="accountDAO" ref="accountDAO"/>
-		<beans:property name="loginRoleDAO" ref="loginRoleDAO"/>
-		<beans:property name="loginGroupDAO" ref="loginGroupDAO"/>
-	</beans:bean>
-	
-	<!-- #### Common authentication success and failure handlers #### -->
-	
-	<beans:bean id="authenticationSuccessHandler"
-		class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler">
-	 	<beans:property name="defaultTargetUrl" value="${security.login.SuccessUrl}"/>
-		<beans:property name="redirectStrategy" ref="contextRelativeRedirectStrategy"/>
-	</beans:bean>
-	
-	<beans:bean id="authenticationFailureHandler"
-		class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
-		<beans:property name="defaultFailureUrl" value="${security.login.failuerUrl}"/>
-	  	<beans:property name="redirectStrategy" ref="contextRelativeRedirectStrategy"/>
-	</beans:bean>
-	  	
-	<beans:bean id="contextRelativeRedirectStrategy"
-		class="org.springframework.security.web.DefaultRedirectStrategy">
-		<beans:property name="contextRelative" value="true"/>
-	</beans:bean>
-	
-</beans:beans>
+</beans>

@@ -24,7 +24,7 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
  * @author maxweld
  *
  */
-public class IbatisAccountDAO extends AbstractIbatisModelBasicDAO<Account> implements AccountBasicDAO {
+public class IbatisAccountBasicDAO extends AbstractIbatisModelBasicDAO<Account> implements AccountBasicDAO {
 	
 	@Override
 	public String getGidType() {

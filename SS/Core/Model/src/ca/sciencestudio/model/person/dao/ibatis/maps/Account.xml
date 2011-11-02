@@ -28,7 +28,7 @@
 		VALUES (
 			#username:VARCHAR#,
 			#password:VARCHAR#,
-			#personGid:VARCHAR#,
+			#personId:INT#,
 			${date.current.function},
 			#status:VARCHAR#
 		)
@@ -42,7 +42,7 @@
 			SET 
 				username = #username:VARCHAR#,
 				password = #password:VARCHAR#,
-				person_id = #personId:VARCHAR#,
+				person_id = #personId:INT#,
 				status = #status:VARCHAR#
 			WHERE 
 				account_id = #id#

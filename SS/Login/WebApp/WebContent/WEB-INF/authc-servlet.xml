@@ -17,24 +17,17 @@
 		</property>
 	</bean>
 	
-	<bean id="login" class="ca.sciencestudio.login.service.controllers.LoginController">
-		<property name="credentialsValidator" ref="credentialsValidator"/>
-		<property name="casLoginUrl">
-			<value>${security.cas.domain.url}/login?service=${security.cas.domain.serviceUrl}</value>
-		</property>
-		<property name="domainsConfig">
-			<value>${security.ldap.domain}=${security.ldap.domain.desc}</value>
-		</property>
+	<bean id="login"
+		class="ca.sciencestudio.login.service.controllers.CasLoginController">
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="defaultService" value="${security.controllers.login.defaultService}"/>
 	</bean>
 	
-	<bean id="logout" class="ca.sciencestudio.login.service.controllers.LogoutController">
-		<property name="logoutProcessUrl" value="${security.logout.processUrl}"/>
-		<property name="loginFormUrl" value="${security.login.formUrl}"/>
-		<property name="casLogoutUrl" value="${security.cas.domain.url}/logout"/>
-	</bean>
-	
-	<bean id="credentialsValidator"
-		class="ca.sciencestudio.login.service.validators.CredentialsValidator">
+	<bean id="logout"
+		class="ca.sciencestudio.login.service.controllers.CasLogoutController">
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="loginUrl" value="${security.controllers.logout.loginUrl}"/>
+		<property name="processUrl" value="${security.controllers.logout.processUrl}"/>
 	</bean>
 	
 	<bean id="viewResolver"
