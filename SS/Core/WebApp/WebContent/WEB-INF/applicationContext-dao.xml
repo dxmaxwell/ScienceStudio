@@ -10,10 +10,21 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<!---  ===================================================================
-  	-  DAOs
+	<!---  ===================================================================
+  	-  Thread Pool for Asynchronous DAOs
   	-  =================================================================== -->
 	
+	<bean id="executor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+  		<property name="corePoolSize" value="5" />
+  		<property name="maxPoolSize" value="10" />
+  		<property name="queueCapacity" value="25" />
+	</bean>
+
+	<!---  ===================================================================
+  	-  DAOs
+  	-  =================================================================== -->
+
 	<bean id="loginSessionDAO"
 		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginSessionDAO">
 		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
@@ -24,98 +35,147 @@
 	<bean id="personAuthzDAO"
 		class="ca.sciencestudio.model.person.dao.rest.RestPersonAuthzDAO">
 		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		<property name="baseUrl" value="${dao.rest.url}"/>
 	</bean>
 	
 	<!-- Project Data Access Objects -->
 	
 	<bean id="projectAuthzDAO"
-		class="ca.sciencestudio.model.project.dao.rest.RestProjectAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.project.dao.async.AsyncProjectAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="projectAuthzDAO">
+			<bean class="ca.sciencestudio.model.project.dao.rest.RestProjectAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<bean id="projectPersonAuthzDAO"
-		class="ca.sciencestudio.model.project.dao.rest.RestProjectPersonAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.project.dao.async.AsyncProjectPersonAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="projectPersonAuthzDAO">
+			<bean class="ca.sciencestudio.model.project.dao.rest.RestProjectPersonAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<!-- Sample Data Access Objects -->
 	
 	<bean id="sampleAuthzDAO"
-		class="ca.sciencestudio.model.sample.dao.rest.RestSampleAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.sample.dao.async.AsyncSampleAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="sampleAuthzDAO">
+			<bean class="ca.sciencestudio.model.sample.dao.rest.RestSampleAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 
 	<!-- Session Data Access Objects -->
 	
 	<bean id="sessionAuthzDAO"
-		class="ca.sciencestudio.model.session.dao.rest.RestSessionAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.session.dao.async.AsyncSessionAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="sessionAuthzDAO">
+			<bean class="ca.sciencestudio.model.session.dao.rest.RestSessionAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<bean id="sessionPersonAuthzDAO"
-		class="ca.sciencestudio.model.session.dao.rest.RestSessionPersonAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.session.dao.async.AsyncSessionPersonAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="sessionPersonAuthzDAO">
+			<bean class="ca.sciencestudio.model.session.dao.rest.RestSessionPersonAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<bean id="experimentAuthzDAO"
-		class="ca.sciencestudio.model.session.dao.rest.RestExperimentAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.session.dao.async.AsyncExperimentAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="experimentAuthzDAO">
+			<bean class="ca.sciencestudio.model.session.dao.rest.RestExperimentAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<bean id="scanAuthzDAO"
-		class="ca.sciencestudio.model.session.dao.rest.RestScanAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.session.dao.async.AsyncScanAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="scanAuthzDAO">
+			<bean class="ca.sciencestudio.model.session.dao.rest.RestScanAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<!-- Facility Data Access Objects -->
 	
-	<!--<bean id="facilityAuthzDAO"
-		class="ca.sciencestudio.model.facility.dao.ibatis.IbatisFacilityDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
-	</bean>-->
+	<bean id="facilityAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.async.AsyncFacilityAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="facilityAuthzDAO">
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestFacilityAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
+	</bean>
 	
 	<bean id="laboratoryAuthzDAO"
-		class="ca.sciencestudio.model.facility.dao.rest.RestLaboratoryAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.facility.dao.async.AsyncLaboratoryAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="laboratoryAuthzDAO">
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestLaboratoryAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<bean id="instrumentAuthzDAO"
-		class="ca.sciencestudio.model.facility.dao.rest.RestInstrumentAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.facility.dao.async.AsyncInstrumentAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="instrumentAuthzDAO">		
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestInstrumentAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<bean id="instrumentTechniqueAuthzDAO"
-		class="ca.sciencestudio.model.facility.dao.rest.RestInstrumentTechniqueAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.facility.dao.async.AsyncInstrumentTechniqueAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="instrumentTechniqueAuthzDAO">	
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestInstrumentTechniqueAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 	<bean id="techniqueAuthzDAO"
-		class="ca.sciencestudio.model.facility.dao.rest.RestTechniqueAuthzDAO">
-		<property name="restTemplate" ref="restTempalate"/>
-		<property name="baseUrl" value="${dao.rest.base.url}"/>
-		<property name="origin" value="DEVI"/>
+		class="ca.sciencestudio.model.facility.dao.async.AsyncTechniqueAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="techniqueAuthzDAO">
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestTechniqueAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
 </beans>

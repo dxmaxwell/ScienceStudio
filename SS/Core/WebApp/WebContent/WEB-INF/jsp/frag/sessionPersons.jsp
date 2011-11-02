@@ -172,7 +172,7 @@ Ext.onReady(function() {
 
 	Add Session Person
 --%>
-	<c:if test="${permissions.add}">
+	<sec:authorize ifContainsAny="FACILITY_ADMIN_SESSIONS">
 
 	var sessionPersonStore = new Ext.data.JsonStore({
 		url:ModelPathUtils.getModelSessionPersonPath('/form/search.json'),
@@ -239,7 +239,7 @@ Ext.onReady(function() {
 
 	addItemModelViewTab(panel, true);
 
-	</c:if>
+	</sec:authorize>
 });
 </script>
 </div>

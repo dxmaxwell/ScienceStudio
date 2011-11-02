@@ -47,7 +47,7 @@ function northPanel() {
 						tag: 'a',
 						href: '#dummy',
 						html: 'Profile',
-						onclick: "return loadModelViewTab(ModelPathUtils.getPersonPath('self') + '.html');"
+						onclick: "return loadModelViewTab(ModelPathUtils.getPersonPath('/self.html'));"
 					}
 				},{
 					xtype:'box',

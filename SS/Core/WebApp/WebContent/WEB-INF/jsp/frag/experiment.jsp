@@ -104,14 +104,14 @@ Ext.onReady(function() {
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
-		<c:if test="${not permissions.edit}">
+		<sec:authorize ifContainsNone="SESSION_EXPERIMENTER,FACILITY_ADMIN_SESSIONS">
 		defaults: {
 			disabled:true
 		},
 		buttonDefaults: {
 			hidden:true,
 		},
-		</c:if>
+		</sec:authorize>
 		border: false,
 		waitMsg:'Saving Experiment...',
 		waitMsgTarget: true,
@@ -128,7 +128,8 @@ Ext.onReady(function() {
 
 	<c:if test="${not empty instrumentTechniqueList}">
 	experimentForm.ss.stores.instrumentTechnique.loadData(<hmc:write source="${instrumentTechniqueList}"/>);
-	</c:if>	
+	experimentForm.ss.stores.instrumentTechnique.filterBy(function() { return false; });
+	</c:if>
 
 	<c:if test="${not empty experiment}">
 	experimentForm.getForm().setValues(<hmc:write source="${experiment}"/>);
@@ -163,11 +164,7 @@ Ext.onReady(function() {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
  							if(json.success) {
-								if(json.viewUrl) {
-									loadModelViewTab(json.viewUrl);
-								} else {
-									loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));
-								}
+								loadModelViewTab(ModelPathUtils.getModelExperimentPath('.html?session=${session.gid}'));
 							}
 							else {
 								if(json.message) {
@@ -185,13 +182,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title: 'Experiment',
-		<c:if test="${permissions.remove}">
+		<sec:authorize ifContainsAny="SESSION_EXPERIMENTER,FACILITY_ADMIN_SESSIONS">
 		tools:[{
 			id:'close',
 			handler:removeExperiment,
 			scope:this
 		}],
-		</c:if>
+		</sec:authorize>
 		items:[
 			experimentForm,
 			linksPanel

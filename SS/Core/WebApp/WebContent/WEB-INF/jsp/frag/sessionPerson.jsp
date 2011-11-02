@@ -117,12 +117,12 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 
-	<c:if test="${permissions.edit}">
+	<sec:authorize ifContainsAny="FACILITY_ADMIN_SESSIONS">
 	sessionPersonForm.ss.fields.role.setDisabled(false);
 	sessionPersonForm.ss.fields.personGid.setDisabled(false);
 	sessionPersonForm.ss.fields.personGid.setReadOnly(true);
 	sessionPersonForm.ss.buttons.submit.setVisible(true);
-	</c:if>
+	</sec:authorize>
 
 	<c:if test="${not empty sessionRoleOptions}">
 	sessionPersonForm.ss.fields.role.getStore().loadData(<hmc:write source="${sessionRoleOptions}"/>);
@@ -148,11 +148,7 @@ Ext.onReady(function() {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
  							if(json.success) {
-								if(json.viewUrl) {
-									loadModelViewTab(json.viewUrl);
-								} else {
-									loadModelViewTab(ModelPathUtils.getModelSessionPersonPath('.html'));
-								}
+								loadModelViewTab(ModelPathUtils.getModelSessionPersonPath('.html?session=${session.gid}'));
 							}
 							else {
 								if(json.message) {
@@ -170,13 +166,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title: 'Person',
-		<c:if test="${permissions.remove}">
+		<sec:authorize ifContainsAny="FACILITY_ADMIN_SESSIONS">
 		tools:[{
 			id:'close',
 			handler:removeSessionPerson,
 			scope:this
 		}],
-		</c:if>
+		</sec:authorize>
 		items:[
 			sessionPersonForm
 		],

@@ -134,13 +134,6 @@ Ext.ss.core.ExperimentFormPanel = function(config) {
 				name:'techniqueLongName'
 			}]
 		});
-		
-		this.ss.stores.instrumentTechnique.on('load', function(store, records, options) {
-			// Filter all InstrumentTechniques in store. //
-			store.filterBy(function(record, id) { 
-				return false;
-			}, this);
-		}, this);
 	}
 
 	this.ss.fields.instrumentTechnique = new Ext.form.ComboBox(Ext.applyIf({

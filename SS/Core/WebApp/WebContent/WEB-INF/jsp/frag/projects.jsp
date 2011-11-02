@@ -137,8 +137,6 @@ Ext.onReady(function() {
 
 	Add Project Form
 --%>
-	<c:if test="${permissions.add}">
-
 	var projectFormPanel = new Ext.ss.core.ProjectFormPanel({
 		url: ModelPathUtils.getModelProjectPath('/form/add.json'),
 		method: 'POST', 
@@ -151,6 +149,8 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 	
+	projectFormPanel.ss.fields.facilityGid.setValue('${facility.gid}');
+
 	projectFormPanel.getForm().on('actioncomplete', function(form, action) {
 		if(action.type == 'submit' && action.result.success == true) {
 			if(action.result.viewUrl) {
@@ -171,8 +171,6 @@ Ext.onReady(function() {
 	});
 
 	addItemModelViewTab(panel, true);
-
-	</c:if>
 });
 </script>
 </div>

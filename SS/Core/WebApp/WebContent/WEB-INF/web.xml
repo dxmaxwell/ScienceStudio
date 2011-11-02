@@ -29,7 +29,6 @@
 			/WEB-INF/applicationContext-rest.xml
 			/WEB-INF/applicationContext-convserv.xml
 			/WEB-INF/applicationContext-security.xml
-			<!--/WEB-INF/applicationContext-marshal.xml-->
 		</param-value>
 	</context-param>
   

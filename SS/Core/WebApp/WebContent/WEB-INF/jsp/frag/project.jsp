@@ -57,15 +57,15 @@ Ext.onReady(function() {
 --%>
 	var projectFormPanel = new Ext.ss.core.ProjectFormPanel({
 		url: ModelPathUtils.getModelProjectPath('/form/edit.json'),
-		method: 'POST',
-		<c:if test="${not permissions.edit}">
+		method: 'POST',		
+		<sec:authorize ifContainsNone="FACILITY_ADMIN_PROJECTS,PROJECT_RESEARCHER">
 		defaults: {
 			disabled:true,
 		},
 		buttonDefaults: {
 			hidden:true
 		},
-		</c:if>
+		</sec:authorize>
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
@@ -162,13 +162,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title: 'Project (GID:${project.gid})',
-		<c:if test="${permissions.remove}">		
+		<sec:authorize authorities="${authorities}" ifContainsAny="FACILITY_ADMIN_PROJECTS,PROJECT_RESEARCHER">
 		tools:[{
 			id:'close',
 			handler:removeProject,
 			scope:this
 		}],
-		</c:if>
+		</sec:authorize>
 		items: [ 
 			projectFormPanel,
 			linksPanel

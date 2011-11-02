@@ -95,12 +95,12 @@ Ext.onReady(function() {
 		padding: '5 5 5 5'
 	});
 
-	<c:if test="${permissions.edit}">
+	<sec:authorize ifContainsAny="PROJECT_RESEARCHER,FACILITY_ADMIN_PROJECTS">
 	projectPersonForm.ss.fields.role.setDisabled(false);
 	projectPersonForm.ss.fields.personGid.setDisabled(false);
 	projectPersonForm.ss.fields.personGid.setReadOnly(true);
 	projectPersonForm.ss.buttons.submit.setVisible(true);
-	</c:if>
+	</sec:authorize>
 
 	<c:if test="${not empty projectRoleOptions}">
 	projectPersonForm.ss.fields.role.getStore().loadData(<hmc:write source="${projectRoleOptions}"/>);
@@ -126,11 +126,7 @@ Ext.onReady(function() {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
  							if(json.success) {
-								if(json.response.viewUrl) {
-									loadModelViewTab(json.response.viewUrl);
-								} else {
-									loadModelViewTab(ModelPathUtils.getModelProjectPersonPath('.html'));
-								}
+								loadModelViewTab(ModelPathUtils.getModelProjectPersonPath('.html?project=${project.gid}'));
 							}
 							else {
 								if(json.message) {
@@ -148,13 +144,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title: 'Person',
-		<c:if test="${permissions.remove}">
+		<sec:authorize ifContainsAny="PROJECT_RESEARCHER,FACILITY_ADMIN_PROJECTS">
 		tools:[{
 			id:'close',
 			handler:removeProjectPerson,
 			scope:this
 		}],
-		</c:if>
+		</sec:authorize>
 		items:[
 			projectPersonForm
 		],

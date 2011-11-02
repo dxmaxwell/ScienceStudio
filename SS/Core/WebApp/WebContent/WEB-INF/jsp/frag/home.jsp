@@ -91,63 +91,6 @@ Ext.onReady(function() {
 		],
 		height:200
 	});
-/*
-	var scansGridStore = new Ext.data.ArrayStore({
-		autoDestroy:true,
-		fields:[{
-			name:"id"
-		},{
-			name:"gid"
-		},{
-			name:"name"
-		},{
-			name:"startDate", type:"date",
-			dateFormat:Date.patterns.ISO8601Full
-		},{
-			name:"endDate", type:"date",
-			dateFormat:Date.patterns.ISO8601Full
-		}],
-		data:[
-			["2", "CLSI2N", "Initial Test Scan", "2011-03-15 02:30:00.0 CST", "2011-03-15 10:30:00.0 CST"]
-		]
-	});
-	
-	var scansGridPanel = new Ext.grid.GridPanel({
-		store:scansGridStore,
-		deferRowRender: false,
-		viewConfig:{
-			forceFit:true
-		},
-		columns: [{
-			header: "GID", width:30, dataIndex:"gid", sortable:true
-		},{
-			header: "Name", width: 180, dataIndex: 'name', sortable: true
-		},{
-			header: "Start", width: 80, dataIndex: 'startDate', sortable: true,
-			xtype:'datecolumn', format:Date.patterns.ISO8601Shrt
-		},{
-			header: "End", width: 80, dataIndex: 'endDate', sortable: true,
-			xtype:'datecolumn', format:Date.patterns.ISO8601Shrt
-		}],
-		border:false,
-		height:400
-	});
-
-	scansGridPanel.on('rowclick', function(grid, index, event) {
-		var sm = grid.getSelectionModel();
-		if(sm && sm.deselectRow) {
-			sm.deselectRow(index);
-		}
-
-		var record = grid.getStore().getAt(index);
-		if(record) {
-			var scanId = record.get("id");
-			if(scanId) {
-				loadModelViewTab('/ss/model/scan/' + scanId + '.html');
-			}
-		}
-	}, this);
-*/
 
 	var sessionsGridStore = new Ext.data.JsonStore({
 		url: '/ss/model/sessions/grid.json',
@@ -207,7 +150,7 @@ Ext.onReady(function() {
 
 		var record = grid.getStore().getAt(index);
 		if(record) {
-			var gid = record.get("sessionId");
+			var gid = record.get("gid");
 			if(gid) {
 				loadModelViewTab(ModelPathUtils.getModelSessionPath(['/', gid, '.html']));
 			}
@@ -262,7 +205,7 @@ Ext.onReady(function() {
 		}
 	});
 	
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
+	<sec:authorize ifContainsAny="FACILITY_ADMIN_PROJECTS">
 	var projectAdminPanel = new Ext.Panel({
 		layout:{
 			type:'hbox'
@@ -297,7 +240,7 @@ Ext.onReady(function() {
 
 	var instrumentAdminPanel = new Ext.Panel({
 		items: [{ xtype:'box' }
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_VESPERS">
+	<sec:authorize ifContainsAny="FACILITY_ADMIN_VESPERS">
 			,{
 				xtype: 'box',
 				autoEl: {
@@ -308,7 +251,7 @@ Ext.onReady(function() {
 				}
 			}
 	<%-- Vespers Simulation --%>
-			,{
+	<%--	,{
 				xtype: 'box',
 				autoEl: {
 					tag:'span',
@@ -322,7 +265,7 @@ Ext.onReady(function() {
 					href: '/ssvespers/simadmin/main.html',
 					html: '(Simulated)'
 				}
-			}
+			}				--%>
 	<%-- ================== --%>
 	</sec:authorize>
 		]
@@ -371,13 +314,13 @@ Ext.onReady(function() {
 				title:'GTalk Gadget',
 				items:[ gTalkPanel ]
 			}
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_PROJECTS">
+	<sec:authorize ifContainsAny="FACILITY_ADMIN_PROJECTS">
 			,{
 				title:'Project Administration',
 				items:[ projectAdminPanel ]
 			}
 	</sec:authorize>
-	<sec:authorize ifAnyGranted="ROLE_ADMIN_VESPERS">
+	<sec:authorize ifContainsAny="FACILITY_ADMIN_VESPERS">
 			,{
 				title:'Instrument Administration',
 				items:[ instrumentAdminPanel ]

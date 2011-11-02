@@ -126,19 +126,22 @@ Ext.onReady(function() {
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
-		<c:if test="${not permissions.edit}">
 		defaults: {
 			disabled:true
 		},
 		buttonDefaults: {
 			hidden:true
 		},
-		</c:if>
 		border: false,
 		waitMsg:'Saving Session...',
 		waitMsgTarget: true,
 		padding: '5 5 5 5'
 	});
+
+	<sec:authorize ifContainsAny="SESSION_EXPERIMENTER,FACILITY_ADMIN_SESSIONS">
+	scanForm.ss.fields.name.setDisabled(false);
+	scanForm.ss.buttons.submit.setVisible(true);
+	</sec:authorize>
 
 	<c:if test="${not empty scan}">
 	var scanFormData = <hmc:write source="${scan}"/>
@@ -226,4 +229,3 @@ Ext.onReady(function() {
 });
 </script>
 </div>
-

@@ -79,14 +79,14 @@ Ext.onReady(function() {
 	var sampleForm = new Ext.ss.core.SampleFormPanel({
 		url: ModelPathUtils.getModelSamplePath('/form/edit.json'),
 		method: 'POST',
-		<c:if test="${not permissions.add}">
+		<sec:authorize ifContainsNone="PROJECT_RESEARCHER,FACILITY_ADMIN_PROJECTS">
 		defaults: {
 			disabled:true
 		},
 		buttonDefaults: {
 			hidden:true
 		},
-		</c:if>
+		</sec:authorize>
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',		
@@ -122,11 +122,7 @@ Ext.onReady(function() {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
  							if(json.success) {
-								if(json.viewUrl) {
-									loadModelViewTab(json.viewUrl);
-								} else {
-									loadModelViewTab(ModelPathUtils.getModelSamplePath('.html'));
-								}
+								loadModelViewTab(ModelPathUtils.getModelSamplePath('.html?project=${project.gid}'));
 							}
 							else {
 								if(json.message) {
@@ -144,13 +140,13 @@ Ext.onReady(function() {
 
 	var panel = new Ext.Panel({
 		title:'Sample (GID:${sample.gid})',
-		<c:if test="${permissions.remove}">		
+		<sec:authorize ifContainsAny="PROJECT_RESEARCHER,FACILITY_ADMIN_PROJECTS">
 		tools:[{
 			id:'close',
 			handler:removeSample,
 			scope:this
 		}],
-		</c:if>
+		</sec:authorize>
 		items:[
 			sampleForm
 		],

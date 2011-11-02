@@ -174,7 +174,8 @@ Ext.onReady(function() {
 
 	Add Experiment Form
 --%>
-	<c:if test="${permissions.add}">
+	<sec:authorize ifContainsAny="SESSION_EXPERIMENTER,FACILITY_ADMIN_SESSIONS">
+
 	var experimentForm = new Ext.ss.core.ExperimentFormPanel({
 		url: ModelPathUtils.getModelExperimentPath('/form/add.json'),
 		method: 'POST',
@@ -207,6 +208,7 @@ Ext.onReady(function() {
 
 	<c:if test="${not empty instrumentTechniqueList}">
 	experimentForm.ss.stores.instrumentTechnique.loadData(<hmc:write source="${instrumentTechniqueList}"/>);
+	experimentForm.ss.stores.instrumentTechnique.filterBy(function() { return false; });
 	</c:if>
 	
 	var panel = new Ext.Panel({
@@ -217,7 +219,8 @@ Ext.onReady(function() {
 	});
 	
 	addItemModelViewTab(panel, true);
-	</c:if>
+
+	</sec:authorize>
 });
 </script>
 </div>

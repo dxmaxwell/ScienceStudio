@@ -84,19 +84,27 @@ Ext.onReady(function() {
 		submitText: 'Save',
 		labelAlign: 'right',
 		buttonAlign: 'center',
-		<c:if test="${not permissions.edit}">
-		defaults: {
-			disabled:true
-		},
-		buttonDefaults: {
-			hidden:true
-		},
-		</c:if>
 		border: false,
 		waitMsg:'Saving Session...',
 		waitMsgTarget: true,
 		padding: '5 5 5 5'
 	});
+
+	<sec:authorize ifContainsNone="SESSION_EXPERIMENTER,FACILITY_ADMIN_SESSIONS">
+	sessionForm.ss.fields.name.setDisabled(true);
+	sessionForm.ss.fields.description.setDisabled(true);
+	sessionForm.ss.buttons.submit.setVisible(false);
+	</sec:authorize>
+
+	<sec:authorize ifContainsNone="FACILITY_ADMIN_SESSIONS">
+	sessionForm.ss.fields.proposal.setDisabled(true);
+	sessionForm.ss.fields.startDay.setDisabled(true);
+	sessionForm.ss.fields.startTime.setDisabled(true);
+	sessionForm.ss.fields.endDay.setDisabled(true);
+	sessionForm.ss.fields.endTime.setDisabled(true);
+	</sec:authorize>
+
+	sessionForm.ss.fields.laboratory.setDisabled(true);
 
 	<c:if test="${not empty laboratoryList}">	
 	sessionForm.ss.fields.laboratory.getStore().loadData(<hmc:write source="${laboratoryList}"/>);
@@ -152,11 +160,7 @@ Ext.onReady(function() {
 						var json = Ext.decode(response.responseText, true);
 						if(json) {
  							if(json.success) {
-								if(json.viewUrl) {
-									loadModelViewTab(json.viewUrl);
-								} else {
-									loadModelViewTab(ModelPathUtils.getModelProjectPath('.html'));
-								}
+								loadModelViewTab(ModelPathUtils.getModelProjectPath('.html?project=${project.gid}'));
 							}
 							else  {
 								if(json.message) {
@@ -174,13 +178,13 @@ Ext.onReady(function() {
 
 	var sessionPanel = new Ext.Panel({
 		title: 'Session (GID:${session.gid})',
-		<c:if test="${permissions.remove}">
+		<sec:authorize ifContainsAny="FACILITY_ADMIN_SESSIONS">
 		tools:[{
 			id:'close',
 			handler:removeSession,
 			scope:this
 		}],
-		</c:if>
+		</sec:authorize>
 		items:[
 			sessionForm,
 			linksPanel

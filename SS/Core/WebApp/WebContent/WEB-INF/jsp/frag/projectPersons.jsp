@@ -150,7 +150,7 @@ Ext.onReady(function() {
 
 	Add Project Person
 --%>
-	<c:if test="${permissions.add}">
+	<sec:authorize ifContainsAny="PROJECT_RESEARCHER,FACILITY_ADMIN_PROJECTS">
 
 	var projectPersonStore = new Ext.data.JsonStore({
 		url:ModelPathUtils.getModelProjectPersonPath('/form/search.json'),
@@ -216,7 +216,7 @@ Ext.onReady(function() {
 
 	addItemModelViewTab(panel, true);
 
-	</c:if>
+	</sec:authorize>
 });
 </script>
 </div>

@@ -45,12 +45,7 @@ Ext.onReady(function() {
 	});
 
 	<c:if test="${not empty personFormBacker}">
-	var personFormValues = 
-		<jsp:include page="/WEB-INF/jsp/include/marshal-json.jsp" flush="true">  
-			<jsp:param name="source" value="personFormBacker"/>
-		</jsp:include>;
-	
-	personFormPanel.getForm().setValues(personFormValues.personFormBacker);
+	personFormPanel.getForm().setValues(<hmc:write source="${personFormBacker}"/>);
 	</c:if>
 
 	var panel = new Ext.Panel({
@@ -64,3 +59,4 @@ Ext.onReady(function() {
 });
 </script>
 </div>
+

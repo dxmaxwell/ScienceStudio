@@ -159,7 +159,7 @@ Ext.onReady(function() {
 
 	Add Session Form
 --%>
-	<c:if test="${permissions.add}">
+	<sec:authorize ifContainsAny="FACILITY_ADMIN_SESSIONS">
 	var sessionForm = new Ext.ss.core.SessionFormPanel({
 		url: ModelPathUtils.getModelSessionPath('/form/add.json'),
 		method: 'POST',
@@ -194,7 +194,7 @@ Ext.onReady(function() {
 	});
 
 	addItemModelViewTab(panel, true);
-	</c:if>
+	</sec:authorize>
 });
 </script>
 </div>

@@ -12,32 +12,36 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
            				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 	
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:servlet.properties"/>
+	</bean>
+	
 	<context:annotation-config/>
 	
 	<!-- ===================================================================
   	-  Main Page Controllers
   	-  =================================================================== -->
-	<bean id="mainPageController"
-		class="ca.sciencestudio.service.app.controllers.MainPageController">
-	</bean>
+	<bean class="ca.sciencestudio.service.app.controllers.MainPageController"/>
 	
-	<bean id="homePageController"
-		class="ca.sciencestudio.service.app.controllers.HomePageController">
+	<bean class="ca.sciencestudio.service.app.controllers.HomePageController">
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
 	
 	<!-- ===================================================================
   	-  Laboratory View Controllers
   	-  =================================================================== -->
-	<bean id="laboratoryViewController"
+	<!--<bean id="laboratoryViewController"
 		class="ca.sciencestudio.service.app.controllers.LaboratoryViewController">
-	</bean>
+	</bean>-->
 	
 	<!-- ===================================================================
   	-  Scan Data View Controllers
   	-  =================================================================== -->
-	<bean id="scanDataViewController"
+	<!--<bean id="scanDataViewController"
 		class="ca.sciencestudio.service.app.controllers.ScanDataViewController">
-	</bean>
+	</bean>-->
 	
 	<bean id="annotationMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">

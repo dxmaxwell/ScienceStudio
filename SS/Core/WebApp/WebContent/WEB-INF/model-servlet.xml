@@ -31,11 +31,12 @@
 	
 	<bean class="ca.sciencestudio.service.project.controllers.ProjectPageController">
 		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.service.project.controllers.ProjectFormController">
 		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
-		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.service.project.controllers.ProjectPersonPageController">
@@ -53,7 +54,6 @@
 		class="ca.sciencestudio.service.project.controllers.ProjectPersonFormController">
 		<property name="personAuthzDAO" ref="personAuthzDAO"/>
 		<property name="projectPersonAuthzDAO" ref="projectPersonAuthzDAO"/>
-		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
 	
 	<!-- ===================================================================
@@ -72,7 +72,6 @@
 	<bean id="sampleFormController"
 		class="ca.sciencestudio.service.sample.controllers.SampleFormController">
 		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
-		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
 	
 	<!-- ===================================================================
@@ -87,11 +86,12 @@
   		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
   		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
   		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+  		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+  		<property name="facility" value="${model.gid.facility}"/>
   	</bean>
   	
   	<bean class="ca.sciencestudio.service.session.controllers.SessionFormController">
   		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
-  		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
 	
 	<bean class="ca.sciencestudio.service.session.controllers.SessionGridController">
@@ -114,16 +114,11 @@
 	<bean class="ca.sciencestudio.service.session.controllers.SessionPersonFormController">
 		<property name="sessionPersonAuthzDAO" ref="sessionPersonAuthzDAO"/>
 		<property name="personAuthzDAO" ref="personAuthzDAO"/>
-		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
 	
 	<!-- ===================================================================
   	-  Experiment Controllers
   	-  =================================================================== -->
-  	
-  	<!--<bean id="experimentController"
-  		class="ca.sciencestudio.service.session.controllers.ExperimentController">
-  	</bean>-->
   	
   	<bean class="ca.sciencestudio.service.session.controllers.ExperimentPageController">
   		<property name="instrumentTechniqueAuthzDAO" ref="instrumentTechniqueAuthzDAO"/>
@@ -137,7 +132,6 @@
 	
 	<bean class="ca.sciencestudio.service.session.controllers.ExperimentFormController">
 		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
-		<property name="facility" value="${model.gid.facility}"/>
 	</bean>
   	
   	<bean class="ca.sciencestudio.service.session.controllers.ExperimentGridController">
@@ -160,7 +154,6 @@
   	
   	<bean class="ca.sciencestudio.service.session.controllers.ScanFormController">
   		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
-  		<property name="facility" value="${model.gid.facility}"/>
   	</bean>
   	
   	<bean class="ca.sciencestudio.service.session.controllers.ScanPageController">
@@ -174,9 +167,10 @@
   	-  Person Controllers
   	-  =================================================================== -->
   	
-  	<!--<bean id="personPageController"
+  	<bean id="personPageController"
   		class="ca.sciencestudio.service.person.controllers.PersonPageController">
-  	</bean>-->
+  		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+  	</bean>
 	
 	<!-- ================================================================================================== -->
 	<!-- These beans effectively replace '<mvc:annotation-driven/>' MVC context configuration option.       -->

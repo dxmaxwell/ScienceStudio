@@ -42,6 +42,11 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 		width: 150
 	}, defaults));
 	
+	this.ss.fields.facilityGid = new Ext.form.Hidden(Ext.applyIf({
+		name: 'facilityGid',
+		disabled:false
+	}, defaults));
+	
 	this.ss.fields.startDay = new Ext.form.DateField(Ext.applyIf({
 		fieldLabel: 'Start Date',
 		name: 'startDay',
@@ -149,6 +154,7 @@ Ext.ss.core.ProjectFormPanel = function(config) {
 	     this.ss.fields.gid,
 	     this.ss.fields.name,
 	     this.ss.fields.description,
+	     this.ss.fields.facilityGid,
 	     this.ss.fields.startDay,
 	     this.ss.fields.endDay,
 	     this.ss.fields.status,

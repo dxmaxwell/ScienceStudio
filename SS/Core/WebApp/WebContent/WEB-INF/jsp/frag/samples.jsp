@@ -154,7 +154,7 @@ Ext.onReady(function() {
 
 	Add Sample Form
 --%>
-	<c:if test="${permissions.add}">
+	<sec:authorize ifContainsAny="PROJECT_RESEARCHER,FACILITY_ADMIN_PROJECTS">
 
 	var sampleForm = new Ext.ss.core.SampleFormPanel({
 		url: ModelPathUtils.getModelSamplePath('/form/add.json'),
@@ -191,7 +191,7 @@ Ext.onReady(function() {
 
 	addItemModelViewTab(panel, true);
 
-	</c:if>
+	</sec:authorize>
 });
 </script>
 </div>
