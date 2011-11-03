@@ -234,7 +234,7 @@ public class ProjectAuthzController extends AbstractProjectAuthzController<Proje
 		}
 		
 		if(project == null) {
-			response.setStatus(HttpStatus.FORBIDDEN.value());
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return Collections.emptyMap();
 		}
 
