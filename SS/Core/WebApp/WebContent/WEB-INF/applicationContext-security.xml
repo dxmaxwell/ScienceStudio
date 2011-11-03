@@ -19,7 +19,7 @@
 		<sec:custom-filter position="FIRST" ref="redirectContextRootFilter"/>
 		<sec:custom-filter position="CAS_FILTER" ref="casAuthenticationFilter"/>
 		<sec:intercept-url pattern="/**" access="ROLE_EVERYBODY" requires-channel="any" />
-		<!--<port-mappings><port-mapping http="8080" https="8443"/></port-mappings>-->
+		<!--<sec:port-mappings><sec:port-mapping http="8080" https="8443"/></sec:port-mappings>-->
 	</sec:http>
   
   	<!--  ### Session management configuration used instead of "<session-management/>". ### -->
