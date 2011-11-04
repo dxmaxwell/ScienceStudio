@@ -148,7 +148,7 @@ public class ProjectAuthzController extends AbstractProjectAuthzController<Proje
 	
 	@ResponseBody
 	@RequestMapping(value = PROJECT_MODEL_PATH + "/{gid}*", method = RequestMethod.DELETE)
-	public RemoveResult remove(@RequestParam String user, @PathVariable String gid, HttpServletResponse response) throws Exception{
+	public RemoveResult remove(@RequestParam String user, @PathVariable String gid, HttpServletResponse response) throws Exception {
 		
 		Project project;
 		try {
@@ -230,7 +230,7 @@ public class ProjectAuthzController extends AbstractProjectAuthzController<Proje
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return Collections.emptyMap();
 		}
 		
 		if(project == null) {
@@ -277,7 +277,7 @@ public class ProjectAuthzController extends AbstractProjectAuthzController<Proje
 			}
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
 		}
 		

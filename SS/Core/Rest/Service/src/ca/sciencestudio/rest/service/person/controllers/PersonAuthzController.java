@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,12 +59,12 @@ public class PersonAuthzController extends AbstractModelAuthzController<Person> 
 			person = personBasicDAO.getByUsername(username, facility);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyMap();
 		}
 		
 		if(person == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return Collections.emptyMap();
 		}
 		return person;
@@ -71,7 +72,7 @@ public class PersonAuthzController extends AbstractModelAuthzController<Person> 
 		
 	@ResponseBody
 	@RequestMapping(value = PERSON_MODEL_PATH + "*", method = RequestMethod.GET, params = "name")
-	public Object getAllByName(@RequestParam String name, HttpServletResponse response) {
+	public Object getAllByName(@RequestParam String name, HttpServletResponse response) throws Exception {
 		if((name == null) || (name.trim().length() == 0)) {
 			return Collections.emptyList();
 		}
@@ -80,7 +81,7 @@ public class PersonAuthzController extends AbstractModelAuthzController<Person> 
 			return personBasicDAO.getAllByName(name);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
 		}
 	}

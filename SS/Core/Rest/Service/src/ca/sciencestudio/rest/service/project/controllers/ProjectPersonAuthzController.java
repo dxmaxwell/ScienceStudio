@@ -198,11 +198,11 @@ public class ProjectPersonAuthzController extends AbstractProjectAuthzController
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return Collections.emptyList();
+			return Collections.emptyMap();
 		}
 			
 		if(projectPerson == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return Collections.emptyMap();
 		}
 		
@@ -212,11 +212,11 @@ public class ProjectPersonAuthzController extends AbstractProjectAuthzController
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return Collections.emptyMap();
 		}
 		
 		if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			response.setStatus(HttpStatus.FORBIDDEN.value());
 			return Collections.emptyMap();
 		}
 		
@@ -237,15 +237,14 @@ public class ProjectPersonAuthzController extends AbstractProjectAuthzController
 		}
 		
 		if(!user.equalsIgnoreCase(personGid) || authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return Collections.emptyList();		
+			return Collections.emptyList();
 		}
 			
 		try {
 			return projectPersonBasicDAO.getAllByPersonGid(personGid);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
 		}
 	}
@@ -264,7 +263,6 @@ public class ProjectPersonAuthzController extends AbstractProjectAuthzController
 		}
 		
 		if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return Collections.emptyList();
 		}
 		
@@ -272,7 +270,7 @@ public class ProjectPersonAuthzController extends AbstractProjectAuthzController
 			return getProjectPersonBasicDAO().getAllByProjectGid(gid);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
 		}
 	}

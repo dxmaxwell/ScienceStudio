@@ -244,11 +244,11 @@ public class SessionAuthzController extends AbstractSessionAuthzController<Sessi
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return Collections.emptyMap();
 		}
 			
 		if(session == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return Collections.emptyMap();
 		}
 		
@@ -281,7 +281,7 @@ public class SessionAuthzController extends AbstractSessionAuthzController<Sessi
 
 	@ResponseBody
 	@RequestMapping(value = SESSION_MODEL_URL + "*", method = RequestMethod.GET)
-	public Object getAll(@RequestParam String user, HttpServletResponse response) {
+	public Object getAll(@RequestParam String user, HttpServletResponse response) throws Exception {
 		
 		Authorities authorities;
 		try {

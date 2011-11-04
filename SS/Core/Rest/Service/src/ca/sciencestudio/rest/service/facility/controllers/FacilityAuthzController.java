@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,7 +52,7 @@ public class FacilityAuthzController extends AbstractModelAuthzController<Facili
 			facility = getModelBasicDAO().get(gid);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyMap();
 		}
 		
@@ -60,13 +61,13 @@ public class FacilityAuthzController extends AbstractModelAuthzController<Facili
 				facility = getFacilityBasicDAO().getByName(gid);
 			}
 			catch(ModelAccessException e) {
-				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 				return Collections.emptyMap();
 			}
 		}
 		
 		if(facility == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return Collections.emptyMap();
 		}
 		return facility;
@@ -74,14 +75,14 @@ public class FacilityAuthzController extends AbstractModelAuthzController<Facili
 	
 	@ResponseBody
 	@RequestMapping(value = FACILITY_MODEL_PATH + "*", method = RequestMethod.GET)
-	public Object getAll(HttpServletResponse response) {
+	public Object getAll(HttpServletResponse response) throws Exception {
 		// No authorization checks required. Everyone is allowed to read this information. //
 		try {
 			return facilityBasicDAO.getAll();
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return Collections.emptyMap();
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
 		}
 	}
 

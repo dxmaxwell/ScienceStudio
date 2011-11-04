@@ -52,7 +52,7 @@ public abstract class AbstractModelController<T extends Model> {
 			getModelBasicDAO().add(t);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return new AddResult(e.getMessage());
 		}
 		
@@ -118,14 +118,14 @@ public abstract class AbstractModelController<T extends Model> {
 			t = getModelBasicDAO().get(gid);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyMap();
 		}
 		
 		if(t == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return Collections.emptyMap();
-		}	
+		}
 		return t;
 	}
 	

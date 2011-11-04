@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,13 +53,13 @@ public class LaboratoryAuthzController extends AbstractModelAuthzController<Labo
 
 	@ResponseBody
 	@RequestMapping(value = LABORATORY_MODEL_PATH + "*", method = RequestMethod.GET)
-	public Object getAll(HttpServletResponse response) {
+	public Object getAll(HttpServletResponse response) throws Exception {
 		// No authorization checks required. Everyone is allowed to read this information. //
 		try {
 			return laboratoryBasicDAO.getAll();
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
 		}
 	}

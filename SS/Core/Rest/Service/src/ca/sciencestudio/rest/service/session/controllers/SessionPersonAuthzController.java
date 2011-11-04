@@ -201,25 +201,34 @@ public class SessionPersonAuthzController extends AbstractSessionAuthzController
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return Collections.emptyMap();
 		}
 		
 		if(!authorities.containsSessionAuthority() && authorities.containsNone(FACILITY_ADMIN_SESSIONS)) {
 			Session session;
 			try {
 				session = sessionBasicDAO.get(sessionPerson.getSessionGid());
-				if(session == null) {
-					throw new ModelAccessException("Session not found.");
-				}
 			}
 			catch(ModelAccessException e) {
 				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 				return Collections.emptyMap();
 			}
 			
-			authorities = projectAuthzDAO.getAuthorities(user, session.getProjectGid()).get();
+			if(session == null) {
+				response.setStatus(HttpStatus.FORBIDDEN.value());
+				return Collections.emptyMap();
+			}
+			
+			try {
+				authorities = projectAuthzDAO.getAuthorities(user, session.getProjectGid()).get();
+			}
+			catch(ModelAccessException e) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return Collections.emptyMap();
+			}
+			
 			if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				response.setStatus(HttpStatus.FORBIDDEN.value());
 				return Collections.emptyMap();
 			}
 		}
@@ -229,7 +238,7 @@ public class SessionPersonAuthzController extends AbstractSessionAuthzController
 
 	@ResponseBody
 	@RequestMapping(value = SESSION_PERSON_MODEL_PATH + "*", method = RequestMethod.GET, params = "session")
-	public Object getAllBySessionGid(@RequestParam String user, @RequestParam("session") String sessionGid, HttpServletResponse response) {
+	public Object getAllBySessionGid(@RequestParam String user, @RequestParam("session") String sessionGid, HttpServletResponse response) throws Exception {
 	
 		Authorities authorities;
 		try {
@@ -244,18 +253,25 @@ public class SessionPersonAuthzController extends AbstractSessionAuthzController
 			Session session;
 			try {
 				session = sessionBasicDAO.get(sessionGid);
-				if(session == null) {
-					throw new ModelAccessException("Session not found.");
-				}
 			}
 			catch(ModelAccessException e) {
 				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 				return Collections.emptyList();
 			}
 			
-			authorities = projectAuthzDAO.getAuthorities(user, session.getProjectGid()).get();
+			if(session == null) {
+				return Collections.emptyList();
+			}
+			
+			try {
+				authorities = projectAuthzDAO.getAuthorities(user, session.getProjectGid()).get();
+			}
+			catch(ModelAccessException e) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return Collections.emptyList();
+			}
+			
 			if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 				return Collections.emptyList();
 			}
 		}

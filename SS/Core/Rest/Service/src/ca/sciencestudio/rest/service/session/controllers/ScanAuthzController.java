@@ -312,7 +312,7 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 			}
 			
 			if(session == null) {
-				response.setStatus(HttpStatus.NOT_FOUND.value());
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 				return Collections.emptyList();
 			}
 			
@@ -325,11 +325,9 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 			}
 			
 			if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-				response.setStatus(HttpStatus.FORBIDDEN.value());
 				return Collections.emptyList();
 			}
 		}
-		
 		
 		try {
 			return scanBasicDAO.getAllByExperimentGid(experimentGid);

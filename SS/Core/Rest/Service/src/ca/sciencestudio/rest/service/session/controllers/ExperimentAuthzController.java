@@ -312,11 +312,11 @@ public class ExperimentAuthzController extends AbstractSessionAuthzController<Ex
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return Collections.emptyMap();
 		}
 		
 		if(experiment == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return Collections.emptyMap();
 		}
 		
@@ -364,7 +364,7 @@ public class ExperimentAuthzController extends AbstractSessionAuthzController<Ex
 	
 	@ResponseBody
 	@RequestMapping(value = EXPERIMENT_MODEL_PATH + "*", method = RequestMethod.GET, params = "session")
-	public Object getAllBySessionGid(@RequestParam String user, @RequestParam("session") String sessionGid, HttpServletResponse response) {
+	public Object getAllBySessionGid(@RequestParam String user, @RequestParam("session") String sessionGid, HttpServletResponse response) throws Exception {
 		
 		Authorities authorities;
 		try {
@@ -387,7 +387,6 @@ public class ExperimentAuthzController extends AbstractSessionAuthzController<Ex
 			}
 			
 			if(session == null) {
-				response.setStatus(HttpStatus.NOT_FOUND.value());
 				return Collections.emptyList();
 			}
 			
@@ -400,7 +399,6 @@ public class ExperimentAuthzController extends AbstractSessionAuthzController<Ex
 			}
 			
 			if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-				response.setStatus(HttpStatus.FORBIDDEN.value());
 				return Collections.emptyList();
 			}
 		}
@@ -409,14 +407,14 @@ public class ExperimentAuthzController extends AbstractSessionAuthzController<Ex
 			return experimentBasicDAO.getAllBySessionGid(sessionGid);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
 		}
 	}
 
 	@ResponseBody
 	@RequestMapping(value = EXPERIMENT_MODEL_PATH + "*", method = RequestMethod.GET, params = "source")
-	public Object getAllBySourceGid(@RequestParam String user, @RequestParam("source") String sourceGid, HttpServletResponse response) {
+	public Object getAllBySourceGid(@RequestParam String user, @RequestParam("source") String sourceGid, HttpServletResponse response) throws Exception {
 		
 		List<Experiment> experiments;
 		try {

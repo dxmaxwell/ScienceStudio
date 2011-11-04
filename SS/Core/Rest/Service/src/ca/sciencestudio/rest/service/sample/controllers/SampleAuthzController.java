@@ -28,6 +28,7 @@ import ca.sciencestudio.model.project.dao.ProjectBasicDAO;
 import ca.sciencestudio.model.sample.Sample;
 import ca.sciencestudio.model.sample.dao.SampleBasicDAO;
 import ca.sciencestudio.model.sample.validators.SampleValidator;
+import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
 import ca.sciencestudio.model.validators.ModelValidator;
 import ca.sciencestudio.rest.service.controllers.AbstractProjectAuthzController;
@@ -163,7 +164,19 @@ public class SampleAuthzController extends AbstractProjectAuthzController<Sample
 			return new RemoveResult("Required authorities not found.");
 		}
 		
-		// TODO: Add check if Experiments reference this Sample! Needs improvements to Experiments DAO! //
+		List<Experiment> experiments;
+		try {
+			experiments = experimentAuthzDAO.getAllBySourceGid(user, sample.getGid()).get();
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return new RemoveResult(e.getMessage());
+		}
+		
+		if(!experiments.isEmpty()) {
+			response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+			return new RemoveResult("Sample has associated Experiments.");
+		}
 		
 		return doRemove(gid, response);
 	}
@@ -178,7 +191,7 @@ public class SampleAuthzController extends AbstractProjectAuthzController<Sample
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return Collections.emptyMap();
 		}
 		
 		if(sample == null) {
@@ -192,11 +205,11 @@ public class SampleAuthzController extends AbstractProjectAuthzController<Sample
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			return new RemoveResult(e.getMessage());
+			return Collections.emptyMap();
 		}
 		
 		if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+			response.setStatus(HttpStatus.FORBIDDEN.value());
 			return Collections.emptyMap();
 		}
 		
@@ -205,7 +218,7 @@ public class SampleAuthzController extends AbstractProjectAuthzController<Sample
 	
 //	@ResponseBody
 //	@RequestMapping(value = SAMPLE_MODEL_PATH + "*", method = RequestMethod.GET)
-//	public List<Sample> getAll(@RequestParam String user, HttpServletResponse response) {
+//	public List<Sample> getAll(@RequestParam String user, HttpServletResponse response) throws Exception {
 //		try {
 //			if(hasLoginRole(user, LOGIN_ROLE_ADMIN_PROJECTS)) {
 //				return sampleBasicDAO.getAll();
@@ -214,14 +227,14 @@ public class SampleAuthzController extends AbstractProjectAuthzController<Sample
 //			}
 //		}
 //		catch(ModelAccessException e) {
-//			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+//			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 //			return Collections.emptyList();
 //		}
 //	}
 
 	@ResponseBody
 	@RequestMapping(value = SAMPLE_MODEL_PATH + "*", method = RequestMethod.GET, params = "project")
-	public List<Sample> getAllByProjectGid(@RequestParam String user, @RequestParam("project") String projectGid, HttpServletResponse response) {
+	public List<Sample> getAllByProjectGid(@RequestParam String user, @RequestParam("project") String projectGid, HttpServletResponse response) throws Exception {
 		
 		Authorities authorities;
 		try {
@@ -233,7 +246,6 @@ public class SampleAuthzController extends AbstractProjectAuthzController<Sample
 		}
 		
 		if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return Collections.emptyList();
 		}
 		
@@ -241,7 +253,7 @@ public class SampleAuthzController extends AbstractProjectAuthzController<Sample
 			return sampleBasicDAO.getAllByProjectGid(projectGid);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
 		}
 	}
