@@ -24,7 +24,7 @@ function spectrumGraphDataUpdate(combo, record, index) {
 	var y = spectrumPointYCmbBox.getValue();
 	if(x && y) {
 		Ext.Ajax.request({
-			url:'../../scan/' + scanId + '/data/mca/spectrum.json',
+			url:vespersServletPath + '/scan/' + scanGid + '/data/mca/spectrum.json',
 			params:{ 'I':x, 'J':y },
 			callback:spectrumGraphDataUpdateCallback
 		});
@@ -43,7 +43,7 @@ function spectrumGraphDataUpdateCallback(options, success, response) {
 		Ext.Msg.alert('Error', 'An unknown error occurred while parsing response.');
 	}
 		
-	if(!json.success || !json.response.spectrum) {
+	if(!json.success || !json.spectrum) {
 		if(json.globalErrors && json.globalErrors[0]) {
 			Ext.Msg.alert('Error', json.globalErrors[0]);
 		} else {
@@ -59,16 +59,16 @@ function spectrumGraphDataUpdateCallback(options, success, response) {
 	var scale = spectrumScaleCmbBox.getValue();
 	
 	var minEnergy = 0.0;
-	if(json.response.minEnergy) {
-		minEnergy = json.response.minEnergy;
+	if(json.minEnergy) {
+		minEnergy = json.minEnergy;
 	}
 	
 	var maxEnergy = 1.0;
-	if(json.response.maxEnergy) {
-		maxEnergy = json.response.maxEnergy;
+	if(json.maxEnergy) {
+		maxEnergy = json.maxEnergy;
 	}
 	
-	var spectrum = json.response.spectrum;
+	var spectrum = json.spectrum;
 	var size = spectrum.length;
 	if(size > 0) {
 		var x0 = 1.0;

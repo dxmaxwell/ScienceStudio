@@ -7,27 +7,22 @@
  */
 package ca.sciencestudio.data.service.controllers;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import ca.sciencestudio.model.session.Scan;
+import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.text.SpecialCharacterUtils;
 
 /**
@@ -35,132 +30,77 @@ import ca.sciencestudio.util.text.SpecialCharacterUtils;
  *
  */
 @Controller
-@RequestMapping("/scan/{scanId}/file")
 public class ScanFileDownloadController extends AbstractScanFileController {
 	
-	@RequestMapping(value = "/download")
-	public String download(@RequestParam(required = false) String[] paths, @PathVariable int scanId, HttpServletResponse response) {
+	@RequestMapping(value = "/scan/{scanGid}/file/download")
+	public void download(@RequestParam(required = false) String[] paths, @PathVariable String scanGid, HttpServletResponse response) {
 		 
-		Scan scan = getScanWithSecurityCheck(scanId, response);
-		if(response.isCommitted()) {
-			return null;
-		}
+		String user = SecurityUtil.getPersonGid();
 		
 		if((paths == null) || (paths.length == 0)) {
 			logger.debug("No data file paths specified for download.");
-			sendError(response, HttpServletResponse.SC_NO_CONTENT);
-			return null;
-		}
-		
-		File scanDataDirectory = new File(scan.getDataUrl());
-		if(!scanDataDirectory.isDirectory()) {
-			logger.warn("Scan data directory not found for path: " + scanDataDirectory);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return null;
+			response.setStatus(HttpStatus.NO_CONTENT.value());
+			return;
 		}
 		
 		if(paths.length == 1) {
-			serveSingleFile(response, scan, scanDataDirectory, paths[0]);
+			serveSingleFile(response, user, scanGid, paths[0]);
 		} else {
-			serveZipArchive(response, scan, scanDataDirectory, paths);
-		}
-		
-		return null;
-	}
-	
-	protected void serveSingleFile(HttpServletResponse response, Scan scan, File scanDataDirectory, String path) {
-		
-		File file = new File(scanDataDirectory, path);
-		if(!file.isFile()) {
-			logger.warn("Specified path is not a regular file: " + file);
-			sendError(response, HttpServletResponse.SC_NOT_FOUND);
-			return;
-		}
-		
-		OutputStream responseOutputStream;
-		try {
-			responseOutputStream = new BufferedOutputStream(response.getOutputStream());
-		}
-		catch(IOException e) {
-			logger.warn("Error constructing buffered output stream from resposne.", e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return;
-		}
-		
-		InputStream fileInputStream;
-		try {
-			fileInputStream = new BufferedInputStream(new FileInputStream(file));
-		}
-		catch(IOException e) {
-			logger.warn("Error constructing buffered input stream from file: " + file, e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return;
-		}
-		
-		String filename = SpecialCharacterUtils.replaceSpecial(file.getName(), true);
-		
-		try {
-			response.setContentLength((int)file.length());
-			response.setContentType(getContentType(file));
-			response.setHeader("Content-disposition","attachment; filename="+filename);
-			IOUtils.copy(fileInputStream, responseOutputStream);
-		}
-		catch(IOException e) {
-			logger.warn("Error copying data from file stream to response stream.", e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		}
-		
-		try {
-			fileInputStream.close();
-		}
-		catch(IOException e) {
-			logger.warn("Error while closing file input stream: " + file, e);
-		}
-		
-		try {
-			responseOutputStream.close();
-		}
-		catch(IOException e) { 
-			logger.warn("Error while closing response output stream.", e);
+			serveZipArchive(response, user, scanGid, paths);
 		}
 		
 		return;
 	}
 	
-	protected void serveZipArchive(HttpServletResponse response, Scan scan, File scanDataDirectory, String[] paths) {
+	protected void serveSingleFile(HttpServletResponse response, String user, String gid, String path) {
 		
-		String filename = SpecialCharacterUtils.replaceSpecial(scan.getName(), true);
-		
-		File zipEntryFile;
-		String zipEntryPath;
-		String zipEntryRoot = "/" + filename;
-		
-		Map<String,File> zipPathFileMap = new HashMap<String,File>();
-		for(String path : paths) {
-			zipEntryPath = zipEntryRoot + path;
-			if(!zipPathFileMap.containsKey(zipEntryPath)) {
-				zipEntryFile = new File(scanDataDirectory, path); 
-				if(zipEntryFile.isFile()) {
-					zipPathFileMap.put(zipEntryPath, zipEntryFile);
-				} else {
-					logger.warn("Specified path is not a regular file: " + zipEntryFile + ". Ignoring.");
-				}
-			}
-		}
-		
-		if(zipPathFileMap.isEmpty()) {
-			logger.warn("No valid data file paths specified for download.");
-			sendError(response, HttpServletResponse.SC_NO_CONTENT);
+		InputStream dataInputStream = scanAuthzDAO.getFileData(user, gid, path).get();
+		if(dataInputStream == null) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return;
 		}
 		
+		int index = path.lastIndexOf("/");
+		if(index >= 0) {
+			String filename = path.substring(index+1);
+			response.setContentType(getContentType(filename));
+			response.setHeader("Content-disposition","attachment; filename="+filename);
+		}
+		else {
+			response.setHeader("Content-disposition","attachment");
+		}
+		
+		try {
+			IOUtils.copy(dataInputStream, response.getOutputStream());
+		}
+		catch(IOException e) {
+			logger.warn("Error copying data response stream.", e);
+		}
+		
+		IOUtils.closeQuietly(dataInputStream);
+		return;
+	}
+	
+	
+	protected void serveZipArchive(HttpServletResponse response, String user, String scanGid, String[] paths) {
+		
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
+		if(scan == null) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
+		}
+		
+		String filename = SpecialCharacterUtils.replaceSpecial(scan.getName(), true);
+	
+		String zipEntryRoot = "/" + filename;
+		
 		ZipOutputStream zipResponseOutputStream;
 		try {
-			zipResponseOutputStream = new ZipOutputStream(new BufferedOutputStream(response.getOutputStream()));
+			zipResponseOutputStream = new ZipOutputStream(response.getOutputStream());
 		}
 		catch(IOException e) {
 			logger.warn("Error constructing buffered zip response stream.", e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return;
 		}
 		
@@ -168,58 +108,51 @@ public class ScanFileDownloadController extends AbstractScanFileController {
 		response.setContentType(getContentType(filename));
 		response.setHeader("Content-disposition","attachment; filename="+filename);
 		
-		for(Map.Entry<String,File> entry : zipPathFileMap.entrySet()) {
+		for(String path : paths) {
 			
-			boolean escape = false;
-			zipEntryPath = entry.getKey();
-			zipEntryFile = entry.getValue();
-			
-			InputStream fileInputStream;
-			try {
-				fileInputStream = new BufferedInputStream(new FileInputStream(zipEntryFile));
-			}
-			catch(IOException e) {
-				logger.warn("Error constructing buffered file input stream: " + zipEntryFile, e);
+			if(path.length() == 0) {
 				continue;
 			}
 			
-			ZipEntry zipEntry = new ZipEntry(zipEntryPath);
-			zipEntry.setTime(zipEntryFile.lastModified());
+			InputStream fileDataInputStream = scanAuthzDAO.getFileData(user, scanGid, path).get();
+			if(fileDataInputStream == null) {
+				continue;
+			}
+			
+			boolean escape = false;
+			
+			ZipEntry zipEntry = new ZipEntry(zipEntryRoot + path);
+			//zipEntry.setTime(zipEntryFile.lastModified());
 			
 			try {
 				zipResponseOutputStream.putNextEntry(zipEntry);
 			}
 			catch(IOException e) {
-				logger.warn("Error writing next zip entry for path: " + zipEntryPath, e);
+				logger.warn("Error writing next zip entry for path: " + path, e);
 				escape = true;
 			}
 			
 			if(!escape) {
 				try {
-					IOUtils.copy(fileInputStream, zipResponseOutputStream);
+					IOUtils.copy(fileDataInputStream, zipResponseOutputStream);
 				}
 				catch(IOException e) {
 					logger.warn("Error copying file input stream to response output stream.", e);
 					escape = true;
 				}
-			
+				finally {
+					IOUtils.closeQuietly(fileDataInputStream);
+				}
+				
 				try {
 					zipResponseOutputStream.closeEntry();
 				}
 				catch(IOException e) {
-					logger.warn("Error closing zip entry for path." + zipEntryPath, e);
+					logger.warn("Error closing zip entry for path: " + path, e);
 					escape = true;
 				}
 			}
-			
-			try {
-				fileInputStream.close();
-			}
-			catch(IOException e) {
-				logger.warn("Error closing file input stream: "  + zipEntryFile, e);
-				escape = true;
-			}
-			
+				
 			if(escape) {
 				break;
 			}	

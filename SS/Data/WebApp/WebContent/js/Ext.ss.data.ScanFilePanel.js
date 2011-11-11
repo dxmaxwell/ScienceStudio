@@ -38,17 +38,19 @@ Ext.ss.data.ScanFilePanel = function(config) {
 			url: fileListUrl,
 			baseParams: {
 				'type':'dir',
-				'depth':100
+				'depth':-1
 			},
 			root:'response',
 			successProperty:'success',
-			messageProperty:'globalError',
+			messageProperty:'message',
 			fields:[
-			    { name:'name', mapping:'fileProperties.name' },
-			    { name:'path', mapping:'fileProperties.path' },
-			    { name:'size', mapping:'fileProperties.size' }
-			],
+			    'path', 'length', 'type'
+			],  
 			listeners:{
+				'load':function(store, records, options) {
+					// Insert root directory. //
+					store.insert(0, [ new store.recordType({ "path":"/", "length":0, "type":"DIRECTORY" }) ]);
+				},
 				'exception':this.ss.handlers.dataStoreExceptionHandler
 			}
 		});
@@ -73,8 +75,8 @@ Ext.ss.data.ScanFilePanel = function(config) {
 				var path = record.get('path');
 				if(path) {
 					fileStore.load({
-						params: { 
-							'dir':path 
+						params: {
+							'dir':path
 						},
 						add: false
 					});
@@ -108,21 +110,18 @@ Ext.ss.data.ScanFilePanel = function(config) {
 			},
 			root: 'response',
 		    successProperty: 'success',
-		    messageProperty: 'globalError',
-		    fields: [
-		        { name:'name', mapping:'fileProperties.name' },
-		        { name:'path', mapping:'fileProperties.path' },
-		        { name:'size', mapping:'fileProperties.size' }
+		    messageProperty: 'message',
+		    fields:[
+		        'path', 'length', 'type'
 		    ],
 		    sortInfo: { 
-				field: 'name',
+				field: 'path',
 				direction: 'ASC'
 			},
 			listeners:{
 				'exception':this.ss.handlers.dataStoreExceptionHandler
 			}
 		});
-		delete filePanelConfig.fileUrl;
 	}
 	
 	this.ss.buttons.addAll = new Ext.Button({
@@ -158,18 +157,37 @@ Ext.ss.data.ScanFilePanel = function(config) {
 		}
 	});
 	
+	function pathToNameRenderer(value) {
+		var idx = value.lastIndexOf("/");
+		return value.substring(idx + 1);
+	};
+	
+	function lengthToSizeRenderer(value) {
+		var length = Number(value);
+		var suffixes = [ "", "k", "M", "G", "T", "P", "E", "Z", "Y" ];
+		for(var idx = 0; idx < suffixes.length; idx++) {
+			if(length < 1000.0) {
+				return length.toFixed(1) + suffixes[idx]; 
+			}
+			length /= 1000.0;
+		}
+		return length.toFixed(1) + suffixes[suffixes.length-1]; 
+	};
+
 	var fileGridPanel = new Ext.grid.GridPanel({
 		sm: fileGridSM,
 		store: fileStore,
 		columns: [{
 			header: 'Name',
-			dataIndex: 'name',
-			sortable: true
+			dataIndex: 'path',
+			sortable: true,
+			renderer: pathToNameRenderer
 		}, { 
 			header: 'Size',
-			dataIndex: 'size',
+			dataIndex: 'length',
 			sortable: false,
-			width: 25
+			width: 25,
+			renderer: lengthToSizeRenderer
 	    }],
 	    viewConfig: {
 	        forceFit: true
@@ -209,7 +227,7 @@ Ext.ss.data.ScanFilePanel = function(config) {
 	
 	var selFileStore = new Ext.data.ArrayStore({
 		fields: [
-		    'name', 'path', 'size'
+		    'path', 'length', 'type'
 		],
 		sortInfo: { 
 			field: 'path',
@@ -283,9 +301,10 @@ Ext.ss.data.ScanFilePanel = function(config) {
 			sortable: true 
 		},{ 
 			header: 'Size',
-			dataIndex: 'size',
+			dataIndex: 'length',
 			sortable: false,
-			width: 25
+			width: 25,
+			renderer:lengthToSizeRenderer
 	    }],
 	    viewConfig: {
 	        forceFit: true

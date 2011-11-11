@@ -7,20 +7,30 @@
  */
 package ca.sciencestudio.data.service.controllers;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.facility.Facility;
+import ca.sciencestudio.model.facility.Instrument;
+import ca.sciencestudio.model.facility.InstrumentTechnique;
+import ca.sciencestudio.model.facility.Laboratory;
+import ca.sciencestudio.model.facility.Technique;
+import ca.sciencestudio.model.facility.dao.FacilityAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentTechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.LaboratoryAuthzDAO;
+import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
+import ca.sciencestudio.model.session.Experiment;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
+import ca.sciencestudio.model.session.Scan;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
+import ca.sciencestudio.service.session.backers.ScanFormBacker;
 import ca.sciencestudio.security.util.SecurityUtil;
 
 /**
@@ -29,76 +39,159 @@ import ca.sciencestudio.security.util.SecurityUtil;
  */
 @Controller
 public class MainDataViewController {
-
-	private static final String ERROR_VIEW = "page/error";
-	private static final String GENERIC_VIEW = "page/generic";
 	
-	@Autowired
-	private ProjectDAO projectDAO;
+	private String errorView = "page/error";
 	
-	private Map<String,String> dataViews = Collections.emptyMap();
+	private String defaultDataView = "page/generic";
+	
+	private ScanAuthzDAO scanAuthzDAO;
+	
+	private FacilityAuthzDAO facilityAuthzDAO;
+	
+	private TechniqueAuthzDAO techniqueAuthzDAO;
+	
+	private InstrumentAuthzDAO instrumentAuthzDAO;
+	
+	private ExperimentAuthzDAO experimentAuthzDAO;
+	
+	private LaboratoryAuthzDAO laboratoryAuthzDAO;
+	
+	private InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO;
+	
+	private Map<String,String> dataViewMap = new HashMap<String,String>();
 	
 	@RequestMapping(value = "/main.html", method = RequestMethod.GET)
-	public String getGenericPage(@RequestParam int scanId, ModelMap model) {
-		
-		Project project = projectDAO.getProjectByScanId(scanId);
-		if(project == null) {
-			model.put("error", "Project not found.");
-			return ERROR_VIEW;
-		}
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_DATA;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			model.put("error", "Not permitted to view data.");
-			return ERROR_VIEW;
-		}
-		
-		model.put("scanId", scanId);
-		return GENERIC_VIEW;
-	}
+	public String main(@RequestParam("scan") String scanGid, ModelMap model) {
 	
-	@RequestMapping(value = "/{instrumentName}/{techniqueName}/main.html", method = RequestMethod.GET)
-	public String getMainPage(@PathVariable String instrumentName, @PathVariable String techniqueName, @RequestParam int scanId, ModelMap model) {
+		String user = SecurityUtil.getPersonGid();
 		
-		Project project = projectDAO.getProjectByScanId(scanId);
-		if(project == null) {
-			model.put("error", "Project not found.");
-			return ERROR_VIEW;
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
+		if(scan == null) {
+			model.put("error", "Scan not found.");
+			return errorView;
 		}
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_DATA;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			model.put("error", "Not permitted to view data.");
-			return ERROR_VIEW;
+		Experiment experiment = experimentAuthzDAO.get(user, scan.getExperimentGid()).get();
+		if(experiment == null) {
+			model.put("error", "Experiment not found.");
+			return errorView;
 		}
 		
-		String dataViewKey = instrumentName + "/" + techniqueName;
-		
-		String dataView = dataViews.get(dataViewKey);
-		if(dataView == null) {
-			model.put("error", "No data view found for request: " + dataViewKey);
-			return ERROR_VIEW;
+		InstrumentTechnique instrumentTechnique = instrumentTechniqueAuthzDAO.get(user, experiment.getInstrumentTechniqueGid()).get();
+		if(instrumentTechnique == null) {
+			model.put("error", "Instrument and technique not found.");
+			return errorView;
+		}
+	
+		Technique technique = techniqueAuthzDAO.get(user, instrumentTechnique.getTechniqueGid()).get();
+		if(technique == null) {
+			model.put("error", "Technique not found.");
+			return errorView;
 		}
 		
-		model.put("scanId", scanId);
+		Instrument instrument = instrumentAuthzDAO.get(user, instrumentTechnique.getInstrumentGid()).get();
+		if(instrument == null) {
+			model.put("error", "Instrument not found.");
+			return errorView;
+		}
+		
+		Laboratory laboratory = laboratoryAuthzDAO.get(user, instrument.getLaboratoryGid()).get();
+		if(laboratory == null) {
+			model.put("error", "Laboratory not found.");
+			return errorView;
+		}
+		
+		Facility facility = facilityAuthzDAO.get(user, laboratory.getFacilityGid()).get();
+		if(facility == null) {
+			model.put("error", "Facility not found.");
+			return errorView;
+		}
+		
+		String dataViewKey = buildDataViewKey(technique, instrument, laboratory, facility);
+		
+		String dataView = defaultDataView;
+		for(Map.Entry<String,String> entry : dataViewMap.entrySet()) {
+			if(entry.getKey().equalsIgnoreCase(dataViewKey)) {
+				dataView = entry.getValue();
+				break;
+			}
+		}
+				
+		model.put("scan", new ScanFormBacker(scan));
 		return dataView;
 	}
-
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	
+	protected String buildDataViewKey(Technique technique, Instrument instrument, Laboratory laboratory, Facility facility) {
+		return facility.getName() + "/" + laboratory.getName() + "/" + instrument.getName() + "/" + technique.getName();
 	}
 
-	public Map<String, String> getDataViews() {
-		return dataViews;
+	public String getErrorView() {
+		return errorView;
 	}
-	public void setDataViews(Map<String, String> dataViews) {
-		this.dataViews = dataViews;
+	public void setErrorView(String errorView) {
+		this.errorView = errorView;
+	}
+	
+	public String getDefaultDataView() {
+		return defaultDataView;
+	}
+	public void setDefaultDataView(String defaultDataView) {
+		this.defaultDataView = defaultDataView;
+	}
+
+	public ScanAuthzDAO getScanAuthzDAO() {
+		return scanAuthzDAO;
+	}
+	public void setScanAuthzDAO(ScanAuthzDAO scanAuthzDAO) {
+		this.scanAuthzDAO = scanAuthzDAO;
+	}
+
+	public FacilityAuthzDAO getFacilityAuthzDAO() {
+		return facilityAuthzDAO;
+	}
+	public void setFacilityAuthzDAO(FacilityAuthzDAO facilityAuthzDAO) {
+		this.facilityAuthzDAO = facilityAuthzDAO;
+	}
+
+	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
+		return techniqueAuthzDAO;
+	}
+	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
+		this.techniqueAuthzDAO = techniqueAuthzDAO;
+	}
+
+	public InstrumentAuthzDAO getInstrumentAuthzDAO() {
+		return instrumentAuthzDAO;
+	}
+	public void setInstrumentAuthzDAO(InstrumentAuthzDAO instrumentAuthzDAO) {
+		this.instrumentAuthzDAO = instrumentAuthzDAO;
+	}
+
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
+	}
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
+	}
+
+	public LaboratoryAuthzDAO getLaboratoryAuthzDAO() {
+		return laboratoryAuthzDAO;
+	}
+	public void setLaboratoryAuthzDAO(LaboratoryAuthzDAO laboratoryAuthzDAO) {
+		this.laboratoryAuthzDAO = laboratoryAuthzDAO;
+	}
+
+	public InstrumentTechniqueAuthzDAO getInstrumentTechniqueAuthzDAO() {
+		return instrumentTechniqueAuthzDAO;
+	}
+	public void setInstrumentTechniqueAuthzDAO(InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO) {
+		this.instrumentTechniqueAuthzDAO = instrumentTechniqueAuthzDAO;
+	}
+
+	public Map<String, String> getDataViewMap() {
+		return dataViewMap;
+	}
+	public void setDataViewMap(Map<String, String> dataViewMap) {
+		this.dataViewMap = dataViewMap;
 	}
 }

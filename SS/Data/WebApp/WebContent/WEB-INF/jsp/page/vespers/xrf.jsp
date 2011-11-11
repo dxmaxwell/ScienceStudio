@@ -17,7 +17,9 @@
 		<%@ include file="/WEB-INF/jsp/include/ext-js.jsp"%>
 		
 		<script type="text/javascript">
-			var scanId = '${scanId}';
+			var scanGid = '${scan.gid}';
+			var scanFormData = <hmc:write source="${scan}"/>;
+			var vespersServletPath = '<c:url value="/vespers"/>';
 		</script>
 		
 		<script type="text/javascript" src="/ssstatic/js/dygraph-1.2/dygraph-combined.js"></script>
@@ -40,7 +42,7 @@
 					]
 				});
 				
-				convert('DAF', 'CDF', scanFormPanelLoad, this);
+				convert('DAF', 'CDF', function() {}, this);
 			};
 		
 			Ext.onReady(xrfMainLayout);

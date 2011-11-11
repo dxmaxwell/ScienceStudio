@@ -14,13 +14,11 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.data.converter.Converter;
 import ca.sciencestudio.data.converter.ConverterMap;
@@ -33,62 +31,50 @@ import ca.sciencestudio.model.facility.Instrument;
 import ca.sciencestudio.model.facility.InstrumentTechnique;
 import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.facility.Technique;
-import ca.sciencestudio.model.facility.dao.FacilityDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentTechniqueDAO;
-import ca.sciencestudio.model.facility.dao.LaboratoryDAO;
-import ca.sciencestudio.model.facility.dao.TechniqueDAO;
+import ca.sciencestudio.model.facility.dao.FacilityAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentTechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.LaboratoryAuthzDAO;
+import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.sample.Sample;
-import ca.sciencestudio.model.sample.dao.SampleDAO;
+import ca.sciencestudio.model.sample.dao.SampleAuthzDAO;
 import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
-import ca.sciencestudio.model.session.dao.ScanDAO;
-import ca.sciencestudio.model.session.dao.SessionDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-@RequestMapping("/scan/{scanId}/convert")
 public class ScanConvertController implements StdConverter {
 
-	@Autowired
-	private ScanDAO scanDAO;
+	private ScanAuthzDAO scanAuthzDAO;
 	
-	@Autowired
-	private SampleDAO sampleDAO;
+	private SampleAuthzDAO sampleAuthzDAO;
 	
-	@Autowired
-	private SessionDAO sessionDAO;
+	private SessionAuthzDAO sessionAuthzDAO;
 	
-	@Autowired
-	private ProjectDAO projectDAO;
+	private ProjectAuthzDAO projectAuthzDAO;
 	
-	@Autowired
-	private FacilityDAO facilityDAO;
+	private FacilityAuthzDAO facilityAuthzDAO;
 	
-	@Autowired
-	private ExperimentDAO experimentDAO;
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	
-	@Autowired
-	private LaboratoryDAO laboratoryDAO;
+	private LaboratoryAuthzDAO laboratoryAuthzDAO;
 	
-	@Autowired
-	private TechniqueDAO techniqueDAO;
+	private TechniqueAuthzDAO techniqueAuthzDAO;
 	
-	@Autowired
-	private InstrumentDAO instrumentDAO;
+	private InstrumentAuthzDAO instrumentAuthzDAO;
 	
-	@Autowired
-	private InstrumentTechniqueDAO instrumentTechniqueDAO;
+	private InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO;
 	
 	private ConverterFactory converterFactory;
 	
@@ -96,109 +82,73 @@ public class ScanConvertController implements StdConverter {
 	
 	protected Log logger = LogFactory.getLog(getClass());
 	
-	@RequestMapping(value = "/{fromFormat}/{toFormat}.{format}", method = RequestMethod.GET)
-	public String convert(@PathVariable int scanId, @PathVariable String fromFormat,
-							@PathVariable String toFormat, @PathVariable String format, ModelMap model) {
-		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		
-		String responseView = "response-" + format;
-		
-		Project project = projectDAO.getProjectByScanId(scanId);
-		if(project == null) {
-			errors.reject("project.invalid", "Project not found.");
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		int projectId = project.getId();
-		
-		Object admin = AuthorityUtil.ROLE_ADMIN_DATA;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			errors.reject("permission.denied", "Not permitted to convert data.");
-			model.put("errors", errors);
-			return responseView;
-		}
+	@ResponseBody
+	@RequestMapping(value = "/scan/{scanGid}/convert/{fromFormat}/{toFormat}*", method = RequestMethod.GET)
+	public FormResponseMap convert(@PathVariable String scanGid, @PathVariable String fromFormat, @PathVariable String toFormat) {
 
-		String convertThreadKey = buildConvertThreadKey(scanId, fromFormat, toFormat);
+		String convertThreadKey = buildConvertThreadKey(scanGid, fromFormat, toFormat);
 		if(convertThreadMap.containsKey(convertThreadKey)) {
-			checkConvertThread(scanId, fromFormat, toFormat, errors, model);
-			return responseView;
+			return checkConvertThread(scanGid, fromFormat, toFormat);
 		}
 		
-		Scan scan = scanDAO.getScanById(scanId);
+		String user = SecurityUtil.getPersonGid();
+		
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
 		if(scan == null) {
-			errors.reject("scan.invalid", "Scan not found.");
-			model.put("errors", errors);
-			return responseView;
+			return new FormResponseMap(false, "Scan not found.");
 		}
 		
 		Date scanStartDate = scan.getStartDate();
 		Date scanEndDate = scan.getEndDate();
 		if((scanStartDate == null) || (scanEndDate == null)) {
-			Map<String,Object> response = new HashMap<String,Object>();
-			response.put("message", "Scan is incomplete.");
+			FormResponseMap response = new FormResponseMap(false, "Scan is incomplete");
 			response.put("complete", false);
-			model.put("response", response);
-			return responseView;
+			return response;
 		}
 		
-		Experiment experiment = experimentDAO.getExperimentById(scan.getExperimentId());
+		Experiment experiment = experimentAuthzDAO.get(user, scan.getExperimentGid()).get();
 		if(experiment == null) {
-			errors.reject("experiment.invalid", "Experiment not found.");
-			model.put("errors", errors);
-			return responseView;
+			return new FormResponseMap(false, "Experiment not found.");
 		}
 		
-		Session session = sessionDAO.getSessionById(experiment.getSessionId());
-		if(session == null) {
-			errors.reject("session.invalid", "Session not found");
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		InstrumentTechnique it = instrumentTechniqueDAO.getInstrumentTechniqueById(experiment.getInstrumentTechniqueId());
-		if(it == null) {
-			errors.reject("instrumentTechnique.invalid", "Instrument technique not found.");
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		Technique technique = techniqueDAO.getTechniqueById(it.getTechniqueId());
-		if(technique == null) {
-			errors.reject("technique.invalid", "Technique not found.");
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		Instrument instrument = instrumentDAO.getInstrumentById(it.getInstrumentId());
-		if(instrument == null) {
-			errors.reject("instrument.invalid", "Instrument not found.");
-			model.put("errors", errors);
-			return responseView;
-		}
-		
-		Sample sample = sampleDAO.getSampleById(experiment.getSampleId());
+		Sample sample = sampleAuthzDAO.get(user, experiment.getSourceGid()).get();
 		if(sample == null) {
-			errors.reject("sample.invalid", "Sample not found.");
-			model.put("errors", errors);
-			return responseView;
+			return new FormResponseMap(false, "Sample not found.");
 		}
 		
-		Laboratory laboratory = laboratoryDAO.getLaboratoryById(instrument.getLaboratoryId());
+		Session session = sessionAuthzDAO.get(user, experiment.getSessionGid()).get();
+		if(session == null) {
+			return new FormResponseMap(false, "Session not found.");
+		}
+		
+		InstrumentTechnique it = instrumentTechniqueAuthzDAO.get(user, experiment.getInstrumentTechniqueGid()).get();
+		if(it == null) {
+			return new FormResponseMap(false, "Instrument technique not found.");
+		}
+		
+		Technique technique = techniqueAuthzDAO.get(it.getTechniqueGid()).get();
+		if(technique == null) {
+			return new FormResponseMap(false, "Technique not found.");
+		}
+		
+		Instrument instrument = instrumentAuthzDAO.get(user, it.getInstrumentGid()).get();
+		if(instrument == null) {
+			return new FormResponseMap(false, "Instrument not found.");
+		}
+		
+		Laboratory laboratory = laboratoryAuthzDAO.get(session.getLaboratoryGid()).get();
 		if(laboratory == null) {
-			errors.reject("laboratory.invalid", "Laboratory not found.");
-			model.put("errors", errors);
-			return responseView;
+			return new FormResponseMap(false, "Laboratory not found.");
 		}
 		
-		Facility facility = facilityDAO.getFacilityById(laboratory.getFacilityId());
+		Facility facility = facilityAuthzDAO.get(laboratory.getFacilityGid()).get();
 		if(facility == null) {
-			errors.reject("facility.invalid", "Facility not found.");
-			model.put("errors", errors);
-			return responseView;
+			return new FormResponseMap(false, "Facility not found.");
+		}
+		
+		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
+		if(project == null) {
+			return new FormResponseMap(false, "Project not found.");
 		}
 		
 		ConverterMap convertRequest = new LinkedHashConverterMap(fromFormat, toFormat);
@@ -218,10 +168,9 @@ public class ScanConvertController implements StdConverter {
 		}
 		catch(ConverterFactoryException e) {
 			String message = "Conversion formats not supported (" + fromFormat + " -> " + toFormat + ").";
-			errors.reject("facility.invalid", message);
-			model.put("errors", errors);
+			FormResponseMap response = new FormResponseMap(false, message);
 			logger.warn(message, e);
-			return responseView;
+			return response;
 		}
 		
 		convertThreadMap.put(convertThreadKey, new ConvertThread(converter));
@@ -233,43 +182,36 @@ public class ScanConvertController implements StdConverter {
 			// ignore //
 		}
 		
-		checkConvertThread(scanId, fromFormat, toFormat, errors, model);
-		return responseView;
+		return checkConvertThread(scanGid, fromFormat, toFormat);
 	}
 	
-	protected void checkConvertThread(int scanId, String fromFormat, String toFormat, BindException errors, ModelMap model) {
+	protected FormResponseMap checkConvertThread(String scanGid, String fromFormat, String toFormat) {
 		
-		String convertThreadKey = buildConvertThreadKey(scanId, fromFormat, toFormat);
+		String convertThreadKey = buildConvertThreadKey(scanGid, fromFormat, toFormat);
 		ConvertThread convertThread = convertThreadMap.get(convertThreadKey);
 		
 		if(convertThread.isAlive()) {
-			Map<String,Object> response = new HashMap<String,Object>();
-			response.put("message", "Conversion in progress.");
+			FormResponseMap response = new FormResponseMap(true, "Conversion in progress.");
 			response.put("complete", false);
-			model.put("response", response);
-			return;
+			return response;
 		}
 		
 		convertThreadMap.remove(convertThreadKey);
 			
 		if(convertThread.hasException()) {
 			String message = "Conversion failed (" + fromFormat + " -> " + toFormat +").";
-			Exception e = convertThread.getException();
-			errors.reject("coverter.failed", message);
-			model.put("errors", errors);
-			logger.warn(message, e);		
-			return;
+			FormResponseMap response = new FormResponseMap(false, message);
+			logger.warn(message, convertThread.getException());
+			return response;
 		}
 		
-		Map<String,Object> response = new HashMap<String,Object>();
-		response.put("message", "Conversion complete.");
+		FormResponseMap response = new FormResponseMap(true, "Conversion complete.");
 		response.put("complete", true);
-		model.put("response", response);
-		return;
+		return response;
 	}
 	
-	protected String buildConvertThreadKey(int scanId, String fromFormat, String toFormat) {
-		return fromFormat + "_" + toFormat + "_" + scanId;
+	protected String buildConvertThreadKey(String scanGid, String fromFormat, String toFormat) {
+		return fromFormat + "_" + toFormat + "_" + scanGid;
 	}
 	
 	protected static class ConvertThread extends Thread {
@@ -307,67 +249,74 @@ public class ScanConvertController implements StdConverter {
 		}
 	}
 
-	public ScanDAO getScanDAO() {
-		return scanDAO;
+	public ScanAuthzDAO getScanAuthzDAO() {
+		return scanAuthzDAO;
 	}
-	public void setScanDAO(ScanDAO scanDAO) {
-		this.scanDAO = scanDAO;
-	}
-
-	public SampleDAO getSampleDAO() {
-		return sampleDAO;
-	}
-	public void setSampleDAO(SampleDAO sampleDAO) {
-		this.sampleDAO = sampleDAO;
+	public void setScanAuthzDAO(ScanAuthzDAO scanAuthzDAO) {
+		this.scanAuthzDAO = scanAuthzDAO;
 	}
 
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
+	public SampleAuthzDAO getSampleAuthzDAO() {
+		return sampleAuthzDAO;
 	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
-	}
-
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setSampleAuthzDAO(SampleAuthzDAO sampleAuthzDAO) {
+		this.sampleAuthzDAO = sampleAuthzDAO;
 	}
 
-	public FacilityDAO getFacilityDAO() {
-		return facilityDAO;
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
 	}
-	public void setFacilityDAO(FacilityDAO facilityDAO) {
-		this.facilityDAO = facilityDAO;
-	}
-
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
-	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
 
-	public LaboratoryDAO getLaboratoryDAO() {
-		return laboratoryDAO;
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	public void setLaboratoryDAO(LaboratoryDAO laboratoryDAO) {
-		this.laboratoryDAO = laboratoryDAO;
-	}
-
-	public TechniqueDAO getTechniqueDAO() {
-		return techniqueDAO;
-	}
-	public void setTechniqueDAO(TechniqueDAO techniqueDAO) {
-		this.techniqueDAO = techniqueDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 
-	public InstrumentDAO getInstrumentDAO() {
-		return instrumentDAO;
+	public FacilityAuthzDAO getFacilityAuthzDAO() {
+		return facilityAuthzDAO;
 	}
-	public void setInstrumentDAO(InstrumentDAO instrumentDAO) {
-		this.instrumentDAO = instrumentDAO;
+	public void setFacilityAuthzDAO(FacilityAuthzDAO facilityAuthzDAO) {
+		this.facilityAuthzDAO = facilityAuthzDAO;
+	}
+
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
+	}
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
+	}
+	
+	public LaboratoryAuthzDAO getLaboratoryAuthzDAO() {
+		return laboratoryAuthzDAO;
+	}
+	public void setLaboratoryAuthzDAO(LaboratoryAuthzDAO laboratoryAuthzDAO) {
+		this.laboratoryAuthzDAO = laboratoryAuthzDAO;
+	}
+
+	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
+		return techniqueAuthzDAO;
+	}
+	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
+		this.techniqueAuthzDAO = techniqueAuthzDAO;
+	}
+
+	public InstrumentAuthzDAO getInstrumentAuthzDAO() {
+		return instrumentAuthzDAO;
+	}
+	public void setInstrumentAuthzDAO(InstrumentAuthzDAO instrumentAuthzDAO) {
+		this.instrumentAuthzDAO = instrumentAuthzDAO;
+	}
+
+	public InstrumentTechniqueAuthzDAO getInstrumentTechniqueAuthzDAO() {
+		return instrumentTechniqueAuthzDAO;
+	}
+	public void setInstrumentTechniqueAuthzDAO(InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO) {
+		this.instrumentTechniqueAuthzDAO = instrumentTechniqueAuthzDAO;
 	}
 
 	public ConverterFactory getConverterFactory() {

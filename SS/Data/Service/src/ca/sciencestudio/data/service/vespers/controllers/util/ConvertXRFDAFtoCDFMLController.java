@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
@@ -20,7 +21,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +28,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import ca.sciencestudio.model.utilities.ScanParameters;
+import ca.sciencestudio.model.facility.Facility;
+import ca.sciencestudio.model.facility.Instrument;
+import ca.sciencestudio.model.facility.Laboratory;
+import ca.sciencestudio.model.facility.Technique;
+import ca.sciencestudio.model.facility.dao.FacilityAuthzDAO;
+import ca.sciencestudio.model.facility.dao.InstrumentAuthzDAO;
+import ca.sciencestudio.model.facility.dao.LaboratoryAuthzDAO;
+import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
+
 import ca.sciencestudio.data.converter.ConverterMap;
 import ca.sciencestudio.data.converter.LinkedHashConverterMap;
 import ca.sciencestudio.data.converter.factory.ConverterFactory;
@@ -36,14 +44,8 @@ import ca.sciencestudio.data.standard.StdConverter;
 import ca.sciencestudio.data.standard.StdScanParams;
 import ca.sciencestudio.data.support.ConverterException;
 
-import ca.sciencestudio.model.facility.Facility;
-import ca.sciencestudio.model.facility.Instrument;
-import ca.sciencestudio.model.facility.Laboratory;
-import ca.sciencestudio.model.facility.Technique;
-import ca.sciencestudio.model.facility.dao.FacilityDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentDAO;
-import ca.sciencestudio.model.facility.dao.LaboratoryDAO;
-import ca.sciencestudio.model.facility.dao.TechniqueDAO;
+import ca.sciencestudio.util.Parameters;
+
 
 /**
  * @author maxweld
@@ -74,17 +76,13 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 	
 	static private final String FORM_VIEW = "convertXRFDAFtoCDFML";
 	
-	@Autowired
-	private FacilityDAO facilityDAO;
+	private FacilityAuthzDAO facilityAuthzDAO;
 	
-	@Autowired
-	private InstrumentDAO instrumentDAO;
+	private InstrumentAuthzDAO instrumentAuthzDAO;
 	
-	@Autowired
-	private LaboratoryDAO laboratoryDAO;
+	private LaboratoryAuthzDAO laboratoryAuthzDAO;
 	
-	@Autowired
-	private TechniqueDAO techniqueDAO;
+	private TechniqueAuthzDAO techniqueAuthzDAO;
 	
 	private ConverterFactory converterFactory;
 	
@@ -157,7 +155,7 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		
 		ConverterMap converterRequestMap = new LinkedHashConverterMap();
 		
-		Facility facility = facilityDAO.getFacilityByName("CLS");
+		Facility facility = facilityAuthzDAO.get("CLS").get();
 		if(facility == null) {
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (101)");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
@@ -165,7 +163,15 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		}
 		converterRequestMap.put(REQUEST_KEY_FACILITY, facility);
 		
-		Laboratory laboratory = laboratoryDAO.getLaboratoryByNameAndFacilityId("VESPERS", facility.getId());
+		List<Laboratory> laboratories = laboratoryAuthzDAO.getAllByFacilityGid(facility.getGid()).get();
+		
+		Laboratory laboratory = null;
+		for(Laboratory l : laboratories) {
+			if(l.getName().equals("VESPERS")) {
+				laboratory = l;
+				break;
+			}
+		}
 		if(laboratory == null) {
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (102)");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
@@ -173,7 +179,15 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		}
 		converterRequestMap.put(REQUEST_KEY_LABORATORY, laboratory);
 		
-		Instrument instrument = instrumentDAO.getInstrumentByNameAndLaboratoryId("Microprobe", laboratory.getId());
+		List<Instrument> instruments = instrumentAuthzDAO.getAllByLaboratoryGid(laboratory.getGid()).get();
+			
+		Instrument instrument = null;
+		for(Instrument i : instruments) {
+			if(i.getName().equals("Microprobe")) {
+				instrument = i;
+				break;
+			}
+		}
 		if(instrument == null) {
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (103)");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
@@ -181,7 +195,15 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		}
 		converterRequestMap.put(REQUEST_KEY_INSTRUMENT, instrument);
 		
-		Technique technique = techniqueDAO.getTechniqueByNameAndInstrumentId("XRF", instrument.getId());
+		List<Technique> techniques = techniqueAuthzDAO.getAllByInstrumentGid(instrument.getGid()).get();
+		
+		Technique technique = null;
+		for(Technique t : techniques) {
+			if(t.getName().equals("XRF")) {
+				technique = t;
+				break;
+			}
+		}
 		if(technique == null) {
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (104)");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
@@ -201,9 +223,9 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		
 		converterRequestMap.put(REQUEST_KEY_SCAN_DATA_URL, dataUrl);
 		
-		ScanParameters scanParams = new ScanParameters();
-		scanParams.setParameter(StdScanParams.PARAM_KEY_DATA_FILE_BASE, dataFileBase);
-		converterRequestMap.put(REQUEST_KEY_SCAN_PARAMS, scanParams);
+		Parameters parameters = new Parameters();
+		parameters.put(StdScanParams.PARAM_KEY_DATA_FILE_BASE, dataFileBase);
+		converterRequestMap.put(REQUEST_KEY_SCAN_PARAMS, parameters);
 		
 		try {
 			dafDataFile.transferTo(dafDataTempFile);
@@ -326,33 +348,7 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		return null;
 	}
 	
-	public FacilityDAO getFacilityDAO() {
-		return facilityDAO;
-	}
-	public void setFacilityDAO(FacilityDAO facilityDAO) {
-		this.facilityDAO = facilityDAO;
-	}
-
-	public InstrumentDAO getInstrumentDAO() {
-		return instrumentDAO;
-	}
-	public void setInstrumentDAO(InstrumentDAO instrumentDAO) {
-		this.instrumentDAO = instrumentDAO;
-	}
 	
-	public LaboratoryDAO getLaboratoryDAO() {
-		return laboratoryDAO;
-	}
-	public void setLaboratoryDAO(LaboratoryDAO laboratoryDAO) {
-		this.laboratoryDAO = laboratoryDAO;
-	}
-	
-	public TechniqueDAO getTechniqueDAO() {
-		return techniqueDAO;
-	}
-	public void setTechniqueDAO(TechniqueDAO techniqueDAO) {
-		this.techniqueDAO = techniqueDAO;
-	}
 	
 	public ConverterFactory getConverterFactory() {
 		return converterFactory;

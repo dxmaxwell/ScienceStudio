@@ -9,18 +9,13 @@ package ca.sciencestudio.data.service.controllers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindException;
 
 import ca.sciencestudio.data.cdf.CDFQuery;
 import ca.sciencestudio.data.standard.StdCategories;
 import ca.sciencestudio.data.standard.StdConverter;
 import ca.sciencestudio.data.support.CDFQueryException;
-import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
 import ca.sciencestudio.model.session.Scan;
-import ca.sciencestudio.model.session.dao.ScanDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 
 /**
@@ -29,68 +24,34 @@ import ca.sciencestudio.security.util.SecurityUtil;
  */
 public abstract class AbstractScanDataController implements StdConverter, StdCategories{
 	
-	@Autowired
-	protected ScanDAO scanDAO;
-	
-	@Autowired
-	protected ProjectDAO projectDAO;
+	protected ScanAuthzDAO scanAuthzDAO;
 	
 	protected Log logger = LogFactory.getLog(getClass());
-	
-	protected Scan getScanWithSecurityCheck(int scanId, BindException errors) {
 		
-		Project project = projectDAO.getProjectByScanId(scanId);
-		if(project == null) {
-			errors.reject("project.notfound", "Project not found.");
-			return null;
-		}
+	protected CDFQuery getCDFQueryByScanGid(String scanGid) throws Exception {
 		
-		Object admin = AuthorityUtil.ROLE_ADMIN_DATA;
-		Object group = AuthorityUtil.buildProjectGroupAuthority(project.getId());
+		String user = SecurityUtil.getPersonGid();
 		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			errors.reject("permission.denied", "Not permitted to read scan data.");
-			return null;
-		}
-		
-		Scan scan = scanDAO.getScanById(scanId);
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
 		if(scan == null) {
-			errors.reject("scan.notfound", "Scan not found.");
-			return null;
-		}
-
-		return scan;
-	}
-	
-	protected CDFQuery getCDFQueryWithSecurityCheck(int scanId, BindException errors) {
-		
-		Scan scan = getScanWithSecurityCheck(scanId, errors);
-		if(errors.hasErrors()) {
-			return null;
+			throw new Exception("Scan not found.");
 		}
 		
 		try {
 			return new CDFQuery(scan);
 		}
 		catch(CDFQueryException e) {
-			String msg = "Exception while constructing CDF query (ScanId:" + scanId + ").";
-			errors.reject("cdfquery.error", msg);
+			String msg = "Exception while constructing CDF query (Scan:" + scanGid + ").";
+			Exception error = new Exception(msg, e);
 			logger.warn(msg, e);
-			return null;
+			throw error;
 		}
 	}
 
-	public ScanDAO getScanDAO() {
-		return scanDAO;
+	public ScanAuthzDAO getScanAuthzDAO() {
+		return scanAuthzDAO;
 	}
-	public void setScanDAO(ScanDAO scanDAO) {
-		this.scanDAO = scanDAO;
+	public void setScanAuthzDAO(ScanAuthzDAO scanAuthzDAO) {
+		this.scanAuthzDAO = scanAuthzDAO;
 	}
-
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
-	}	
 }

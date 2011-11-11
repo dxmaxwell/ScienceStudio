@@ -18,7 +18,9 @@
 		<%@ include file="/WEB-INF/jsp/include/ext-js.jsp"%>
 		
 		<script type="text/javascript">
-			var scanId = '${scanId}';
+			var scanGid = '${scan.gid}';
+			var scanFormData = <hmc:write source="${scan}"/>;
+			var genericServletPath = '<c:url value="/generic"/>';
 		</script>
 		
 		<script type="text/javascript" src="<c:url value="/js/Ext.ss.data.ScanFilePanel.js"/>"></script>
@@ -37,8 +39,6 @@
 					    centerPanel
 					]
 				});
-				
-				scanFormPanelLoad();
 			};
 		
 			Ext.onReady(mainLayout);

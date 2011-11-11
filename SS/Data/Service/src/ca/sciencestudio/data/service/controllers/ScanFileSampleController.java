@@ -24,12 +24,13 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import ca.sciencestudio.model.session.Scan;
+import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.Parameters;
 
 /**
@@ -39,39 +40,42 @@ import ca.sciencestudio.util.Parameters;
 @Controller
 public class ScanFileSampleController extends AbstractScanFileController {
 	
-	@RequestMapping(value = "/scan/{scanId}/file/sample.{format}", method = RequestMethod.GET)
-	public String getSampleImage(@PathVariable int scanId, @PathVariable String format, HttpServletResponse response) {
+	@RequestMapping(value = "/scan/{scanGid}/file/sample.{format}")
+	public void getSampleImage(@PathVariable String scanGid, @PathVariable String format, HttpServletResponse response) {
 		
-		Scan scan = getScanWithSecurityCheck(scanId, response);
+		String user = SecurityUtil.getPersonGid();
+		
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
 		if(scan == null) {
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
-		
+			
 		Parameters sp = scan.getParameters();
 		
 		String sampleImageFileName  = sp.get(PARAM_KEY_SAMPLE_IMAGE_FILE);
 		if((sampleImageFileName == null) || (sampleImageFileName.length() == 0)) {
-			sendError(response, HttpServletResponse.SC_NOT_FOUND);
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
 
 		String dataUrl = scan.getDataUrl();
 		if((dataUrl == null) || (dataUrl.length() == 0)) {
-			sendError(response, HttpServletResponse.SC_NOT_FOUND);
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
 		
 		File sampleImageFile = new File(dataUrl, sampleImageFileName);
 		if(!sampleImageFile.isFile()) {
-			sendError(response, HttpServletResponse.SC_NOT_FOUND);
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
 		
 		int sampleImageFileExtIndex = sampleImageFile.getName().lastIndexOf(".");
 		if(sampleImageFileExtIndex < 0) {
 			logger.warn("Sample image file name extension not found.");
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return null;
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return;
 		}
 		
 		String sampleImageFileNameExt = sampleImageFile.getName().substring(sampleImageFileExtIndex + 1);
@@ -82,8 +86,8 @@ public class ScanFileSampleController extends AbstractScanFileController {
 		}
 		catch(IOException e) {
 			logger.warn("Exception while getting response output stream.", e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return null;
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return;
 		}
 		
 		InputStream sampleImageInputStream;
@@ -92,8 +96,8 @@ public class ScanFileSampleController extends AbstractScanFileController {
 		}
 		catch(IOException e) {
 			logger.warn("Exception while openning sample image input stream.", e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return null;
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return;
 		}
 		
 		if(format.equalsIgnoreCase(sampleImageFileNameExt)) {
@@ -109,14 +113,14 @@ public class ScanFileSampleController extends AbstractScanFileController {
 			}
 			catch(IOException e) {
 				logger.warn("Exception while reading sample image file: " + sampleImageFile + ". Format not supported?");
-				sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-				return null;
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return;
 			}
 			
 			if(sampleImageBuffer == null) {
 				logger.warn("Sample image input format (" + sampleImageFileNameExt + ") not supported. ");
-				sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-				return null;
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return;
 			}
 			
 			ByteArrayOutputStream sampleImageOutputStream = 
@@ -128,14 +132,14 @@ public class ScanFileSampleController extends AbstractScanFileController {
 			}
 			catch(IOException e) {
 				logger.warn("Exception while writing sample image to response buffer.", e);
-				sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-				return null;
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return;
 			}
 			
 			if(!imageWriterFound) {
 				logger.warn("Sample image output format (" + format + ") not supported. ");
-				sendError(response, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
-				return null;
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return;
 			}
 			
 			byte[] sampleImageByteArray = sampleImageOutputStream.toByteArray();
@@ -166,6 +170,6 @@ public class ScanFileSampleController extends AbstractScanFileController {
 			logger.warn("Exception while closing response output stream.", e);
 		}
 		
-		return null;
+		return;
 	}
 }

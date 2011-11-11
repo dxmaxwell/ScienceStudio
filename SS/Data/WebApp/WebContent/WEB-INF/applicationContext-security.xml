@@ -6,42 +6,115 @@
 	Description:
 		Application context security configuration.
 -->
-<beans:beans xmlns="http://www.springframework.org/schema/security"
-	xmlns:beans="http://www.springframework.org/schema/beans"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:sec="http://www.springframework.org/schema/security"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+						http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
 
 
-	<http
-		entry-point-ref="loginUrlAuthenticationEntryPoint"
+	<sec:http
+		entry-point-ref="casAuthcAuthenticationEntryPoint"
 		security-context-repository-ref="daoSecurityContextRepository">
-		<intercept-url pattern="/cls/vespers/util/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/img/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<intercept-url pattern="/**" access="ROLE_EVERYBODY" />
-		
-		<!--<port-mappings><port-mapping http="8080" https="8443"/></port-mappings>--><!-- Used for development environments. -->
-	</http>
+		<sec:custom-filter position="FIRST" ref="redirectContextRootFilter"/>
+		<sec:custom-filter position="CAS_FILTER" ref="casAuthenticationFilter"/>
+		<sec:intercept-url pattern="/cls/vespers/util/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<sec:intercept-url pattern="/img/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<sec:intercept-url pattern="/**" access="ROLE_EVERYBODY" />
+		<!--<sec:port-mappings><sec:port-mapping http="8080" https="8443"/></sec:port-mappings>-->
+	</sec:http>
   
   	<!--  ### Session management configuration used instead of "<session-management/>". ### -->
   	
-  	<beans:bean id="daoSecurityContextRepository"
+  	<bean id="daoSecurityContextRepository"
   		class="ca.sciencestudio.security.spring.web.context.DaoSecurityContextRepository">
-  		<beans:property name="loginSessionDAO" ref="loginSessionDAO"/>
-  	</beans:bean>
+  		<property name="loginSessionDAO" ref="loginSessionDAO"/>
+  	</bean>
   	
-  
-  	<!-- ### Bean definitions used instead of "<form-login/>" configuration. ### -->
+  	<!-- Custom filter to redirect context root. Avoids the use of welcome file (index.jsp). -->
   	
-  	<beans:bean id="loginUrlAuthenticationEntryPoint"
-  		class="ca.sciencestudio.security.spring.web.authentication.ContextRelativeLoginUrlAuthenticationEntryPoint">
-  		<beans:property name="loginFormUrl" value="${security.login.formUrl}"/>
-  		<beans:property name="contextRelative" value="true"/>
-  	</beans:bean>
+  	<bean id="redirectContextRootFilter"
+  		class="ca.sciencestudio.util.servlet.RedirectContextRootFilter">
+  		<property name="redirectUrl" value="${security.cas.successUrl}"/>
+  		<property name="contextRelative" value="true"/>
+  	</bean>
 	  
-  	<!-- ###################################################################### -->
+  	<!-- #################### Authentication Manager ########################## -->
   
-	<authentication-manager>
-	</authentication-manager>
+	<sec:authentication-manager alias="authenticationManager">
+		<sec:authentication-provider ref="casAuthenticationProvider"/>
+	</sec:authentication-manager>
 
-</beans:beans>
+	<!-- ### CAS Security Configuration ### -->
+
+	<bean id="casAuthcAuthenticationEntryPoint"
+		class="ca.sciencestudio.security.spring.web.authentication.cas.CasAuthcAuthenticationEntryPoint">
+		<property name="serviceProperties" ref="casServiceProperites"/>
+		<property name="loginUrl" value="${security.login.url}"/>
+	</bean>
+
+	<bean id="casAuthenticationFilter"
+		class="org.springframework.security.cas.web.CasAuthenticationFilter">
+		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="serviceProperties" ref="casServiceProperites"/>
+		<property name="filterProcessesUrl" value="${security.cas.processUrl}"/>
+		<property name="authenticationFailureHandler" ref="authenticationFailureHandler"/>
+	  	<property name="authenticationSuccessHandler" ref="authenticationSuccessHandler"/>
+	</bean>
+	
+	<bean id="casAuthenticationProvider"
+		class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+		<property name="authenticationUserDetailsService" ref="casScienceStudioUserDetailsService"/>
+		<property name="ticketValidator" ref="casTicketValidator"/>
+		<property name="serviceProperties" ref="casServiceProperites"/>
+		<property name="key" value="${security.cas.providerKey}"/>
+	</bean>
+	
+	<bean id="casScienceStudioUserDetailsService"
+		class="ca.sciencestudio.security.spring.cas.userdetails.CasScienceStudioUserDetailsService">
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="defaultAuthorities">
+			<set>
+				<bean class="org.springframework.security.core.authority.GrantedAuthorityImpl">
+					<constructor-arg value="ROLE_EVERYBODY"/>
+				</bean>
+			</set>
+		</property>	
+	</bean>
+	
+	<bean id="casTicketValidator"
+		class="ca.sciencestudio.security.cas.client.validation.ScienceStudioServiceTicketValidator">
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+	</bean>
+	
+	<bean id="casServiceProperites"
+		class="org.springframework.security.cas.ServiceProperties">
+		<property name="service" value="${security.cas.service}"/>
+	</bean>
+		
+	<!-- ### General Configuration ### -->
+
+	<bean id="authenticationSuccessHandler"
+		class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler">
+	 	<property name="defaultTargetUrl" value="${security.cas.successUrl}"/>
+		<property name="redirectStrategy" ref="contextRelativeRedirectStrategy"/>
+	</bean>
+	
+	<bean id="authenticationFailureHandler"
+		class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<property name="defaultFailureUrl" value="${security.cas.failureUrl}"/>
+	  	<property name="redirectStrategy" ref="contextRelativeRedirectStrategy"/>
+	</bean>
+	  	
+	<bean id="contextRelativeRedirectStrategy"
+		class="org.springframework.security.web.DefaultRedirectStrategy">
+		<property name="contextRelative" value="true"/>
+	</bean>
+
+	<bean class="ca.sciencestudio.security.util.SecurityUtilConfigBean">
+		<property name="securityStrategy">
+			<bean class="ca.sciencestudio.security.spring.SpringSecurityStrategy"/>
+		</property>
+	</bean>
+
+</beans>

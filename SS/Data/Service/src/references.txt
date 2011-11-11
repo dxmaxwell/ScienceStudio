@@ -1,4 +1,5 @@
 SS_Core_Model
+SS_Core_Service
 SS_Data_Core
 SS_Security
 SS_Utilities

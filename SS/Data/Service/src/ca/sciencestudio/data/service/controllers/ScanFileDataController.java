@@ -18,13 +18,14 @@ import java.io.OutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import ca.sciencestudio.model.session.Scan;
+import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.text.SpecialCharacterUtils;
 import ca.sciencestudio.util.Parameters;
 
@@ -33,35 +34,37 @@ import ca.sciencestudio.util.Parameters;
  *
  */
 @Controller
-@RequestMapping("/scan/{scanId}/file")
 public class ScanFileDataController extends AbstractScanFileController {
 	
-	@RequestMapping(value = "/data.{format}", method = RequestMethod.GET)
-	public String getDataFile(@PathVariable int scanId, @PathVariable String format, HttpServletResponse response, ModelMap model) {
+	@RequestMapping(value = "/scan/{scanGid}/file/data.{format}")
+	public void getDataFile(@PathVariable String scanGid, @PathVariable String format, HttpServletResponse response, ModelMap model) {
 		
-		Scan scan = getScanWithSecurityCheck(scanId, response);
+		String user = SecurityUtil.getPersonGid();
+		
+		Scan scan = scanAuthzDAO.get(user, scanGid).get();
 		if(scan == null) {
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
 		
 		Parameters sp = scan.getParameters();
 		
 		String dataFileBase  = sp.get(PARAM_KEY_DATA_FILE_BASE);
 		if((dataFileBase == null) || (dataFileBase.length() == 0)) {
-			sendError(response, HttpServletResponse.SC_NOT_FOUND);
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
 
 		String dataUrl = scan.getDataUrl();
 		if((dataUrl == null) || (dataUrl.length() == 0)) {
-			sendError(response, HttpServletResponse.SC_NOT_FOUND);
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
 		
 		File dataFile = new File(dataUrl, dataFileBase + "." + format);
 		if(!dataFile.isFile()) {
-			sendError(response, HttpServletResponse.SC_NOT_FOUND);
-			return null;
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return;
 		}
 		
 		InputStream dataFileInputStream;
@@ -70,8 +73,8 @@ public class ScanFileDataController extends AbstractScanFileController {
 		}
 		catch(IOException e) {
 			logger.warn("Exception while constructing input stream for data file: " + dataFile, e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return null;
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return;
 		}
 		
 		OutputStream responseOutputStream;
@@ -80,8 +83,8 @@ public class ScanFileDataController extends AbstractScanFileController {
 		}
 		catch(IOException e) {
 			logger.warn("Exception while constructing output stream for response", e);
-			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return null;
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return;
 		}
 		
 		String filename = SpecialCharacterUtils.replaceSpecial(scan.getName()) + "." + format;
@@ -110,6 +113,6 @@ public class ScanFileDataController extends AbstractScanFileController {
 			logger.warn("Exception while closing response output stream.", e);
 		}
 		
-		return null;
+		return;
 	}
 }

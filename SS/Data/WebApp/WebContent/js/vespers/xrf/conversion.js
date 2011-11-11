@@ -18,7 +18,7 @@ function convert(fromFormat, toFormat, complete, scope) {
 	function conversionRequest() {
 		if(!conversionRequestPending) {
 			Ext.Ajax.request({
-				url:'../../scan/' + scanId + '/convert/' + fromFormat + '/' + toFormat + '.json',
+				url: vespersServletPath + '/scan/' + scanGid + '/convert/' + fromFormat + '/' + toFormat + '.json',
 				callback:conversionRequestCallback,
 				disableCaching:false,
 				scope:this
@@ -33,7 +33,7 @@ function convert(fromFormat, toFormat, complete, scope) {
 			var json = response.responseJson||Ext.decode(response.responseText, true);
 			if(json) {
 				if(json.success) {
-					if(json.response.complete) {
+					if(json.complete) {
 						Ext.TaskMgr.stop(conversionRequestTask);
 						Ext.Msg.hide();
 						if(complete) {
@@ -51,8 +51,8 @@ function convert(fromFormat, toFormat, complete, scope) {
 						conversionRequestProgress = 0.0;
 					}
 					
-					if(json.response.message) {
-						Ext.Msg.updateProgress(conversionRequestProgress, '', json.response.message);
+					if(json.message) {
+						Ext.Msg.updateProgress(conversionRequestProgress, '', json.message);
 					} else {
 						Ext.Msg.updateProgress(conversionRequestProgress, '', conversionDefaultMessage);
 					}

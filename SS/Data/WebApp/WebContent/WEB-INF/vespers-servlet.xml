@@ -16,42 +16,39 @@
 	
 	<import resource="vespers-converters.xml"/>
 	
-	<bean id="mainDataViewController"
-		class="ca.sciencestudio.data.service.controllers.MainDataViewController">
-		<property name="dataViews">
-			<map>
-				<entry key="microprobe/xrf" value="page/vespers/xrf"/>
-			</map>
-		</property>
-	</bean>
-	
 	<bean id="scanConvertController"
 		class="ca.sciencestudio.data.service.controllers.ScanConvertController">
 		<property name="converterFactory" ref="delegatingConverterFactory"/>
-	</bean>
-	
-	<bean id="scanFormController"
-		class="ca.sciencestudio.service.session.controllers.ScanFormController">
-	</bean>
-	
-	<bean id="scanFormValidator"
-		class="ca.sciencestudio.service.session.validators.ScanFormValidator">
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+		<property name="sampleAuthzDAO" ref="sampleAuthzDAO"/>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
+		<property name="instrumentAuthzDAO" ref="instrumentAuthzDAO"/>
+		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+		<property name="instrumentTechniqueAuthzDAO" ref="instrumentTechniqueAuthzDAO"/>
 	</bean>
 	
 	<bean id="scanFileDataController"
 		class="ca.sciencestudio.data.service.controllers.ScanFileDataController">
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
 	</bean>
 	
 	<bean id="scanFileSampleController" 
 		class="ca.sciencestudio.data.service.controllers.ScanFileSampleController">
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
 	</bean>
 	
 	<bean id="scanDataMapXYController"
 		class="ca.sciencestudio.data.service.controllers.ScanDataMapXYController">
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
 	</bean>
 	
 	<bean id="scanDataMCAController"
 		class="ca.sciencestudio.data.service.controllers.ScanDataMCAController">
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
 	</bean>
 	
 	<bean id="convertXRFDAFtoCDFMLController"
@@ -64,6 +61,11 @@
 
 	<bean id="annotationMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+	
+	<bean id="annoationMethodHandler"
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters" ref="httpMessageConverters"/>
 	</bean>
 
 	<bean id="viewResolver"

@@ -4,7 +4,7 @@
 	see license.txt for details.
 
 	Description:
-		Configuration file for generic servlet.
+		Configuration file for view servlet.
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,21 +12,28 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
            				
-	
 	<context:annotation-config/>
 	
-	<bean id="scanFileListController"
-		class="ca.sciencestudio.data.service.controllers.ScanFileListController">
+	<bean id="mainDataViewController"
+		class="ca.sciencestudio.data.service.controllers.MainDataViewController">
 		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
-	</bean>
-	
-	<bean id="scanFileDownloadController"
-		class="ca.sciencestudio.data.service.controllers.ScanFileDownloadController">
-		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
+		<property name="instrumentAuthzDAO" ref="instrumentAuthzDAO"/>
+		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+		<property name="instrumentTechniqueAuthzDAO" ref="instrumentTechniqueAuthzDAO"/>
+		<property name="defaultDataView" value="page/generic"/>
+		<property name="errorView" value="page/error"/>
+		<property name="dataViewMap">
+			<map>
+				<entry key="CLS/VESPERS/Microprobe/XRF" value="page/vespers/xrf"/>
+			</map>
+		</property>
 	</bean>
 	
 	<bean id="annotationMapping"
-		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">		
 	</bean>
 
 	<bean id="annoationMethodHandler"
