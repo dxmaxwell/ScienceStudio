@@ -7,6 +7,8 @@
  */
 package ca.sciencestudio.model.facility.dao;
 
+import java.util.List;
+
 import ca.sciencestudio.model.dao.ModelBasicDAO;
 import ca.sciencestudio.model.facility.Laboratory;
 
@@ -16,8 +18,5 @@ import ca.sciencestudio.model.facility.Laboratory;
  */
 public interface LaboratoryBasicDAO extends ModelBasicDAO<Laboratory> {
 	
-	//public Laboratory getLaboratoryByNameAndFacilityId(String laboratoryName, int facilityId);
-	//public List<Laboratory> getLaboratoryListByName(String laboratoryName);
-	//public List<Laboratory> getLaboratoryListByFacilityId(int facilityId);
-	//public List<Laboratory> getLaboratoryListByNameAndFacilityId(String laboratoryName, int facilityId);
+	public List<Laboratory> getAllByFacilityGid(String facilityGid);
 }

@@ -22,8 +22,5 @@ public interface LaboratoryAuthzDAO extends ModelAuthzDAO<Laboratory> {
 	public Data<Laboratory> get(String gid);
 	
 	public Data<List<Laboratory>> getAll(); 
-	//public Laboratory getLaboratoryByNameAndFacilityId(String laboratoryName, int facilityId);
-	//public List<Laboratory> getLaboratoryListByName(String laboratoryName);
-	//public List<Laboratory> getLaboratoryListByFacilityId(int facilityId);
-	//public List<Laboratory> getLaboratoryListByNameAndFacilityId(String laboratoryName, int facilityId);
+	public Data<List<Laboratory>> getAllByFacilityGid(String facilityGid);
 }

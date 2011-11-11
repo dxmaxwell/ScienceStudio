@@ -77,22 +77,10 @@
 			FROM ${schema}.laboratory
 	</select>
 	
-	<!--<select id="getLaboratoryListByFacilityId" resultMap="laboratory">
+	<select id="getLaboratoryListByFacilityId" resultMap="laboratory">
 		SELECT *
 			FROM ${schema}.laboratory 
 			WHERE facility_id = #value#
-	</select>-->
-	
-	<!--<select id="getLaboratoryListByName" resultMap="laboratory">
-		SELECT *
-			FROM ${schema}.laboratory 
-			WHERE name LIKE #value#
-	</select>-->
-
-	<!--<select id="getLaboratoryListByNameAndFacilityId" resultMap="laboratory">
-		SELECT *
-			FROM ${schema}.laboratory
-			WHERE name LIKE #param1# AND facility_id = #param2#
-	</select>-->
+	</select>
 	
 </sqlMap>

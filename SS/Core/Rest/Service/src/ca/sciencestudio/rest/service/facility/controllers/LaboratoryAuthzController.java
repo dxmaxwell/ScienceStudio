@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.dao.ModelBasicDAO;
@@ -64,6 +65,19 @@ public class LaboratoryAuthzController extends AbstractModelAuthzController<Labo
 		}
 	}
 
+	@ResponseBody
+	@RequestMapping(value = LABORATORY_MODEL_PATH + "*", method = RequestMethod.GET, params = "facility")
+	public Object getAll(@RequestParam("facility") String facilityGid, HttpServletResponse response) throws Exception {
+		// No authorization checks required. Everyone is allowed to read this information. //
+		try {
+			return laboratoryBasicDAO.getAllByFacilityGid(facilityGid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+	}
+	
 	@Override
 	public String getModelPath() {
 		return LABORATORY_MODEL_PATH;

@@ -7,12 +7,18 @@
  */
 package ca.sciencestudio.model.facility.dao.ibatis;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+
 import ca.sciencestudio.model.facility.Facility;
 import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.facility.dao.LaboratoryBasicDAO;
 import ca.sciencestudio.model.facility.dao.ibatis.support.IbatisLaboratory;
 import ca.sciencestudio.model.dao.ibatis.AbstractIbatisModelBasicDAO;
 import ca.sciencestudio.model.utilities.GID;
+import ca.sciencestudio.util.exceptions.ModelAccessException;
 
 
 /**
@@ -26,33 +32,27 @@ public class IbatisLaboratoryBasicDAO extends AbstractIbatisModelBasicDAO<Labora
 		return Laboratory.GID_TYPE;
 	}
 	
-//	public Laboratory getLaboratoryByNameAndFacilityId(String laboratoryName, int facilityId) {	
-//		List<Laboratory> list = getLaboratoryListByNameAndFacilityId(laboratoryName, facilityId);
-//		if((list != null) && (list.size() > 0)) {
-//			return list.get(0);
-//		}
-//		return null;
-//	}
-
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Laboratory> getLaboratoryListByFacilityId(int facilityId) {
-//		List<Laboratory> list = getSqlMapClientTemplate().queryForList("getLaboratoryListByFacilityId", facilityId);
-//		return list;
-//	}
-
-//	@SuppressWarnings("unchecked")
-//	public List<Laboratory> getLaboratoryListByName(String laboratoryName) {
-//		List<Laboratory> list = getSqlMapClientTemplate().queryForList("getLaboratoryListByName", laboratoryName);
-//		return list;
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Laboratory> getLaboratoryListByNameAndFacilityId(String laboratoryName, int facilityId) {	
-//		SqlMapParameters params = new SqlMapParameters(laboratoryName, facilityId);
-//		List<Laboratory> list = getSqlMapClientTemplate().queryForList("getLaboratoryListByNameAndFacilityId", params);
-//		return list;
-//	}
+	@Override
+	public List<Laboratory> getAllByFacilityGid(String facilityGid) {
+		GID gid = parseAndCheckGid(facilityGid, getGidFacility(), Facility.GID_TYPE);
+		if(gid == null) {
+			return Collections.emptyList();
+		}
+		
+		List<Laboratory> techniques;
+		try {
+			techniques = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByFacilityId"), gid.getId()));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Laboratory list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Laboratories by Facility GID: " + facilityGid + ", size: " + techniques.size());
+		}
+		return Collections.unmodifiableList(techniques);
+	}
 	
 	@Override
 	protected IbatisLaboratory toIbatisModel(Laboratory laboratory) {

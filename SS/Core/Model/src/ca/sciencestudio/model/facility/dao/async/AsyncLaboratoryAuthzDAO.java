@@ -36,6 +36,11 @@ public class AsyncLaboratoryAuthzDAO extends AbstractAsyncModelAuthzDAO<Laborato
 		return execute(new DataFutureTask<List<Laboratory>>(new GetAllCallable()));
 	}
 
+	@Override
+	public Data<List<Laboratory>> getAllByFacilityGid(String facilityGid) {
+		return execute(new DataFutureTask<List<Laboratory>>(new GetAllByFacilityGidCallable(facilityGid)));
+	}
+	
 	public LaboratoryAuthzDAO getLaboratoryAuthzDAO() {
 		return laboratoryAuthzDAO;
 	}
@@ -68,6 +73,20 @@ public class AsyncLaboratoryAuthzDAO extends AbstractAsyncModelAuthzDAO<Laborato
 		@Override
 		public List<Laboratory> call() throws Exception {
 			return laboratoryAuthzDAO.getAll().get();
+		}	
+	}
+	
+	private class GetAllByFacilityGidCallable implements Callable<List<Laboratory>> {
+
+		private String facilityGid;
+		
+		public GetAllByFacilityGidCallable(String facilityGid) {
+			this.facilityGid = facilityGid;
+		}
+
+		@Override
+		public List<Laboratory> call() throws Exception {
+			return laboratoryAuthzDAO.getAllByFacilityGid(facilityGid).get();
 		}	
 	}
 }
