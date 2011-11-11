@@ -13,6 +13,7 @@ import java.util.List;
 import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.dao.Data;
 import ca.sciencestudio.model.dao.ModelAuthzDAO;
+import ca.sciencestudio.util.rest.FileProps;
 
 /**
  * @author maxweld
@@ -22,5 +23,8 @@ public interface ScanAuthzDAO extends ModelAuthzDAO<Scan> {
 	
 	public Data<List<Scan>> getAllByExperimentGid(String user, String experimentGid);
 	
-	public Data<InputStream> getData(String user, String gid, String path);
+	public Data<InputStream> getFileData(String user, String gid, String path);
+	public Data<List<FileProps>> getFileList(String user, String gid, String path);
+	public Data<List<FileProps>> getFileList(String user, String gid, String path, String type);
+	public Data<List<FileProps>> getFileList(String user, String gid, String path, String type, int depth);
 }

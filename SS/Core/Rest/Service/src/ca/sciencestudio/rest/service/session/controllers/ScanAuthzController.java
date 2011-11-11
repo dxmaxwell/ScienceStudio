@@ -13,10 +13,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -50,6 +55,7 @@ import ca.sciencestudio.util.exceptions.ModelAccessException;
 import ca.sciencestudio.util.http.EncodingType;
 import ca.sciencestudio.util.rest.AddResult;
 import ca.sciencestudio.util.rest.EditResult;
+import ca.sciencestudio.util.rest.FileProps;
 import ca.sciencestudio.util.rest.RemoveResult;
 
 /**
@@ -74,6 +80,12 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 	private static final String DEFAULT_CONTENT_TYPE = null;
 	
 	private static final List<EncodingType> SUPPORTED_ENCODING_TYPES = Arrays.asList(EncodingType.GZIP, EncodingType.DEFLATE, EncodingType.IDENTITY);	
+	
+	private static final String FILE_TYPE_ANY = "any";
+	
+	private static final String FILE_TYPE_FILE = "file";
+	
+	private static final String FILE_TYPE_DIRECTORY = "directory";
 	
 	private ScanBasicDAO scanBasicDAO;
 	
@@ -338,20 +350,162 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		}
 	}
 
-	@RequestMapping(value = SCAN_MODEL_PATH + "/{gid}/data/**/*", method = RequestMethod.GET)
-	public void getData(@RequestParam String user, @PathVariable String gid, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	@ResponseBody
+	@RequestMapping(value = SCAN_MODEL_PATH + "/{gid}/file/list/**", method = RequestMethod.GET)
+	public Object getFileList(@RequestParam String user, @RequestParam(defaultValue = "any") String type, @RequestParam(defaultValue = "0") int depth,  @PathVariable String gid, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		Scan scan;
 		try {
 			scan = scanBasicDAO.get(gid);
 		}
 		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+	
+		if(scan == null) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return Collections.emptyList();
+		}
+		
+		// *** Check Authorities  *** //
+		
+		Experiment experiment;
+		try {
+			experiment = experimentBasicDAO.get(scan.getExperimentGid());
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+		
+		if(experiment == null) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+		
+		Authorities authorities;
+		try {
+			authorities = sessionAuthorityAccessor.getAuthorities(user, experiment.getSessionGid());
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+		
+		if(!authorities.containsSessionAuthority() && authorities.containsNone(FACILITY_ADMIN_SESSIONS)) {
+		
+			Session session;
+			try {
+				session = sessionBasicDAO.get(experiment.getSessionGid());
+			}
+			catch(ModelAccessException e) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return Collections.emptyList();
+			}
+			
+			if(session == null) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return Collections.emptyList();
+			}
+			
+			try {
+				authorities = projectAuthzDAO.getAuthorities(user, session.getProjectGid()).get();
+			}
+			catch(ModelAccessException e) {
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+				return Collections.emptyList();
+			}
+			
+			if(!authorities.containsProjectAuthority() && authorities.containsNone(FACILITY_ADMIN_PROJECTS)) {
+				return Collections.emptyList();
+			}
+		}
+		
+		// ************************* //
+		
+		URI dataUrl;
+		try {
+			dataUrl = URI.create(scan.getDataUrl());
+		}
+		catch(Exception e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+		
+		File dataDirectory = null;
+		if(dataUrl.getScheme() == null) {
+			dataDirectory = new File(dataUrl.getPath());
+		} else if(dataUrl.getScheme().equals(URI_SCHEME_FILE)) {
+			dataDirectory = new File(dataUrl);
+		}
+		System.out.println(dataDirectory);
+		if((dataDirectory == null) || !dataDirectory.isDirectory()) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+				
+		String dataPath = getRelativePath(request.getRequestURI(), "/file/list/");
+		
+		File dataFile = new File(dataDirectory, dataPath);
+		System.out.println(dataFile);
+		
+		if(!dataFile.exists()) {
+			response.setStatus(HttpStatus.GONE.value());
+			return Collections.emptyList();
+		}
+		
+		if(!dataFile.isDirectory()) {
+			return Collections.emptyList();
+		}
+		
+		type = type.toLowerCase();
+		boolean allowTypeAny = FILE_TYPE_ANY.startsWith(type);
+		boolean allowTypeFile = allowTypeAny || FILE_TYPE_FILE.startsWith(type);
+		boolean allowTypeDirectory = allowTypeAny || FILE_TYPE_DIRECTORY.startsWith(type);
+		
+		Queue<File> directories = new LinkedList<File>();
+		directories.offer(dataFile);
+		
+		List<FileProps> filePropsList = new ArrayList<FileProps>();
+		for(int level = 0; directories.peek() != null; level++) {
+			File pwd = directories.poll();
+			for(File file : pwd.listFiles()) {
+				if(file.isDirectory()) {
+					if(allowTypeDirectory) {
+						filePropsList.add(new FileProps(file, dataDirectory));
+					}
+					if((depth < 0) || (level < depth)) {
+						directories.offer(file);
+					}
+				}
+				else if(file.isFile()) {
+					if(allowTypeFile) {
+						filePropsList.add(new FileProps(file, dataDirectory));
+					}
+				}
+			}
+		}
+		
+		Collections.sort(filePropsList);
+		return filePropsList;
+	}
+	
+	
+	@RequestMapping(value = SCAN_MODEL_PATH + "/{gid}/file/data/**/*", method = RequestMethod.GET)
+	public void getFileData(@RequestParam String user, @PathVariable String gid, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		
+		Scan scan;
+		try {
+			scan = scanBasicDAO.get(gid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return;
 		}
 	
 		if(scan == null) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			response.setStatus(HttpStatus.NOT_FOUND.value());
 			return;
 		}
 		
@@ -412,55 +566,39 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		
 		// ************************* //
 		
-		String dataUrl = scan.getDataUrl();
-		if(dataUrl == null) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return;
-		}
-		
-		if(!dataUrl.endsWith(URI_SEPERATOR)) {
-			dataUrl += URI_SEPERATOR;
-		}
-		
-		URI dataPath;
+		URI dataUrl;
 		try {
-			dataPath = URI.create(dataUrl);
+			dataUrl = URI.create(scan.getDataUrl());
 		}
-		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		catch(Exception e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return;
 		}
 		
-		URI filePath;
+		File dataDirectory = null;
+		if(dataUrl.getScheme() == null) {
+			dataDirectory = new File(dataUrl.getPath());
+		} else if(dataUrl.getScheme().equals(URI_SCHEME_FILE)) {
+			dataDirectory = new File(dataUrl);
+		}
+		System.out.println(dataDirectory);
+		if((dataDirectory == null) || !dataDirectory.isDirectory()) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return;
+		}
+				
+		String dataPath = getRelativePath(request.getRequestURI(), "/file/data/");
+		
+		File dataFile = new File(dataDirectory, dataPath);
+		System.out.println(dataFile);
+		
+		InputStream dataInputStream;
 		try {
-			filePath = dataPath.resolve(getRelativePath(request.getRequestURI(), "/data/"));
+			dataInputStream = new FileInputStream(dataFile);
 		}
-		catch(ModelAccessException e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		catch(FileNotFoundException e) {
+			response.setStatus(HttpStatus.GONE.value());
 			return;
-		}
-		
-		InputStream dataInputStream = null;
-		
-		if(URI_SCHEME_FILE.equals(filePath.getScheme())) {
-			File dataFile = new File(filePath);
-			try {
-				dataInputStream = new FileInputStream(dataFile);
-			}
-			catch(FileNotFoundException e) {
-				response.setStatus(HttpStatus.GONE.value());
-				return;
-			}
-		}
-		else {
-			File dataFile = new File(getSystemPath(filePath.getPath()));
-			try {
-				dataInputStream = new FileInputStream(dataFile); 
-			}
-			catch(FileNotFoundException e) {
-				response.setStatus(HttpStatus.GONE.value());
-				return;
-			}
 		}
 		
 		EncodingType encodingType = null;
@@ -523,19 +661,21 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 			response.addHeader(HTTP_HEADER_CONTENT_ENCODING, encodingType.getType());
 		}
 		
-		String contentType = getContentType(filePath.getPath());
+		String contentType = getContentType(dataFile.getPath());
 		if(contentType != null) {
 			response.setContentType(contentType);
 		}
 
 		try {
-			IOUtils.copy(dataInputStream, dataOutputStream);
-			return;
+			System.out.println(IOUtils.copy(dataInputStream, dataOutputStream));
 		}
 		catch(IOException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return;
-		}	
+		}
+
+		IOUtils.closeQuietly(dataInputStream);
+		IOUtils.closeQuietly(dataOutputStream);
+		return;
 	}
 	
 	protected String getSystemPath(String path) {
@@ -547,7 +687,13 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		if(index < 0) {
 			return DEFAULT_RELATIVE_PATH;
 		}
-		return uri.substring(index + separator.length());
+		String relativePath = uri.substring(index + separator.length());
+		try {
+			return URLDecoder.decode(relativePath, "UTF-8");
+		}
+		catch(UnsupportedEncodingException e) {
+			return relativePath;
+		}
 	}
 	
 	protected String getContentType(String path) {

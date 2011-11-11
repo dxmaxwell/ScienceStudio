@@ -147,13 +147,13 @@ public abstract class AbstractRestModelAuthzDAO<T extends Model> extends Abstrac
 			t = getRestTemplate().getForObject(getModelUrl("/{gid}"), getModelClass(), gid);
 		}
 		catch(HttpClientErrorException e) {
-			logger.debug("HTTP Client Error exception while editing Model: " + e.getMessage());
+			logger.debug("HTTP Client Error exception while getting Model: " + e.getMessage());
 			return new SimpleData<T>((T)null);
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Model: " + e.getMessage());
 			return new SimpleData<T>(new ModelAccessException(e));
-		}	
+		}
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug("Get Model with GID: " + gid);
