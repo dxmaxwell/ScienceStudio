@@ -40,6 +40,11 @@ public class AsyncTechniqueAuthzDAO extends AbstractAsyncModelAuthzDAO<Technique
 	public Data<List<Technique>> getAllByLaboratoryGid(String laboratoryGid) {
 		return execute(new DataFutureTask<List<Technique>>(new GetAllByLaboratoryGidCallable(laboratoryGid)));
 	}
+	
+	@Override
+	public Data<List<Technique>> getAllByInstrumentGid(String instrumentGid) {
+		return execute(new DataFutureTask<List<Technique>>(new GetAllByInstrumentGidCallable(instrumentGid)));
+	}
 
 	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
 		return techniqueAuthzDAO;
@@ -87,6 +92,20 @@ public class AsyncTechniqueAuthzDAO extends AbstractAsyncModelAuthzDAO<Technique
 		@Override
 		public List<Technique> call() throws Exception {
 			return techniqueAuthzDAO.getAllByLaboratoryGid(laboratoryGid).get();
+		}	
+	}
+	
+	private class GetAllByInstrumentGidCallable implements Callable<List<Technique>> {
+		
+		private String instrumentGid;
+		
+		public GetAllByInstrumentGidCallable(String instrumentGid) {
+			this.instrumentGid = instrumentGid;
+		}
+
+		@Override
+		public List<Technique> call() throws Exception {
+			return techniqueAuthzDAO.getAllByInstrumentGid(instrumentGid).get();
 		}	
 	}
 }

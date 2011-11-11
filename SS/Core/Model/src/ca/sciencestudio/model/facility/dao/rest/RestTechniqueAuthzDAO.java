@@ -36,12 +36,29 @@ public class RestTechniqueAuthzDAO extends AbstractRestModelAuthzDAO<Technique> 
 			techniques = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "laboratory={laboratory}"), getModelArrayClass(), laboratoryGid));
 		}
 		catch(RestClientException e) {
-			logger.warn("Rest Client exception while getting Model list: " + e.getMessage());
+			logger.warn("Rest Client exception while getting Technique list: " + e.getMessage());
 			return new SimpleData<List<Technique>>(new ModelAccessException(e));
 		}
 		
 		if(logger.isDebugEnabled()) {
-			logger.debug("Get all Models, size: " + techniques.size());
+			logger.debug("Get all Techniques with Laboratory GID: " + laboratoryGid + ", size: " + techniques.size());
+		}
+		return new SimpleData<List<Technique>>(Collections.unmodifiableList(techniques));
+	}
+	
+	@Override
+	public Data<List<Technique>> getAllByInstrumentGid(String instrumentGid) {
+		List<Technique> techniques;
+		try {
+			techniques = Arrays.asList(getRestTemplate().getForObject(getModelUrl("", "instrument={instrument}"), getModelArrayClass(), instrumentGid));
+		}
+		catch(RestClientException e) {
+			logger.warn("Rest Client exception while getting Technique list: " + e.getMessage());
+			return new SimpleData<List<Technique>>(new ModelAccessException(e));
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Techniques with Instrument GID: " + instrumentGid + ", size: " + techniques.size());
 		}
 		return new SimpleData<List<Technique>>(Collections.unmodifiableList(techniques));
 	}

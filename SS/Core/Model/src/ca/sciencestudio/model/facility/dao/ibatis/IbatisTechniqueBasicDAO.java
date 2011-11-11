@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.springframework.dao.DataAccessException;
 
+import ca.sciencestudio.model.facility.Instrument;
 import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.facility.Technique;
 import ca.sciencestudio.model.facility.dao.TechniqueBasicDAO;
@@ -31,34 +32,6 @@ public class IbatisTechniqueBasicDAO extends AbstractIbatisModelBasicDAO<Techniq
 		return Technique.GID_TYPE;
 	}
 
-//	public Technique getTechniqueByNameAndInstrumentId(String techniqueName, int instrumentId) {
-//		List<Technique> list = getTechniqueListByNameAndInstrumentId(techniqueName, instrumentId);
-//		if((list != null) && (list.size() > 0)) {
-//			return list.get(0);
-//		}
-//		return null;
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Technique> getTechniqueListByName(String techniqueName) {
-//		List<Technique> list = getSqlMapClientTemplate().queryForList("getTechniqueListByName", techniqueName);
-//		return list;
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Technique> getTechniqueListByNameAndInstrumentId(String techniqueName, int instrumentId) {
-//		SqlMapParameters params = new SqlMapParameters(techniqueName, instrumentId);
-//		List<Technique> list = getSqlMapClientTemplate().queryForList("getTechniqueListByNameAndInstrumentId", params);
-//		return list;
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	public List<Technique> getTechniqueListByInstrumentId(int instrumentId) {
-//		List<Technique> list = getSqlMapClientTemplate().queryForList("getTechniqueListByInstrumentId", instrumentId);
-//		return list;
-//	}
-
-	//@SuppressWarnings("unchecked")
 	@Override
 	public List<Technique> getAllByLaboratoryGid(String laboratoryGid) {
 		GID gid = parseAndCheckGid(laboratoryGid, getGidFacility(), Laboratory.GID_TYPE);
@@ -71,12 +44,34 @@ public class IbatisTechniqueBasicDAO extends AbstractIbatisModelBasicDAO<Techniq
 			techniques = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByLaboratoryId"), gid.getId()));
 		}
 		catch(DataAccessException e) {
-			logger.warn("Data Access exception while getting Model list: " + e.getMessage());
+			logger.warn("Data Access exception while getting Techniques list: " + e.getMessage());
 			throw new ModelAccessException(e);
 		}
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug("Get all Techniques by Laboratory GID: " + laboratoryGid + ", size: " + techniques.size());
+		}
+		return Collections.unmodifiableList(techniques);
+	}
+	
+	@Override
+	public List<Technique> getAllByInstrumentGid(String instrumentGid) {
+		GID gid = parseAndCheckGid(instrumentGid, getGidFacility(), Instrument.GID_TYPE);
+		if(gid == null) { 
+			return Collections.emptyList();
+		}
+		
+		List<Technique> techniques;
+		try {
+			techniques = toModelList(getSqlMapClientTemplate().queryForList(getStatementName("get", "ListByInstrumentId"), gid.getId()));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Techniques list: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get all Techniques by Instrument GID: " + instrumentGid + ", size: " + techniques.size());
 		}
 		return Collections.unmodifiableList(techniques);
 	}

@@ -23,4 +23,5 @@ public interface TechniqueAuthzDAO extends ModelAuthzDAO<Technique> {
 	
 	public Data<List<Technique>> getAll();
 	public Data<List<Technique>> getAllByLaboratoryGid(String laboratoryGid);
+	public Data<List<Technique>> getAllByInstrumentGid(String instrumentGid);
 }

@@ -67,10 +67,23 @@ public class TechniqueAuthzController extends AbstractModelAuthzController<Techn
 
 	@ResponseBody
 	@RequestMapping(value = TECHNIQUE_MODEL_PATH + "*", method = RequestMethod.GET, params = "laboratory")
-	public Object getAll(@RequestParam("laboratory") String laboratoryGid, HttpServletResponse response) throws Exception {
+	public Object getAllByLaboratoryGid(@RequestParam("laboratory") String laboratoryGid, HttpServletResponse response) throws Exception {
 		// No authorization checks required. Everyone is allowed to read this information. //
 		try {
-			return techniqueBasicDAO.getAll();
+			return techniqueBasicDAO.getAllByLaboratoryGid(laboratoryGid);
+		}
+		catch(ModelAccessException e) {
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return Collections.emptyList();
+		}
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = TECHNIQUE_MODEL_PATH + "*", method = RequestMethod.GET, params = "instrument")
+	public Object getAllByInstrumentGid(@RequestParam("instrument") String instrumentGid, HttpServletResponse response) throws Exception {
+		// No authorization checks required. Everyone is allowed to read this information. //
+		try {
+			return techniqueBasicDAO.getAllByInstrumentGid(instrumentGid);
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
