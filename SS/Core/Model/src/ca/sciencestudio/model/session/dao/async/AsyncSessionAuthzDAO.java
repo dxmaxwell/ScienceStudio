@@ -28,6 +28,16 @@ public class AsyncSessionAuthzDAO extends AsyncAuthoritiesModelAuthzDAO<Session>
 	private SessionAuthzDAO sessionAuthzDAO;
 	
 	@Override
+	public Data<Session> getByScanGid(String user, String scanGid) {
+		return get(user, scanGid);
+	}
+
+	@Override
+	public Data<Session> getByExperimentGid(String user, String experimentGid) {
+		return get(user, experimentGid);
+	}
+
+	@Override
 	public Data<List<Session>> getAll(String user) {
 		return execute(new DataFutureTask<List<Session>>(new GetAllCallable(user)));
 	}

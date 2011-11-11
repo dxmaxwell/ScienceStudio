@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.springframework.dao.DataAccessException;
 
+import ca.sciencestudio.model.session.Experiment;
+import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.session.dao.SessionBasicDAO;
@@ -31,6 +33,50 @@ public class IbatisSessionBasicDAO extends AbstractIbatisModelBasicDAO<Session> 
 		return Session.GID_TYPE;
 	}
 	
+	@Override
+	public Session getByScanGid(String scanGid) {
+		GID gid = parseAndCheckGid(scanGid, getGidFacility(), Scan.GID_TYPE);
+		if(gid == null) {
+			return null;
+		}
+		
+		Session session;
+		try {
+			session = toModel(getSqlMapClientTemplate().queryForObject(getStatementName("get", "ByScanId"), gid.getId()));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Session: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get Session by Scan GID: " + scanGid);
+		}
+		return session;
+	}
+
+	@Override
+	public Session getByExperimentGid(String experimentGid) {
+		GID gid = parseAndCheckGid(experimentGid, getGidFacility(), Experiment.GID_TYPE);
+		if(gid == null) {
+			return null;
+		}
+		
+		Session session;
+		try {
+			session = toModel(getSqlMapClientTemplate().queryForObject(getStatementName("get", "ByExperimentId"), gid.getId()));
+		}
+		catch(DataAccessException e) {
+			logger.warn("Data Access exception while getting Session: " + e.getMessage());
+			throw new ModelAccessException(e);
+		}
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Get Session by Experiment GID: " + experimentGid);
+		}
+		return session;
+	}
+
 	@Override
 	public List<Session> getAllByPersonGid(String personGid) {		
 		List<Session> sessions;

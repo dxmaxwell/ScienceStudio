@@ -19,7 +19,10 @@ import ca.sciencestudio.model.session.Session;
  *
  */
 public interface SessionAuthzDAO extends ModelAuthzDAO<Session>, AuthoritiesDAO {
-		
+	
+	public Data<Session> getByScanGid(String user, String scanGid);
+	public Data<Session> getByExperimentGid(String user, String experimentGid);
+	
 	public Data<List<Session>> getAll(String user);
 	public Data<List<Session>> getAllByProjectGid(String user, String projectGid);
 	//public List<Session> getSessionListByLaboratoryId(int laboratoryId);

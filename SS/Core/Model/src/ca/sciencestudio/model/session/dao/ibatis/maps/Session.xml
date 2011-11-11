@@ -70,6 +70,18 @@
 			WHERE session_id = #value#
 	</select>
 	
+	<select id="getSessionByScanId" resultMap="session">
+		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
+			FROM ${schema}.session AS s, ${schema}.experiment AS e, ${schema}.scan AS scan
+			WHERE scan.scan_id = #value# AND scan.experiment_id = e.experiment_id AND e.session_id = s.session_id
+	</select>
+	
+	<select id="getSessionByExperimentId" resultMap="session">
+		SELECT s.session_id, s.name, s.description, s.project_gid, s.proposal, s.laboratory_id, s.start_date, s.end_date
+			FROM ${schema}.session AS s, ${schema}.experiment AS e
+			WHERE e.experiment_id = #value# AND e.session_id = s.session_id
+	</select>
+	
 	<select id="getSessionList" resultMap="session">
 		SELECT *
 			FROM ${schema}.session

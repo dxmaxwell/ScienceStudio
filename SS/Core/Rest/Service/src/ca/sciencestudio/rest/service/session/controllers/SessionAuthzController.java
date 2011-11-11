@@ -30,12 +30,14 @@ import ca.sciencestudio.model.facility.Laboratory;
 import ca.sciencestudio.model.facility.dao.LaboratoryBasicDAO;
 import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.session.Experiment;
+import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.session.SessionPerson;
 import ca.sciencestudio.model.session.dao.ExperimentBasicDAO;
 import ca.sciencestudio.model.session.dao.SessionBasicDAO;
 import ca.sciencestudio.model.session.dao.SessionPersonBasicDAO;
 import ca.sciencestudio.model.session.validators.SessionValidator;
+import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.model.validators.ModelValidator;
 import ca.sciencestudio.rest.service.controllers.AbstractSessionAuthzController;
 import ca.sciencestudio.util.authz.Authorities;
@@ -238,9 +240,23 @@ public class SessionAuthzController extends AbstractSessionAuthzController<Sessi
 	@RequestMapping(value = SESSION_MODEL_URL + "/{gid}*", method = RequestMethod.GET)
 	public Object get(@RequestParam String user, @PathVariable String gid, HttpServletResponse response) throws Exception {
 		
-		Session session;
+		GID g = GID.parse(gid);
+		if(g == null) {
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return Collections.emptyMap();
+		}
+		
+		Session session = null;
 		try {
-			session = sessionBasicDAO.get(gid);
+			if(g.isType(Session.GID_TYPE) || g.isTypeless()) {
+				session = sessionBasicDAO.get(gid);
+			}
+			else if(g.isType(Scan.GID_TYPE)) {
+				session = sessionBasicDAO.getByScanGid(gid);
+			}
+			else if(g.isType(Experiment.GID_TYPE)) {
+				session = sessionBasicDAO.getByExperimentGid(gid);
+			}
 		}
 		catch(ModelAccessException e) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

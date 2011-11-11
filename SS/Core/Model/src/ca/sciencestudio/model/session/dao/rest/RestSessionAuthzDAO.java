@@ -32,6 +32,16 @@ public class RestSessionAuthzDAO extends RestAuthoritiesModelAuthzDAO<Session> i
 	public static final String SESSION_MODEL_PATH = "/model/sessions";
 	
 	@Override
+	public Data<Session> getByScanGid(String user, String scanGid) {
+		return get(user, scanGid);
+	}
+
+	@Override
+	public Data<Session> getByExperimentGid(String user, String experimentGid) {
+		return get(user, experimentGid);
+	}
+
+	@Override
 	public Data<List<Session>> getAllByProjectGid(String user, String projectGid) {
 		List<Session> sessions;
 		try {

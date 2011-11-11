@@ -18,6 +18,9 @@ import ca.sciencestudio.model.session.Session;
  */
 public interface SessionBasicDAO extends ModelBasicDAO<Session> {
 	
+	public Session getByScanGid(String scanGid);
+	public Session getByExperimentGid(String experimentGid);
+	
 	public List<Session> getAllByPersonGid(String personGid);	
 	public List<Session> getAllByProjectGid(String projectGid);
 	//public List<Session> getAllByLaboratoryGid(String laboratoryGid);
