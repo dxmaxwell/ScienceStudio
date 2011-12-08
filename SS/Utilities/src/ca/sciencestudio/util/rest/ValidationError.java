@@ -30,6 +30,10 @@ public class ValidationError implements MessageSourceResolvable {
 		this(new String[0], new Object[0], defaultMessage);
 	}
 	
+	public ValidationError(String code, Object[] arguments, String defaultMessage) { 
+		this(new String[] { code }, arguments, defaultMessage);
+	}
+	
 	public ValidationError(String[] codes, Object[] arguments, String defaultMessage) { 
 		this.codes = codes;
 		this.arguments = arguments;

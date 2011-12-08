@@ -7,73 +7,49 @@
  */
 package ca.sciencestudio.vespers.service.controllers;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.state.StateMap;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class GetSampleCameraQueryController {
+public class GetSampleCameraQueryController extends AbstractBeamlineAuthzController {
 	
-	private static final String VALUE_KEY_PROJECT_ID = "projectId";
+	private StateMap sampleCameraProxy;
 	
-	private StateMap sampleCameraStateMap;
-	private StateMap beamlineSessionStateMap;
-	
-	@RequestMapping(value = "/sample/camera/query.{format}", method = RequestMethod.POST)
-	public String handleRequest(@PathVariable String format, @RequestParam long timestamp, ModelMap model) {
-
-		Map<String,Object> response = new HashMap<String, Object>();
-		model.put("response", response);
+	@ResponseBody
+	@RequestMapping(value = "/sample/camera/query*", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam long timestamp, ModelMap model) {
 		
-		Integer projectId = (Integer) beamlineSessionStateMap.get(VALUE_KEY_PROJECT_ID);
-		if(projectId == null) { projectId = new Integer(0); }
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!(SecurityUtil.hasAnyAuthority(group,admin))) {
-			Map<String,String> error = new HashMap<String,String>();
-			error.put("message", "Not permitted to query sample camera.");
-			response.put("error", error);
-			return "response-" + format;
+		if(!canReadBeamline()) {
+			return new FormResponseMap(false, "Not permitted to query sample camera.");
 		}
+				
+		FormResponseMap response = new FormResponseMap(true);
 		
-		long deviceTimestamp = sampleCameraStateMap.getTimestamp().getTime();
-		
+		long deviceTimestamp = sampleCameraProxy.getTimestamp().getTime();
 		if(deviceTimestamp > timestamp) {
 			response.put("timestamp", deviceTimestamp);
 		} else {
 			response.put("timestamp", timestamp);
 		}
 		
-		return "response-" + format;		
+		return response;
 	}
 
-	public StateMap getSampleCameraStateMap() {
-		return sampleCameraStateMap;
+	public StateMap getSampleCameraProxy() {
+		return sampleCameraProxy;
 	}
-	public void setSampleCameraStateMap(StateMap sampleCameraStateMap) {
-		this.sampleCameraStateMap = sampleCameraStateMap;
-	}
-	
-	public StateMap getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
-	}
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setSampleCameraProxy(StateMap sampleCameraProxy) {
+		this.sampleCameraProxy = sampleCameraProxy;
 	}
 }

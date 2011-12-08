@@ -10,75 +10,55 @@ package ca.sciencestudio.vespers.service.controllers;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.session.Experiment;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.util.state.StateMap;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class GetExperimentListController {
+public class GetExperimentListController extends AbstractBeamlineAuthzController {
 
-	private static final String STATE_KEY_PROJECT_ID = "projectId";
-	private static final String STATE_KEY_SESSION_ID = "sessionId";
+	private static final String STATE_KEY_SESSION_GID = "sessionGid";
 	
-	private ExperimentDAO experimentDAO;
-	private StateMap beamlineSessionStateMap;
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	
-	@RequestMapping(value = "/experiments.{format}", method = RequestMethod.POST)
-	public String requestHandler(@PathVariable String format, ModelMap model) {
-
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
+	@ResponseBody
+	@RequestMapping(value = "/experiments*", method = RequestMethod.POST)
+	public FormResponseMap requestHandler() {
 		
-		String responseView = "response-" + format;
-		
-		Integer projectId = (Integer) beamlineSessionStateMap.get(STATE_KEY_PROJECT_ID);
-		if(projectId == null) { projectId = new Integer(0); }
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			errors.reject("permission.denied", "Not permitted to view experiment list.");
-			return responseView;
+		if(!canReadBeamline()) {
+			return new FormResponseMap(false, "Not permitted to view experiment list.");
 		}
 		
-		Integer sessionId = (Integer) beamlineSessionStateMap.get(STATE_KEY_SESSION_ID);
-		if(sessionId == null) { sessionId = new Integer(0); }
+		String user = SecurityUtil.getPersonGid();
 		
-		List<Experiment> experimentList = experimentDAO.getExperimentListBySessionId(sessionId);
+		String sessionGid = (String) beamlineSessionProxy.get(STATE_KEY_SESSION_GID);
+		if(sessionGid == null) {
+			return new FormResponseMap(false, "Session GID not found.");
+		}
+		
+		List<Experiment> experimentList = experimentAuthzDAO.getAllBySessionGid(user, sessionGid).get();
 		if(experimentList == null) {
-			errors.reject("experiment.notfound", "Experiments not found.");
-			return responseView;
+			return new FormResponseMap(false, "Experiments not found.");
 		}
 		
-		model.put("response", experimentList);
-		return "response-" + format;
+		FormResponseMap response = new FormResponseMap(true);
+		response.put("experiments", experimentList);
+		return response;
 	}
 
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
 	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
-	}
-
-	public StateMap getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
-	}
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
 	}
 }

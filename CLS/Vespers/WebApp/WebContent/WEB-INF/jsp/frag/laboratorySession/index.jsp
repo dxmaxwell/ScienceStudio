@@ -13,30 +13,21 @@
 		Ext.onReady(function() {
 			
 			var laboratorySessionFields = [
-				{name: 'sessionId', type: 'int'},
+				{name: 'gid', type: 'string'},
+				{name: 'name', type: 'string'},
 				{name: 'projectName', type: 'string'},
-				{name: 'sessionName', type: 'string'},
 				{name: 'proposal', type: 'string'},
-				{name: 'startDateTime', type: 'date', dateFormat: Date.patterns.ISO8601Shrt },
-				{name: 'endDateTime', type: 'date', dateFormat: Date.patterns.ISO8601Shrt },
+				{name: 'startDate', type: 'date', dateFormat:'c' },
+				{name: 'endDate', type: 'date', dateFormat:'c' },
 				{name: 'status', type: 'string'}
 			];
 		
-			var laboratorySessionData = [
-			/*<c:forEach items="${laboratorySessionList}" var="laboratorySession" varStatus="status">*/
-				[
-					'${laboratorySession.sessionId}',
-					'${laboratorySession.projectName}', 
-					'${laboratorySession.sessionName}',
-					'${laboratorySession.proposal}',
-					'${laboratorySession.startDate}${" "}${laboratorySession.startTime}',
-					'${laboratorySession.endDate}${" "}${laboratorySession.endTime}',
-					'${laboratorySession.status}'
-				 ]/*<c:if test="${!status.last}">*/,/*</c:if>*/
-			/*</c:forEach>*/
-			];
-	
-			var labSessionStore = new Ext.data.SimpleStore({
+			var laboratorySessionData = [ ];
+			//<c:if test="${not empty laboratorySessionList}">
+			laboratorySessionData = <hmc:write source="${laboratorySessionList}"/>;
+			//</c:if>
+		
+			var labSessionStore = new Ext.data.JsonStore({
 				fields:laboratorySessionFields,
 				data:laboratorySessionData
 			}); 
@@ -61,11 +52,11 @@
 				title: '${laboratoryName} Sessions @ ${facilityName}',
 				store: labSessionStore,
 				columns: [
-					{header: "Project", width: 100, sortable: true, dataIndex: 'projectName'},
-					{header: "Session", width: 120, sortable: true, dataIndex: 'sessionName'},
-					{header: "Proposal", width: 100, sortable: true, dataIndex: 'proposal'},
-					{header: "Start", width: 150, sortable: true, renderer: Ext.util.Format.dateRenderer('Y-m-d H:i'), dataIndex: 'startDateTime'},
-					{header: "End", width: 150, sortable: true, renderer: Ext.util.Format.dateRenderer('Y-m-d H:i'), dataIndex: 'endDateTime'},
+					{header: "Project", width: 150, sortable: true, dataIndex: 'projectName'},
+					{header: "Session", width: 150, sortable: true, dataIndex: 'name'},
+					{header: "Proposal", width: 80, sortable: true, dataIndex: 'proposal'},
+					{header: "Start", width: 120, sortable: true, renderer: Ext.util.Format.dateRenderer('Y-m-d H:i'), dataIndex: 'startDate'},
+					{header: "End", width: 120, sortable: true, renderer: Ext.util.Format.dateRenderer('Y-m-d H:i'), dataIndex: 'endDate'},
 					{header: "Status", width: 80, sortable: true, dataIndex: 'status'}
 				],
 				viewConfig: {
@@ -76,22 +67,17 @@
 					listeners: {
 						'rowselect' : {
 							fn: function(rowSelectionModel, rowIndex, record) {
-	
-								
-								var sessionId = record.get('sessionId');
-								
+								var gid = record.get('gid');
 								var updater = new Ext.Updater('MAIN_PANEL');
-								if(updater) {
+								if(gid && updater) {
 									updater.update({
-										url:'session/' + sessionId + '/show.html',
+										url:'session/' + gid + '/show.html',
 										scripts:true
 									});
 								}
-								
-								
 							}
 			    		}
-					}				
+					}
 				}),
 				buttons: [runningBtn],
 				style:'padding-top: 40px; padding-left: 50px;',

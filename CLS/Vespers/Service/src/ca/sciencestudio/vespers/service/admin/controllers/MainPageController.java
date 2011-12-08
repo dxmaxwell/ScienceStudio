@@ -2,7 +2,7 @@
  *   - see license.txt for details.
  *
  *  Description:
- * 		AdminPageController class.
+ * 		MainPageController class.
  *     
  */
 package ca.sciencestudio.vespers.service.admin.controllers;
@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -20,17 +19,31 @@ import org.springframework.web.bind.annotation.RequestMethod;
  *
  */
 @Controller
-public class MainPageController {
+public class MainPageController extends AbstractBeamlineAdminController {
 	
-	private String htmlHeaderTitle = "Science Studio :: VESPERS Administration";
-	private String pageHeaderTitle = "VESPERS Administration";
+	private static final String MODEL_KEY_HTML_HEADER_TITLE = "htmlHeaderTitle";
+	private static final String MODEL_KEY_PAGE_HEADER_TITLE = "pageHeaderTitle";
+	
+	private static final String ERROR_VIEW = "page/error";
+	private static final String ADMIN_VIEW = "page/admin";
+	
+	private String htmlHeaderTitle;
+	private String pageHeaderTitle;
 	
 	@RequestMapping(value = "/main.html", method = RequestMethod.GET)
 	public String main(HttpServletRequest request, ModelMap model) {
-		return "page/admin";
+		
+		if(!canAdminBeamline()) {
+			model.put("error", "Authorization Error");
+			model.put("errorMessage", "Not authorized to administrate beamline.");
+			return ERROR_VIEW;
+		}
+		
+		model.put(MODEL_KEY_HTML_HEADER_TITLE, htmlHeaderTitle);
+		model.put(MODEL_KEY_PAGE_HEADER_TITLE, pageHeaderTitle);
+		return ADMIN_VIEW;
 	}
-
-	@ModelAttribute("htmlHeaderTitle")
+	
 	public String getHtmlHeaderTitle() {
 		return htmlHeaderTitle;
 	}
@@ -38,7 +51,6 @@ public class MainPageController {
 		this.htmlHeaderTitle = htmlHeaderTitle;
 	}
 
-	@ModelAttribute("pageHeaderTitle")
 	public String getPageHeaderTitle() {
 		return pageHeaderTitle;
 	}

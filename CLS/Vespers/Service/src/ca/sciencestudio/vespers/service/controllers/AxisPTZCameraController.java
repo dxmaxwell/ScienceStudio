@@ -20,58 +20,42 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.FormResponseMap;
 import ca.sciencestudio.vespers.device.camera.axis.AxisHttpPTZCamera;
-import ca.sciencestudio.vespers.device.proxy.event.BeamlineSessionProxyEventListener;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class AxisPTZCameraController {
-	
-	private static final String VALUE_KEY_CONTROLLER_UID = "controllerUid";
-	private static final String VALUE_KEY_PROJECT_ID = "projectId";
+public class AxisPTZCameraController extends AbstractBeamlineAuthzController {
 	
 	private String cameraNotAvailableImageUrl;
 	private Collection<AxisHttpPTZCamera> axisHttpPTZCameras;
-	private BeamlineSessionProxyEventListener beamlineSessionStateMap;
 	
 	protected Log logger = LogFactory.getLog(getClass());
 	
-	@RequestMapping(value = "/camera/{name}/control.{format}", method = RequestMethod.POST)
-	public String control(@RequestParam(required = false) String rcenter, 
-							@RequestParam(required = false) String rzoom, 
-								@RequestParam(required = false) String rfocus,
-									@RequestParam(required = false) String riris,
-										@PathVariable String name, @PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/camera/{name}/control*", method = RequestMethod.POST)
+	public FormResponseMap control(@RequestParam(required = false) String rcenter,
+									@RequestParam(required = false) String rzoom,
+										@RequestParam(required = false) String rfocus,
+											@RequestParam(required = false) String riris,
+																@PathVariable String name) {
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		String personUid = (String) beamlineSessionStateMap.get(VALUE_KEY_CONTROLLER_UID);
-		
-		if(!SecurityUtil.getPerson().getUid().equals(personUid)) {
-			errors.reject("permission.denied", "Not permitted to control camera.");
-			return responseView;
+		if(!canWriteBeamline()) {
+			return new FormResponseMap(false, "Not permitted to control camera.");
 		}
 		
 		AxisHttpPTZCamera axisPTZCamera = findCameraByName(name);
 		if(axisPTZCamera == null) {
-			errors.reject("permission.denied", "Camera, '" + name + "', not found.");
-			return responseView;
+			return new FormResponseMap(false, "Camera, '" + name + "', not found.");
 		}
 		
 		if(rcenter != null) {
@@ -83,8 +67,7 @@ public class AxisPTZCameraController {
 				axisPTZCamera.setCenterRelative(centerRelativeX, centerRelativeY);
 			}
 			catch(NumberFormatException e) {
-				errors.reject("permission.denied", "Camera move location invalid (" + rcenter + ").");
-				return responseView;
+				return new FormResponseMap(false, "Camera move location invalid (" + rcenter + ").");
 			}
 		}
 		
@@ -94,8 +77,7 @@ public class AxisPTZCameraController {
 				axisPTZCamera.setZoomRelative(zoomRelative);
 			}
 			catch(NumberFormatException e) {
-				errors.reject("permission.denied", "Camera zoom factor invalid (" + rzoom + ").");
-				return responseView;
+				return new FormResponseMap(false, "Camera zoom factor invalid (" + rzoom + ").");
 			}
 		}
 		
@@ -105,8 +87,7 @@ public class AxisPTZCameraController {
 				axisPTZCamera.setFocusRelative(focusRelative);
 			}
 			catch(NumberFormatException e) {
-				errors.reject("permission.denied", "Camera focus parameter invalid (" + rfocus + ").");
-				return responseView;
+				return new FormResponseMap(false, "Camera focus parameter invalid (" + rfocus + ").");
 			}
 		}
 		
@@ -116,24 +97,17 @@ public class AxisPTZCameraController {
 				axisPTZCamera.setIrisRelative(irisRelative);
 			}
 			catch(NumberFormatException e) {
-				errors.reject("permission.denied", "Camera iris parameter invalid (" + riris + ").");
-				return responseView;
+				return new FormResponseMap(false, "Camera iris parameter invalid (" + riris + ").");
 			}
 		}
 		
-		return responseView;
+		return new FormResponseMap(true);
 	}
 	
 	@RequestMapping(value = "/camera/{name}/image.jpg", method = RequestMethod.GET)
 	public String image(@PathVariable String name, HttpServletResponse response) {
 		
-		Integer projectId = (Integer) beamlineSessionStateMap.get(VALUE_KEY_PROJECT_ID);
-		if(projectId == null) { projectId = new Integer(0); }
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!(SecurityUtil.hasAnyAuthority(admin,group))) {
+		if(!canReadBeamline()) {
 			return "redirect:" + cameraNotAvailableImageUrl;
 		}
 		
@@ -146,7 +120,7 @@ public class AxisPTZCameraController {
 			ImageIO.write(axisPTZCamera.getImage(), "jpg", response.getOutputStream());
 		}
 		catch(IOException e) {
-			return "redirect:" + cameraNotAvailableImageUrl;
+			// Ignore, data has already been sent. //
 		}
 		
 		return null;
@@ -155,13 +129,7 @@ public class AxisPTZCameraController {
 	@RequestMapping(value = "/camera/{name}/video.mjpg", method = RequestMethod.GET)
 	public String video(@PathVariable String name, HttpServletResponse response) {
 
-		Integer projectId = (Integer) beamlineSessionStateMap.get(VALUE_KEY_PROJECT_ID);
-		if(projectId == null) { projectId = new Integer(0); }
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!(SecurityUtil.hasAnyAuthority(admin,group))) {
+		if(!canReadBeamline()) {
 			return "redirect:" + cameraNotAvailableImageUrl;
 		}
 		
@@ -223,12 +191,5 @@ public class AxisPTZCameraController {
 	public void setAxisHttpPTZCameras(
 			Collection<AxisHttpPTZCamera> axisHttpPTZCameras) {
 		this.axisHttpPTZCameras = axisHttpPTZCameras;
-	}
-	
-	public BeamlineSessionProxyEventListener getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
-	}
-	public void setBeamlineSessionStateMap(BeamlineSessionProxyEventListener beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
 	}
 }

@@ -16,9 +16,9 @@ import ca.sciencestudio.util.state.support.SessionStateMapException;
 public interface SessionStateMap extends StateMap {
 	
 	public boolean isRunning();
-	public int getRunningSessionId();
+	public String getRunningSessionGid();
 	
-	public void startSession(int sessionId) throws SessionStateMapException;
-	public void stopSession(int sessionId) throws SessionStateMapException;
+	public void startSession(String user, String sessionGid) throws SessionStateMapException;
+	public void stopSession(String sessionGid) throws SessionStateMapException;
 	public void stopSession() throws SessionStateMapException;
 }

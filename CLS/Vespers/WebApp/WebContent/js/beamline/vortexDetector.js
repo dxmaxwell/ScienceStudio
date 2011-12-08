@@ -34,9 +34,9 @@ var vtxStartBtn = new Ext.Button({
 			callback: function(options, success, response) {
 				var json = Ext.decode(response.responseText, true);
 				if(json && !json.success) {
-					if(json.globalErrors && json.globalErrors[0]) {
-						Ext.Msg.alert("Error", json.globalErrors[0]);
-					} else {	
+					if(json.message) {
+						Ext.Msg.alert("Error", json.message);
+					} else {
 						Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 					}
 				}
@@ -54,9 +54,9 @@ var vtxStopBtn = new Ext.Button({
 			callback: function(options, success, response) {
 				var json = Ext.decode(response.responseText, true);
 				if(json && !json.success) {
-					if(json.globalErrors && json.globalErrors[0]) {
-						Ext.Msg.alert("Error", json.globalErrors[0]);
-					} else {	
+					if(json.message) {
+						Ext.Msg.alert("Error", json.message);
+					} else {
 						Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 					}
 				}
@@ -135,9 +135,9 @@ var setVtxSetupBtn = new Ext.Button({
 			url: 'detector/vtx/setup.json',
 			failure: function(form, action) {
 				var json = Ext.decode(action.response.responseText, true);
-				if(json && json.globalErrors && json.globalErrors[0]) {
-					Ext.Msg.alert("Error", json.globalErrors[0]);
-				} else {	
+				if(json && json.message) {
+					Ext.Msg.alert("Error", json.message);
+				} else {
 					Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 				}
 			}
@@ -345,18 +345,18 @@ var vtxSpectrumRefresh = function() {
 			var labelY = 'Unknown';
 			
 			var json = response.responseJson||Ext.decode(response.responseText, true);
-			if(json && json.response) {
+			if(json) {
 			
 				var scale = vtxScaleCmbx.getValue();
 				
 				var maxEnergy = 0.0;
-				if(json.response.maxEnergy) {
-					maxEnergy = json.response.maxEnergy;
+				if(json.maxEnergy) {
+					maxEnergy = json.maxEnergy;
 				}
 				
 				var spectrum = [];
-				if(json.response.spectrum) {
-					spectrum = json.response.spectrum;
+				if(json.spectrum) {
+					spectrum = json.spectrum;
 				}
 				
 				var size = spectrum.length;

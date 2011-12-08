@@ -7,85 +7,73 @@
  */
 package ca.sciencestudio.vespers.service.controllers;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.util.state.SimpleStateMap;
 import ca.sciencestudio.util.state.StateMap;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
- * @author medrand
+ * @author maxweld
  * The Heartbeat controller
  */
 @Controller
-public class HeartbeatController {
-
-	private static final String VALUE_KEY_PROJECT_ID = "projectId";
+public class HeartbeatController extends AbstractBeamlineAuthzController {
 	
-	private StateMap beamlineSessionStateMap;
+	protected static final String VALUE_KEY_TIMESTAMP = "timestamp";
+	 
+	private Collection<StateMap> deviceProxyList = new ArrayList<StateMap>();
+	private Collection<StateMap> authzDeviceProxyList = new ArrayList<StateMap>();
+	private Map<StateMap, Collection<String>> excludeMap = new HashMap<StateMap, Collection<String>>();
 	
-	private List<StateMap> stateMapList;
-	private Map<StateMap, Collection<String>> excludeMap;
-	
-	@RequestMapping(value = "/heartbeat.{format}", method = RequestMethod.GET)
-	public String handleRequest(@PathVariable String format, ModelMap model) {
-	
-		Map<String,Object> response = new HashMap<String,Object>();
-		model.put("response", response);
+	@ResponseBody
+	@RequestMapping(value = "/heartbeat*", method = RequestMethod.GET)
+	public FormResponseMap handleRequest() {
 		
-		Integer projectId = (Integer) beamlineSessionStateMap.get(VALUE_KEY_PROJECT_ID);
-		if(projectId == null) { projectId = new Integer(0); }
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group,admin)) {
-			Map<String,String> error = new HashMap<String,String>();
-			error.put("message", "Mot permitted to view session.</error>");
-			response.put("error", error);
-			return "response-" + format;
+		Collection<StateMap> fullDeviceProxyList = new ArrayList<StateMap>(deviceProxyList);
+		if(canReadBeamline()) {
+			fullDeviceProxyList.addAll(authzDeviceProxyList);
 		}
 		
-		for(StateMap stateMap : stateMapList) {
-			StateMap tempStateMap = new SimpleStateMap(stateMap);
+		FormResponseMap response = new FormResponseMap(true);
+		
+		for(StateMap deviceProxy : fullDeviceProxyList) {
+			StateMap tempStateMap = new SimpleStateMap(deviceProxy);
 			
-			if(!tempStateMap.containsKey("timestamp")) {
-				tempStateMap.put("timestamp", tempStateMap.getTimestamp().getTime());
+			if(!tempStateMap.containsKey(VALUE_KEY_TIMESTAMP)) {
+				tempStateMap.put(VALUE_KEY_TIMESTAMP, tempStateMap.getTimestamp().getTime());
 			}
 			
-			if((excludeMap != null) && excludeMap.containsKey(stateMap)) {
-				tempStateMap.keySet().removeAll(excludeMap.get(stateMap));
+			if((excludeMap != null) && excludeMap.containsKey(deviceProxy)) {
+				tempStateMap.keySet().removeAll(excludeMap.get(deviceProxy));
 			}
 			
 			response.put(tempStateMap.getName(), tempStateMap);
 		}
 		
-		return "response-" + format;
+		return response;
 	}
 
-	public StateMap getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
+	public Collection<StateMap> getDeviceProxyList() {
+		return deviceProxyList;
 	}
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setDeviceProxyList(Collection<StateMap> deviceProxyList) {
+		this.deviceProxyList = deviceProxyList;
 	}
 
-	public List<StateMap> getStateMapList() {
-		return stateMapList;
+	public Collection<StateMap> getAuthzDeviceProxyList() {
+		return authzDeviceProxyList;
 	}
-	public void setStateMapList(List<StateMap> stateMapList) {
-		this.stateMapList = stateMapList;
+	public void setAuthzDeviceProxyList(Collection<StateMap> authzDeviceProxyList) {
+		this.authzDeviceProxyList = authzDeviceProxyList;
 	}
 
 	public Map<StateMap, Collection<String>> getExcludeMap() {

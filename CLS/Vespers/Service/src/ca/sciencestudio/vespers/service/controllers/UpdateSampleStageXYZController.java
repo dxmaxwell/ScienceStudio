@@ -11,85 +11,72 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.state.StateMap;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
- * @author medrand
+ * @author maxweld
  *
  */
+public class UpdateSampleStageXYZController extends AbstractBeamlineAuthzController {
 
-public class UpdateSampleStageXYZController {
-
-	private static final String SET_POINT_X_PARAMTER_KEY = "setPointX";
-	private static final String SET_POINT_Y_PARAMTER_KEY = "setPointY";
-	private static final String SET_POINT_Z_PARAMTER_KEY = "setPointZ";
+	private static final String VALUE_KEY_SET_POINT_X = "setPointX";
+	private static final String VALUE_KEY_SET_POINT_Y = "setPointY";
+	private static final String VALUE_KEY_SET_POINT_Z = "setPointZ";
 	
-	private static final String VALUE_KEY_PERSON_KEY = "personKey";
+	private StateMap sampleStateXYZProxy;
 	
-	private StateMap sampleStateXYZStateMap;
-	private StateMap beamlineSessionStateMap;
-	
-	@RequestMapping(value = "/updateSampleStageXYZ.xml", method = RequestMethod.GET)
-	public String handleRequest(HttpServletRequest request, ModelMap model) {
-			
-		String personKey = (String) beamlineSessionStateMap.get(VALUE_KEY_PERSON_KEY);
-		
-		if(!SecurityUtil.getUsername().equals(personKey)) {
-			model.put("errors", "<error>You do not have permission to view this session.</error>");
-			model.put("success", "false");
-			return "response";	
+	@ResponseBody
+	@RequestMapping(value = "/sample/stage/xyz*", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam(required=false) String setPointX,
+											@RequestParam(required=false) String setPointY,
+												@RequestParam(required=false) String setPointZ) {
+				
+		if(!canWriteBeamline()) {
+			return new FormResponseMap(false, "Not permitted to set stage position.");
 		}
 		
 		Map<String,Serializable> fields = new HashMap<String,Serializable>();
-		
-		String setPointXParmeter = request.getParameter(SET_POINT_X_PARAMTER_KEY);
-		String setPointYParmeter = request.getParameter(SET_POINT_Y_PARAMTER_KEY);
-		String setPointZParmeter = request.getParameter(SET_POINT_Z_PARAMTER_KEY);
 		
 		double spX = 0;
 		double spY = 0;
 		double spZ = 0;
 		
 		try {
-			spX = (setPointXParmeter != null) ? (spX = Double.parseDouble(setPointXParmeter)) : 0;
-			fields.put(SET_POINT_X_PARAMTER_KEY, spX);
-		} catch (NumberFormatException e) {
+			spX = (setPointX != null) ? (spX = Double.parseDouble(setPointX)) : 0;
+			fields.put(VALUE_KEY_SET_POINT_X, spX);
 		}
+		catch (NumberFormatException e) { /* ignore */ }
 		
 		try {
-			spY = (setPointYParmeter != null) ? (spY = Double.parseDouble(setPointYParmeter)) : 0;
-			fields.put(SET_POINT_Y_PARAMTER_KEY, spY);
-		} catch (NumberFormatException e) {
+			spY = (setPointY != null) ? (spY = Double.parseDouble(setPointY)) : 0;
+			fields.put(VALUE_KEY_SET_POINT_Y, spY);
 		}
+		catch (NumberFormatException e) { /* ignore */ }
+		
 		
 		try {
-			spZ = (setPointZParmeter != null) ? (spZ = Double.parseDouble(setPointZParmeter)) : 0;
-			fields.put(SET_POINT_Z_PARAMTER_KEY, spZ);
-		} catch (NumberFormatException e) {
+			spZ = (setPointZ != null) ? (spZ = Double.parseDouble(setPointZ)) : 0;
+			fields.put(VALUE_KEY_SET_POINT_Z, spZ);
+		}
+		catch (NumberFormatException e) { /* ignore */ }
+	
+		if(!fields.isEmpty()) {
+			sampleStateXYZProxy.putAll(fields);
 		}
 		
-		
-		if(fields.isEmpty()) {
-			model.put("success", false);
-		} else {
-			sampleStateXYZStateMap.putAll(fields);
-			model.put("success", true);	
-		}
-		return "response";
+		return new FormResponseMap(true);
 	}
 
-	public void setSampleStateXYZStateMap(StateMap sampleStateXYZStateMap) {
-		this.sampleStateXYZStateMap = sampleStateXYZStateMap;
+	public StateMap getSampleStateXYZProxy() {
+		return sampleStateXYZProxy;
 	}
-
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setSampleStateXYZProxy(StateMap sampleStateXYZProxy) {
+		this.sampleStateXYZProxy = sampleStateXYZProxy;
 	}
 }

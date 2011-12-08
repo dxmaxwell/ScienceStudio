@@ -332,8 +332,8 @@ function sampleImageQuery() {
 
 function sampleImageQuerySuccess(response, options) {
 	var json = Ext.decode(response.responseText, true);
-	if(json && json.response && json.response.timestamp) {
-		var timestamp = json.response.timestamp;
+	if(json && json.timestamp) {
+		var timestamp = json.timestamp;
 		if(timestamp > siUpdateImageTimestamp) {
 			siUpdateImageTimestamp = timestamp;
 			sampleImageUpdate();

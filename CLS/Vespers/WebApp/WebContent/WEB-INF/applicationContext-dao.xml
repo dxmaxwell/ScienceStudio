@@ -10,43 +10,104 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<!-- ===================================================================
+	<!---  ===================================================================
+  	-  Thread Pool for Asynchronous DAOs
+  	-  =================================================================== -->
+	
+	<bean id="executor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+  		<property name="corePoolSize" value="5" /><!-- Default: 1                 -->
+  		<property name="maxPoolSize" value="50" /><!-- Default: Integer.MAX_VALUE -->
+  		<!--<property name="queueCapacity" value="10000" />--><!-- Default: Integer.MAX_VALUE -->
+	</bean>
+
+	<!-- ===================================================================
   	-  DAOs
   	-  =================================================================== -->
 	
 	<bean id="loginSessionDAO"
 		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginSessionDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
 	</bean>
 	
-	<bean id="scanDAO"
-		class="ca.sciencestudio.model.session.dao.ibatis.IbatisScanDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<!-- Person Data Access Objects -->
+	
+	<bean id="personAuthzDAO"
+		class="ca.sciencestudio.model.person.dao.rest.RestPersonAuthzDAO">
+		<property name="restTemplate" ref="restTempalate"/>
+		<property name="baseUrl" value="${dao.rest.url}"/>
 	</bean>
 	
-	<bean id="experimentDAO"
-		class="ca.sciencestudio.model.session.dao.ibatis.IbatisExperimentDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<bean id="scanAuthzDAO"
+		class="ca.sciencestudio.model.session.dao.async.AsyncScanAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="scanAuthzDAO">
+			<bean class="ca.sciencestudio.model.session.dao.rest.RestScanAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
-	<bean id="sessionDAO"
-		class="ca.sciencestudio.model.session.dao.ibatis.IbatisSessionDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<!-- Project Data Access Objects -->
+	
+	<bean id="projectAuthzDAO"
+		class="ca.sciencestudio.model.project.dao.async.AsyncProjectAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="projectAuthzDAO">
+			<bean class="ca.sciencestudio.model.project.dao.rest.RestProjectAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
-	<bean id="projectDAO"
-		class="ca.sciencestudio.model.project.dao.ibatis.IbatisProjectDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<!-- Session Data Access Objects -->
+	
+	<bean id="sessionAuthzDAO"
+		class="ca.sciencestudio.model.session.dao.async.AsyncSessionAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="sessionAuthzDAO">
+			<bean class="ca.sciencestudio.model.session.dao.rest.RestSessionAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
-	<bean id="projectPersonDAO"
-		class="ca.sciencestudio.model.project.dao.ibatis.IbatisProjectPersonDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<bean id="experimentAuthzDAO"
+		class="ca.sciencestudio.model.session.dao.async.AsyncExperimentAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="experimentAuthzDAO">
+			<bean class="ca.sciencestudio.model.session.dao.rest.RestExperimentAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
+	</bean>
+
+	<!-- Facility Data Access Objects -->
+	
+	<bean id="facilityAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.async.AsyncFacilityAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="facilityAuthzDAO">
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestFacilityAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 	
-	<bean id="laboratoryDAO"
-		class="ca.sciencestudio.model.facility.dao.ibatis.IbatisLaboratoryDAO">
-		<property name="sqlMapClient" ref="sqlMapClient"/>
+	<bean id="laboratoryAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.async.AsyncLaboratoryAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="laboratoryAuthzDAO">
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestLaboratoryAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
 	</bean>
 
 </beans>

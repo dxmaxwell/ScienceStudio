@@ -18,6 +18,7 @@
 				<value>classpath:jdbc.properties</value>
 				<value>classpath:jms.properties</value>
 				<value>classpath:ccd.properties</value>
+				<value>classpath:dao.properties</value>
             </list>
         </property>
     </bean>

@@ -12,11 +12,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.SessionDAO;
 import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.session.Session;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.util.state.SessionStateMap;
 import ca.sciencestudio.util.state.support.SessionStateMapException;
 
@@ -31,43 +31,48 @@ import ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener;
  */
 public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventListener implements SessionStateMap {
 
-	private static final String VALUE_KEY_PROJECT_ID = "projectId";
+	private static final String VALUE_KEY_STOP = "stop";
+	private static final String VALUE_KEY_START = "start";
+	private static final String VALUE_KEY_PROJECT_GID = "projectGid";
 	private static final String VALUE_KEY_PROJECT_NAME = "projectName";
-	private static final String VALUE_KEY_SESSION_ID = "sessionId";
+	private static final String VALUE_KEY_SESSION_GID = "sessionGid";
 	private static final String VALUE_KEY_SESSION_NAME = "sessionName";
 	private static final String VALUE_KEY_SESSION_TIMEOUT = "sessionTimeout";
+	private static final String VALUE_KEY_SESSION_END_TIME = "sessionEndTime";
 	private static final String VALUE_KEY_PROPOSAL = "proposal";
-	private static final String VALUE_KEY_EXPERIMENT_ID = "experimentId";
+	private static final String VALUE_KEY_EXPERIMENT_GID = "experimentGid";
 	private static final String VALUE_KEY_EXPERIMENT_NAME = "experimentName";
-	private static final String VALUE_KEY_SCAN_ID = "scanId";
+	private static final String VALUE_KEY_SCAN_GID = "scanGid";
 	private static final String VALUE_KEY_SCAN_NAME = "scanName";
-	private static final String VALUE_KEY_CONTROLLER_UID = "controllerUid";
+	private static final String VALUE_KEY_CONTROLLER_GID = "controllerGid";
 	private static final String VALUE_KEY_CONTROLLER_NAME = "controllerName";
-
+	private static final String VALUE_KEY_ADMINISTRATOR_GID = "administratorGid";
 	private static final String VALUE_KEY_XRD_MODE = "xrdMode";
 	private static final String VALUE_KEY_XRD_TRIGGER_MODE = "triggerMode";
 
-	private static final int DEFAULT_PROJECT_ID = 0;
+	private static final String DEFAULT_PROJECT_GID = "0";
 	private static final String DEFAULT_PROJECT_NAME = "NOT AVAILABLE";
-	private static final int DEFAULT_SESSION_ID = 0;
+	private static final String DEFAULT_SESSION_GID = "0";
 	private static final String DEFAULT_SESSION_NAME = "NOT AVAILABLE";
 	private static final int DEFAULT_SESSION_TIMEOUT = 0;
+	private static final long DEFAULT_SESSION_END_TIME = 0;
 	private static final String DEFAULT_PROPOSAL = "NOT AVAILABLE";
-	private static final int DEFAULT_EXPERIMENT_ID = 0;
+	private static final String DEFAULT_EXPERIMENT_GID = "0";
 	private static final String DEFAULT_EXPERIMENT_NAME = "NOT AVAILABLE";
-	private static final int DEFAULT_SCAN_ID = 0;
+	private static final String DEFAULT_SCAN_GID = "0";
 	private static final String DEFAULT_SCAN_NAME = "NOT AVAILABLE";
-	private static final String DEFAULT_CONTROLLER_UID = "";
+	private static final String DEFAULT_CONTROLLER_GID = "0";
 	private static final String DEFAULT_CONTROLLER_NAME = "NOT AVAILABLE";
-
-	protected static final int DEFAULT_RUNNING_SESSION_ID = 0;
+	protected static final String DEFAULT_ADMINISTRATOR_GID = "0";
 	
-	private static final String INITIAL_EXPIMENT_NAME = "SELECT AN EXPERIMENT";
+	protected static final String DEFAULT_RUNNING_SESSION_GID = "0";
+	
+	private static final String INITIAL_EXPERIMENT_NAME = "SELECT AN EXPERIMENT";
 
 	private ReadWriteDeviceProxyEventListener delegateDeviceProxy = new ReadWriteDeviceProxyEventListener();
 	
-	private ProjectDAO projectDAO;
-	private SessionDAO sessionDAO;
+	private ProjectAuthzDAO projectAuthzDAO;
+	private SessionAuthzDAO sessionAuthzDAO;
 
 	private String DEFAULT_XRD_MODE;
 	private String DEFAULT_XRD_TRIGGER_MODE;
@@ -79,103 +84,128 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 
 	@Override
 	public boolean isRunning() {
-		return (DEFAULT_RUNNING_SESSION_ID < getRunningSessionId()); 
+		return (!DEFAULT_RUNNING_SESSION_GID.equalsIgnoreCase(getRunningSessionGid()));
 	}
 	
 	@Override
-	public int getRunningSessionId() {
-		Integer sessionId = (Integer) get(VALUE_KEY_SESSION_ID);
-		if(sessionId instanceof Number) {
-			return ((Number)sessionId).intValue();
-		}
-		else {
-			return DEFAULT_RUNNING_SESSION_ID;
+	public String getRunningSessionGid() {
+		Object sessionGid = get(VALUE_KEY_SESSION_GID);
+		if(sessionGid != null) {
+			return sessionGid.toString();
+		} else {
+			return DEFAULT_RUNNING_SESSION_GID;
 		}
 	}
 
 	@Override
 	public void stopSession() throws SessionStateMapException {
-		stopSession(getRunningSessionId());
+		stopSession(getRunningSessionGid());
 	}
 	
 	@Override
-	public void startSession(int sessionId) throws SessionStateMapException {
+	public void startSession(String user, String sessionGid) throws SessionStateMapException {
 		
 		if(isRunning()) {
 			throw new SessionStateMapException("Laboratory Session is already running.");
 		}
 		
-		Session session = sessionDAO.getSessionById(sessionId);
+		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
-			throw new SessionStateMapException("Unknown Laboratory Session ID. (1)");
+			throw new SessionStateMapException("Unknown Laboratory Session GID. (1)");
 		}
 		
-		Project project = projectDAO.getProjectById(session.getProjectId());
+		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
-			throw new SessionStateMapException("Unknown Laboratory Session ID. (2)");
+			throw new SessionStateMapException("Unknown Laboratory Session GID. (2)");
 		}
 		
 		Date now = new Date();
 
-		Date startDateTime = session.getStartDate();
-		if(now.before(startDateTime)) {
+		Date startDate = session.getStartDate();
+		if(now.before(startDate)) {
 			throw new SessionStateMapException("Laboratory Session is not currently scheduled.");
 		}
 		
-		Date endDateTime = session.getEndDate();
-		if(now.after(endDateTime)) {
+		Date endDate = session.getEndDate();
+		if(now.after(endDate)) {
 			throw new SessionStateMapException("Laboratory Session is not currently scheduled.");
 		}
 		
 		Map<String,Serializable> values = new HashMap<String,Serializable>();
-		values.put("start", "");
-		values.put("sessionId", session.getId());
-		values.put("sessionEndTime", endDateTime.getTime());
-		
+		values.put(VALUE_KEY_START, true);
+		values.put(VALUE_KEY_SESSION_GID, session.getGid());
+		values.put(VALUE_KEY_SESSION_END_TIME, endDate.getTime());
+		values.put(VALUE_KEY_ADMINISTRATOR_GID, user);
 		delegateDeviceProxy.putAll(values);
 	}
 	
 	@Override
-	public void stopSession(int sessionId) throws SessionStateMapException {
+	public void stopSession(String sessionGid) throws SessionStateMapException {
 		
 		if(!isRunning()) {
 			throw new SessionStateMapException("Laboratory Session is already stopped.");
 		}
 		
-		if(sessionId != getRunningSessionId()) {
+		if(!getRunningSessionGid().equalsIgnoreCase(sessionGid)) {
 			throw new SessionStateMapException("Laboratory Session is not running.");
 		}
 		
 		Map<String,Serializable> values = new HashMap<String,Serializable>();
-		values.put("stop", "");
-		
+		values.put(VALUE_KEY_STOP, true);
 		delegateDeviceProxy.putAll(values);
 	}
 
 
 	@Override
-	public void handleEvent(DeviceProxyEvent deviceStateMapEvent) {
-
-		Integer oldSessionId = (Integer) get(VALUE_KEY_SESSION_ID);
-		super.handleEvent(deviceStateMapEvent);
-		Integer newSessionId = (Integer) get(VALUE_KEY_SESSION_ID);
-
-		if((newSessionId != null) && !newSessionId.equals(oldSessionId)) {
-
-			setDefaultValues();
-
-			Session session = sessionDAO.getSessionById(newSessionId);
-			if(session == null) { return; }
-
-			Project project = projectDAO.getProjectById(session.getProjectId());
-			if(project == null) { return; }
-
-			put(VALUE_KEY_PROJECT_ID, project.getId());
-			put(VALUE_KEY_PROJECT_NAME, project.getName());
-			put(VALUE_KEY_SESSION_ID, session.getId());
-			put(VALUE_KEY_SESSION_NAME, session.getName());
-			put(VALUE_KEY_PROPOSAL, session.getProposal());
-			put(VALUE_KEY_EXPERIMENT_NAME, INITIAL_EXPIMENT_NAME);
+	public void handleEvent(DeviceProxyEvent deviceProxyEvent) {
+		if(!getDeviceId().equals(deviceProxyEvent.getDeviceId())) {
+			return;
+		}
+		
+		String currentGid = (String) get(VALUE_KEY_SESSION_GID);
+		super.handleEvent(deviceProxyEvent);
+		
+		String sessionGid = (String) get(VALUE_KEY_SESSION_GID);
+		if(sessionGid == null) {
+			return;
+		}
+			
+		if(!sessionGid.equalsIgnoreCase(currentGid)) {
+			
+			if(!sessionGid.equalsIgnoreCase(DEFAULT_SESSION_GID)) {
+				// Session has started. //
+				String administratorGid = (String) get(VALUE_KEY_ADMINISTRATOR_GID);
+				if(administratorGid == null) {
+					logger.warn("No administrator GID found in BeamlineSessionProxy, cannot start session.");
+					return;
+				}
+				
+				setDefaultValues();
+				
+				Session session = sessionAuthzDAO.get(administratorGid, sessionGid).get();
+				if(session == null) {
+					logger.warn("Session (" + sessionGid + ") not found or not authorized, cannot start session.");
+					return;
+				}
+	
+				Project project = projectAuthzDAO.get(administratorGid, session.getProjectGid()).get();
+				if(project == null) {
+					logger.warn("Project (" + session.getProjectGid() + ") not found or not authorized, cannot start session.");
+					return;
+				}
+	
+				put(VALUE_KEY_PROJECT_GID, project.getGid());
+				put(VALUE_KEY_PROJECT_NAME, project.getName());
+				put(VALUE_KEY_SESSION_GID, session.getGid());
+				put(VALUE_KEY_SESSION_NAME, session.getName());
+				put(VALUE_KEY_PROPOSAL, session.getProposal());
+				put(VALUE_KEY_ADMINISTRATOR_GID, administratorGid);
+				put(VALUE_KEY_EXPERIMENT_NAME, INITIAL_EXPERIMENT_NAME);
+			}
+			else {
+				// Session has stopped. //
+				setDefaultValues();
+			}
 		}
 	}
 	
@@ -191,58 +221,59 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 		super.setDeviceMessageSender(deviceMessageSender);
 	}
 	
-	public String getControllerUid() {
-		Object controllerUid = get(VALUE_KEY_CONTROLLER_UID);
-		if(controllerUid instanceof String) {
-			return (String) controllerUid;
+	public String getControllerGid() {
+		Object controllerGid = get(VALUE_KEY_CONTROLLER_GID);
+		if(controllerGid != null) {
+			return controllerGid.toString();
 		} else {
-			return DEFAULT_CONTROLLER_UID;
+			return DEFAULT_CONTROLLER_GID;
 		}
 	}
 	
 	public void setController(Person person) {
-		put(VALUE_KEY_CONTROLLER_UID, person.getUid());
-		put(VALUE_KEY_CONTROLLER_NAME, getPersonName(person));
+		put(VALUE_KEY_CONTROLLER_GID, person.getGid());
+		put(VALUE_KEY_CONTROLLER_NAME, Person.getFullName(person));
 	}
 	
-	protected void setRunningSessionId(int sessionId) {
-		put(VALUE_KEY_SESSION_ID, sessionId);
+	public void setControllerIfNotSet(Person person) {
+		String controllerGid = (String) get(VALUE_KEY_CONTROLLER_GID);
+		if((controllerGid == null) || controllerGid.equalsIgnoreCase(DEFAULT_CONTROLLER_GID)) {
+			setController(person);
+		}
 	}
 	
 	protected void setDefaultValues() {
-		put(VALUE_KEY_PROJECT_ID, DEFAULT_PROJECT_ID);
+		put(VALUE_KEY_PROJECT_GID, DEFAULT_PROJECT_GID);
 		put(VALUE_KEY_PROJECT_NAME, DEFAULT_PROJECT_NAME);
-		put(VALUE_KEY_SESSION_ID, DEFAULT_SESSION_ID);
+		put(VALUE_KEY_SESSION_GID, DEFAULT_SESSION_GID);
 		put(VALUE_KEY_SESSION_NAME, DEFAULT_SESSION_NAME);
 		put(VALUE_KEY_SESSION_TIMEOUT, DEFAULT_SESSION_TIMEOUT);
+		put(VALUE_KEY_SESSION_END_TIME, DEFAULT_SESSION_END_TIME);
 		put(VALUE_KEY_PROPOSAL, DEFAULT_PROPOSAL);
-		put(VALUE_KEY_EXPERIMENT_ID, DEFAULT_EXPERIMENT_ID);
+		put(VALUE_KEY_EXPERIMENT_GID, DEFAULT_EXPERIMENT_GID);
 		put(VALUE_KEY_EXPERIMENT_NAME, DEFAULT_EXPERIMENT_NAME);
-		put(VALUE_KEY_SCAN_ID, DEFAULT_SCAN_ID);
+		put(VALUE_KEY_SCAN_GID, DEFAULT_SCAN_GID);
 		put(VALUE_KEY_SCAN_NAME, DEFAULT_SCAN_NAME);
-		put(VALUE_KEY_CONTROLLER_UID, DEFAULT_CONTROLLER_UID);
+		put(VALUE_KEY_CONTROLLER_GID, DEFAULT_CONTROLLER_GID);
 		put(VALUE_KEY_CONTROLLER_NAME, DEFAULT_CONTROLLER_NAME);
+		put(VALUE_KEY_ADMINISTRATOR_GID, DEFAULT_ADMINISTRATOR_GID);
 		put(VALUE_KEY_TIMESTAMP, new Date());
 		put(VALUE_KEY_XRD_MODE, DEFAULT_XRD_MODE);
 		put(VALUE_KEY_XRD_TRIGGER_MODE, DEFAULT_XRD_TRIGGER_MODE);
 	}
 	
-	protected String getPersonName(Person person) {
-		return person.getFirstName() + " " + person.getLastName();
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
 	}
-	
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
-	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
-	}	
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
+	}
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
 
 	public void setDEFAULT_XRD_MODE(String defaultxrdmode) {

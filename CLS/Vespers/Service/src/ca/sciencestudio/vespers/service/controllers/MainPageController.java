@@ -7,78 +7,60 @@
  */
 package ca.sciencestudio.vespers.service.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.security.util.AuthorityUtil;
+import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.model.session.dao.SessionDAO;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
-import ca.sciencestudio.vespers.device.proxy.event.BeamlineSessionProxyEventListener;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class MainPageController {
+public class MainPageController extends AbstractBeamlineControlController {
 	
-	private static final String MODEL_KEY_PERSON_UID = "personUid";
+	private static final String MODEL_KEY_PERSON_GID = "personGid";
 	
-	private static final String VALUE_KEY_PROJECT_ID = "projectId";
-	private static final String VALUE_KEY_SESSION_ID = "sessionId";
+	private static final String VALUE_KEY_SESSION_GID = "sessionGid";
 	
 	private static final String SUCCESS_VIEW = "page/main";
 	private static final String FAILURE_VIEW = "page/error";
-	
-	@Autowired
-	private ProjectDAO projectDAO;
-	
-	@Autowired
-	private SessionDAO sessionDAO;
+
+	private PersonAuthzDAO personAuthzDAO;
 	
 	private String successView = SUCCESS_VIEW;
 	
-	private BeamlineSessionProxyEventListener beamlineSessionStateMap;
-	
 	@RequestMapping(value = "/main.html", method = RequestMethod.GET)
-	public String handleRequest(@RequestParam int sessionId, ModelMap model) {
+	public String handleRequest(@RequestParam("session") String sessionGid, ModelMap model) {
 				
-		Integer currentSessionId = (Integer) beamlineSessionStateMap.get(VALUE_KEY_SESSION_ID);
+		String currentSessionGid = (String) beamlineSessionProxy.get(VALUE_KEY_SESSION_GID);
 		
-		if((currentSessionId == null) || (sessionId != currentSessionId)) {
+		if((currentSessionGid == null) || (!currentSessionGid.equalsIgnoreCase(sessionGid))) {
 			model.put("error", "Session has not been started.");
 			model.put("errorMessage", "<a href=\"\">Try Again</a>");
 			return FAILURE_VIEW;
 		}
 		
-		Object value = beamlineSessionStateMap.get(VALUE_KEY_PROJECT_ID);
-		
-		int projectId = 0;
-		if(value instanceof Number) {
-			projectId = ((Number)value).intValue();
-		}
-
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		Object exptr = AuthorityUtil.buildProjectExperimenterAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group,admin)) {
+		if(!canObserveBeamline()) {
 			model.put("error", "Not permitted to view session.");
 			model.put("errorMessage", "<a href=\"\">Try Again</a>");
 			return FAILURE_VIEW;
 		}
 			
-		String controllerUid = beamlineSessionStateMap.getControllerUid();
-		if((controllerUid.length() == 0) && SecurityUtil.hasAnyAuthority(exptr,admin)) {
-			beamlineSessionStateMap.setController(SecurityUtil.getPerson());
+		if(canControlBeamline()) {
+			String user = SecurityUtil.getPersonGid();
+			Person person = personAuthzDAO.get(user, user).get();
+			if(person != null) {
+				beamlineSessionProxy.setControllerIfNotSet(person);
+			}
 		}
 		
-		model.put(MODEL_KEY_PERSON_UID, SecurityUtil.getPerson().getUid());
+		model.put(MODEL_KEY_PERSON_GID, SecurityUtil.getPersonGid());
 		return successView;
 	}
 	
@@ -89,24 +71,10 @@ public class MainPageController {
 		this.successView = successView;
 	}
 
-	public ProjectDAO getProjectDAO() {
-		return projectDAO;
+	public PersonAuthzDAO getPersonAuthzDAO() {
+		return personAuthzDAO;
 	}
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
-	}
-
-	public SessionDAO getSessionDAO() {
-		return sessionDAO;
-	}
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
-	}
-
-	public BeamlineSessionProxyEventListener getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
-	}
-	public void setBeamlineSessionStateMap(BeamlineSessionProxyEventListener beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setPersonAuthzDAO(PersonAuthzDAO personAuthzDAO) {
+		this.personAuthzDAO = personAuthzDAO;
 	}
 }

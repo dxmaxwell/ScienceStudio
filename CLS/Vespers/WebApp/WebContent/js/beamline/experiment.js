@@ -103,9 +103,9 @@ var moveHVStage = function() {
 		url: 'sample/stage/hv.json',
 		failure: function(form, action) {
 			var json = Ext.decode(action.response.responseText, true);
-			if(json && json.globalErrors && json.globalErrors[0]) {
-				Ext.Msg.alert("Error", json.globalErrors[0]);
-			} else {	
+			if(json && json.message) {
+				Ext.Msg.alert("Error", json.message);
+			} else {
 				Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 			}
 		}
@@ -325,9 +325,9 @@ setSampleImageScaleBtn.on('click', function() {
 		url: 'sample/camera/scale.json',
 		failure: function(form, action) {
 			var json = Ext.decode(action.response.responseText, true);
-			if(json && json.globalErrors && json.globalErrors[0]) {
-				Ext.Msg.alert("Error", json.globalErrors[0]);
-			} else {	
+			if(json && json.message) {
+				Ext.Msg.alert("Error", json.message);
+			} else {
 				Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 			}
 		}
@@ -484,24 +484,12 @@ heartbeatTasksToStart.push(sessionTask);
 
 var experimentStore = new Ext.data.JsonStore({
 	url: 'experiments.json',
-	root: 'response',
-	fields: [{
-		name:'display', mapping:'experiment.name'
-	},{
-		name:'value', mapping:'experiment.id'
-	}]
-});
-
-experimentStore.on('beforeload', function(store, options) {
-	if(heartbeatData.beamlineSession && heartbeatData.beamlineSession.sessionId) {
-		options.params.sessionId = heartbeatData.beamlineSession.sessionId;
-		return (options.params.sessionId > 0);
-	}
-	return false;
+	root: 'experiments',
+	fields: [ 'gid', 'name' ]
 });
 
 var experimentFld = new Ext.form.ComboBox({
-	hiddenName: 'experimentId',
+	hiddenName: 'experimentGid',
 	hideLabel: true,
 	store: experimentStore,
 	mode: 'remote',
@@ -509,8 +497,8 @@ var experimentFld = new Ext.form.ComboBox({
 	triggerAction: 'all',
 	forceSelection: true,
 	editable: false,
-	displayField: 'display',
-	valueField: 'value',
+	displayField: 'name',
+	valueField: 'gid',
 	listWidth: 150,
 	width: 'auto'
 });
@@ -524,9 +512,9 @@ experimentFld.on('select', function(combo, record, index) {
 		url: 'session.json',
 		failure: function(form, action) {
 			var json = Ext.decode(action.response.responseText, true);
-			if(json && json.globalErrors && json.globalErrors[0]) {
-				Ext.Msg.alert("Error", json.globalErrors[0]);
-			} else {	
+			if(json && json.message) {
+				Ext.Msg.alert("Error", json.message);
+			} else {
 				Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 			}
 		}
@@ -667,9 +655,9 @@ var scanSetupFormSubmit = function() {
 		failure: function(form, action) {
 			siUpdateScanPending = false;
 			var json = Ext.decode(action.response.responseText, true);
-			if(json && json.globalErrors && json.globalErrors[0]) {
-				Ext.Msg.alert("Error", json.globalErrors[0]);
-			} else {	
+			if(json && json.message) {
+				Ext.Msg.alert("Error", json.message);
+			} else {
 				Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 			}
 		}
@@ -821,9 +809,9 @@ stopScanBtn.on('click', function() {
 		callback: function(options, success, response) {
 			var json = Ext.decode(response.responseText, true);
 			if(json && !json.success) {
-				if(json.globalErrors && json.globalErrors[0]) {
-					Ext.Msg.alert("Error", json.globalErrors[0]);
-				} else {	
+				if(json.message) {
+					Ext.Msg.alert("Error", json.message);
+				} else {
 					Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 				}
 			}
@@ -841,9 +829,9 @@ pauseScanBtn.on('click', function() {
 		callback: function(options, success, response) {
 			var json = Ext.decode(response.responseText, true);
 			if(json && !json.success) {
-				if(json.globalErrors && json.globalErrors[0]) {
-					Ext.Msg.alert("Error", json.globalErrors[0]);
-				} else {	
+				if(json.message) {
+					Ext.Msg.alert("Error", json.message);
+				} else {
 					Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 				}
 			}
@@ -883,9 +871,9 @@ acceptStartScanBtn.on('click', function() {
 		},
 		failure: function(form, action) {
 			var json = Ext.decode(action.response.responseText, true);
-			if(json && json.globalErrors && json.globalErrors[0]) {
-				Ext.Msg.alert("Error", json.globalErrors[0]);
-			} else {	
+			if(json && json.message) {
+				Ext.Msg.alert("Error", json.message);
+			} else {
 				Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 			}
 		}

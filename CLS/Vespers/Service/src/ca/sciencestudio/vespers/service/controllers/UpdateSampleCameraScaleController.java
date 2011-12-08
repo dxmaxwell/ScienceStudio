@@ -8,71 +8,55 @@
 package ca.sciencestudio.vespers.service.controllers;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.util.authz.Authorities;
 import ca.sciencestudio.util.state.StateMap;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class UpdateSampleCameraScaleController {
-	
-	private static final String STATE_KEY_CONTROLLER_UID = "controllerUid";
-	
+public class UpdateSampleCameraScaleController extends AbstractBeamlineAuthzController {
+		
 	private static final String VALUE_KEY_SCALE = "scale";
 	
+	private StateMap sampleCameraProxy;
 	
-	private StateMap sampleCameraStateMap;
-	private StateMap beamlineSessionStateMap;
-	
-	@RequestMapping(value = "/sample/camera/scale.{format}", method = RequestMethod.POST)
-	public String handleRequest(@RequestParam(required = false) String scaleSP, 
-									@PathVariable String format, ModelMap model) {	
+	@ResponseBody
+	@RequestMapping(value = "/sample/camera/scale*", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam(required = false) String scaleSP) {
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
+		// User must be controller and VESPERS administrator to update Sample Camera Scale. //
 		
-		String responseView = "response-" + format;
-		
-		String personUid = (String) beamlineSessionStateMap.get(STATE_KEY_CONTROLLER_UID);
-		
-		if(!SecurityUtil.getPerson().getUid().equals(personUid)) {
-			errors.reject("permission.denied", "Not permitted to set sample image scale. (1)");
-			return responseView;
+		if(!canWriteBeamline()) {
+			return new FormResponseMap(false, "Not permitted to set sample image scale. (1)");
 		}
 		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		
-		if(!SecurityUtil.hasAuthority(admin)) {
-			errors.reject("permission.denied", "Not permitted to set sample image scale. (1)");
-			return responseView;
+		Authorities authorities = getAuthorities();
+		if((authorities == null) || !authorities.containsAny(FACILITY_ADMIN_VESPERS)) {
+			return new FormResponseMap(false, "Not permitted to set sample image scale. (1)");
 		}
 		
 		if(scaleSP != null) {
 			try {
-				sampleCameraStateMap.put(VALUE_KEY_SCALE, Double.parseDouble(scaleSP));
+				sampleCameraProxy.put(VALUE_KEY_SCALE, Double.parseDouble(scaleSP));
 			}
 			catch(NumberFormatException e) { /* Nothing To Do */ }
 		}
 		
-		return responseView;
+		return new FormResponseMap(true);
 	}
 
-	public void setSampleCameraStateMap(StateMap sampleCameraStateMap) {
-		this.sampleCameraStateMap = sampleCameraStateMap;
+	public StateMap getSampleCameraProxy() {
+		return sampleCameraProxy;
 	}
-
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setSampleCameraProxy(StateMap sampleCameraProxy) {
+		this.sampleCameraProxy = sampleCameraProxy;
 	}
 }

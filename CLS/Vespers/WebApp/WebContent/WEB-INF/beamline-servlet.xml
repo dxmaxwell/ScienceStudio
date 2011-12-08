@@ -18,27 +18,34 @@
 
 	<bean id="mainPageController"
 		class="ca.sciencestudio.vespers.service.controllers.MainPageController">
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="successView" value="page/main"/>
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
     <!--  Beamline Controllers -->
 
     <bean id="heartbeatController"
     	class="ca.sciencestudio.vespers.service.controllers.HeartbeatController">
-    	<property name="stateMapList">
+    	<property name="deviceProxyList">
     		<list>
-    			<ref bean="storageRingStatusStateMap"/>
-    			<ref bean="shutterStatus"/>
-    			<ref bean="monoStatus"/>
-    			<ref bean="mirrorStatus"/>
-    			<ref bean="fourElementDetectorStateMap"/>
-    			<!--<ref bean="vortexDetectorStateMap"/>-->
-    			<ref bean="sampleStageHVStateMap"/>
-    			<!--<ref bean="sampleStageXYZStateMap"/>-->
-    			<ref bean="scanDeviceStateMap"/>
-    			<ref bean="sampleCameraStateMap"/>
-    			<ref bean="beamlineInformationStateMap"/>
-    			<ref bean="beamlineSessionStateMap"/>
+    			<ref bean="beamlineSessionProxy"/>
+    		</list>
+    	</property>
+    	<property name="authzDeviceProxyList">
+    		<list>
+    			<ref bean="storageRingStatusProxy"/>
+    			<ref bean="shutterStatusProxy"/>
+    			<ref bean="monoStatusProxy"/>
+    			<ref bean="mirrorStatusProxy"/>
+    			<ref bean="fourElementDetectorProxy"/>
+    			<!--<ref bean="vortexDetectorProxy"/>-->
+    			<ref bean="sampleStageHVProxy"/>
+    			<!--<ref bean="sampleStageXYZProxy"/>-->
+    			<ref bean="scanDeviceProxy"/>
+    			<ref bean="sampleCameraProxy"/>
+    			<ref bean="beamlineInformationProxy"/>
     			<!--<ref bean="ccdSetupStateMap"/>-->
 				<!--<ref bean="ccdCollectionStateMap"/>-->
 				<!--<ref bean="ccdStageStateMap"/>-->
@@ -47,17 +54,17 @@
     	</property>
     	<property name="excludeMap">
     		<map>
-    			<entry key-ref="fourElementDetectorStateMap">
+    			<entry key-ref="fourElementDetectorProxy">
     				<set>
     					<value>spectrumAll</value>
     				</set>
     			</entry>
-    			<entry key-ref="sampleCameraStateMap">
+    			<entry key-ref="sampleCameraProxy">
     				<set>
     					<value>image</value>
  					</set>
     			</entry>
-    			<entry key-ref="sampleStageHVStateMap">
+    			<entry key-ref="sampleStageHVProxy">
     				<set>
     					<value>setPointH</value>
     					<value>setPointV</value>
@@ -65,124 +72,143 @@
     			</entry>
     		</map>
     	</property>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>
 
 	<!-- fourElementDetector Controllers -->
 
 	<bean id="getFourElementSpectrumController"
 		class="ca.sciencestudio.vespers.service.controllers.GetFourElementSpectrumController">
-		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="fourElementDetectorProxy" ref="fourElementDetectorProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
 	<bean id="startStopFourElementDetectorController"
 		class="ca.sciencestudio.vespers.service.controllers.StartStopFourElementDetectorController">
-		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="fourElementDetectorProxy" ref="fourElementDetectorProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
 	<bean id="saveFourElementSpectrumController"
 		class="ca.sciencestudio.vespers.service.controllers.SaveFourElementSpectrumController">
-		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="fourElementDetectorProxy" ref="fourElementDetectorProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
 	<bean id="updateFourElementDetectorController"
 		class="ca.sciencestudio.vespers.service.controllers.UpdateFourElementDetectorController">
-		<property name="fourElementDetectorStateMap" ref="fourElementDetectorStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="fourElementDetectorProxy" ref="fourElementDetectorProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
     <!-- vortexDetector Controllers -->
 
     <!--<bean id="getVortexSpectrumController"
     	class="ca.sciencestudio.vespers.service.controllers.GetVortexSpectrumController">
-    	<property name="vortexDetectorStateMap" ref="vortexDetectorStateMap"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="vortexDetectorProxy" ref="vortexDetectorProxy"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>-->
 
     <!--<bean id="startStopVortexDetectorController"
     	class="ca.sciencestudio.vespers.service.controllers.StartStopVortexDetectorController">
-    	<property name="vortexDetectorStateMap" ref="vortexDetectorStateMap"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="vortexDetectorProxy" ref="vortexDetectorProxy"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>-->
 
     <!--<bean id="saveVortexSpectrumController"
     	class="ca.sciencestudio.vespers.service.controllers.SaveVortexSpectrumController">
-    	<property name="vortexDetectorStateMap" ref="vortexDetectorStateMap"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="vortexDetectorProxy" ref="vortexDetectorProxy"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>-->
 
     <!--<bean id="updateVortexDetectorController"
     	class="ca.sciencestudio.vespers.service.controllers.UpdateVortexDetectorController">
-    	<property name="vortexDetextorStateMap" ref="vortexDetectorStateMap"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="vortexDetextorProxy" ref="vortexDetectorProxy"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>-->
 
     <!-- sampleCamera Controllers -->
 
 	<bean id="getSampleCameraQueryController"
 		class="ca.sciencestudio.vespers.service.controllers.GetSampleCameraQueryController">
-		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="sampleCameraProxy" ref="sampleCameraProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
 	<bean id="getSampleCameraImageController"
 		class="ca.sciencestudio.vespers.service.controllers.GetSampleCameraImageController">
-		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
-		<property name="sampleNotAvailableImageUrl" value="/ssvespers/img/sample_not_available.jpg"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="sampleCameraProxy" ref="sampleCameraProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
+		<property name="sampleNotAvailableImageUrl" value="/img/sample_not_available.jpg"/>
 	</bean>
 
 	<bean id="updateSampleCameraScaleController"
 		class="ca.sciencestudio.vespers.service.controllers.UpdateSampleCameraScaleController">
-		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="sampleCameraProxy" ref="sampleCameraProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
 	<!-- sampleStageHV Controllers -->
 
     <bean id="updateSampleStageHVController"
     	class="ca.sciencestudio.vespers.service.controllers.UpdateSampleStageHVController">
-    	<property name="sampleStateHVStateMap" ref="sampleStageHVStateMap"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="sampleStateHVProxy" ref="sampleStageHVProxy"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>
 
 	<!-- sampleStageXYZ Controllers -->
 
     <!--<bean id="updateSampleStageXYZController"
     	class="ca.sciencestudio.vespers.service.controllers.UpdateSampleStageXYZController">
-    	<property name="sampleStateXYZStateMap" ref="sampleStageXYZStateMap"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="sampleStateXYZProxy" ref="sampleStageXYZProxy"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>-->
 
     <!-- beamlineSession Controllers -->
 
     <bean id="updateBeamlineSessionController"
     	class="ca.sciencestudio.vespers.service.controllers.UpdateBeamlineSessionController">
-    	<property name="experimentDAO" ref="experimentDAO"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>
 
     <bean id="controlBeamlineController"
     	class="ca.sciencestudio.vespers.service.controllers.ControlBeamlineController">
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+    	<property name="personAuthzDAO" ref="personAuthzDAO"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>
 
     <!-- scan Controllers -->
 
 	<bean id="getExperimentListController"
 		class="ca.sciencestudio.vespers.service.controllers.GetExperimentListController">
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
-		<property name="experimentDAO" ref="experimentDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
     <bean id="startStopPauseScanDeviceController"
     	class="ca.sciencestudio.vespers.service.controllers.StartStopPauseScanDeviceController">
-    	<property name="scanDeviceStateMap" ref="scanDeviceStateMap"/>
-    	<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
-    	<property name="scanDAO" ref="scanDAO"/>
+    	<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+    	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="scanDeviceProxy" ref="scanDeviceProxy"/>
+    	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     	<!--<property name="ccdCollectionStateMap" ref="ccdCollectionStateMap"></property>-->
 		<!--<property name="ccdFileStateMap" ref="ccdFileStateMap"></property>-->
 		<!--<property name="filePath" value="${ccd.filePath}"></property>-->
@@ -191,9 +217,10 @@
     
     <bean id="updateScanDeviceController"
 		class="ca.sciencestudio.vespers.service.controllers.UpdateScanDeviceController">
-		<property name="scanDeviceStateMap" ref="scanDeviceStateMap"/>
-		<property name="sampleCameraStateMap" ref="sampleCameraStateMap"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="scanDeviceProxy" ref="scanDeviceProxy"/>
+		<property name="sampleCameraProxy" ref="sampleCameraProxy"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
 	<!-- PZT Cameras -->
@@ -201,7 +228,7 @@
 	<bean id="axisPTZCameraController"
 		class="ca.sciencestudio.vespers.service.controllers.AxisPTZCameraController">
 		<property name="cameraNotAvailableImageUrl" value="/img/camera_not_available.jpg"/>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 		<property name="axisHttpPTZCameras">
 			<list>
 				<ref bean="camera101"/>
@@ -256,6 +283,11 @@
 
 	<bean id="annotationMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="annoationMethodHandler"
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters" ref="httpMessageConverters"/>
 	</bean>
 
 	<bean id="viewResolver"

@@ -29,7 +29,10 @@
 		<script type="text/javascript">
 		
 			function initMainViewport() {
-			  
+				
+				// Init Tool Tips //
+				Ext.QuickTips.init();
+				
 				// Configure viewport //
 				var mainViewPort = new Ext.Viewport({
 			        layout:'border',

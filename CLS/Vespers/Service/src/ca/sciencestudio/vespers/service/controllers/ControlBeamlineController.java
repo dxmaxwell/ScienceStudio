@@ -8,53 +8,46 @@
 package ca.sciencestudio.vespers.service.controllers;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
-import ca.sciencestudio.vespers.device.proxy.event.BeamlineSessionProxyEventListener;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class ControlBeamlineController {
-
-	private static final String STATE_KEY_PROJECT_ID = "projectId";
+public class ControlBeamlineController extends AbstractBeamlineControlController {
 	
-	private BeamlineSessionProxyEventListener beamlineSessionStateMap;
-	
-	@RequestMapping(value = "/session/control.{format}", method = RequestMethod.GET)
-	public String handleRequest(@PathVariable String format, ModelMap model) {
+	private PersonAuthzDAO personAuthzDAO;
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
+	@ResponseBody
+	@RequestMapping(value = "/session/control*", method = RequestMethod.GET)
+	public FormResponseMap handleRequest() {
 		
-		Integer projectId = (Integer) beamlineSessionStateMap.get(STATE_KEY_PROJECT_ID);
-		if(projectId == null) { projectId = new Integer(0); }
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_VESPERS");
-		Object exptr = AuthorityUtil.buildProjectExperimenterAuthority(projectId);
-		
-		if(SecurityUtil.hasAnyAuthority(exptr, admin)) {
-			beamlineSessionStateMap.setController(SecurityUtil.getPerson());
-		} else {
-			errors.reject("permission.denied", "Not permitted to control session.");
+		if(!canControlBeamline()) {
+			return new FormResponseMap(false, "Not permitted to control session.");
 		}
 		
-		return "response-" + format;
+		String user = SecurityUtil.getPersonGid();
+		Person person = personAuthzDAO.get(user, user).get();
+		if(person == null) {
+			return new FormResponseMap(false, "Controller person not found.");
+		}
+		
+		beamlineSessionProxy.setController(person);
+		return new FormResponseMap(true);
 	}
 
-	public BeamlineSessionProxyEventListener getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
+	public PersonAuthzDAO getPersonAuthzDAO() {
+		return personAuthzDAO;
 	}
-	public void setBeamlineSessionStateMap(BeamlineSessionProxyEventListener beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setPersonAuthzDAO(PersonAuthzDAO personAuthzDAO) {
+		this.personAuthzDAO = personAuthzDAO;
 	}
 }

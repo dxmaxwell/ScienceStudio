@@ -12,25 +12,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.state.StateMap;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class UpdateScanDeviceController {
-	
-	private static final String STATE_KEY_CONTROLLER_UID = "controllerUid";
+public class UpdateScanDeviceController extends AbstractBeamlineAuthzController {
 	
 	private static final String VALUE_KEY_START_POSITION_X = "startPositionX";
 	private static final String VALUE_KEY_START_POSITION_Y = "startPositionY";
@@ -49,28 +44,19 @@ public class UpdateScanDeviceController {
 	private static final String VALUE_KEY_SAMPLE_CAMERA_POSITION_X = "positionH";
 	private static final String VALUE_KEY_SAMPLE_CAMERA_POSITION_Y = "positionV";
 	
-	private StateMap scanDeviceStateMap;
-	private StateMap sampleCameraStateMap;
-	private StateMap beamlineSessionStateMap;
+	private StateMap scanDeviceProxy;
+	private StateMap sampleCameraProxy;
 
-	@RequestMapping(value = "/scan/device/setup.{format}", method = RequestMethod.POST)
-	public String handleRequest(@RequestParam(required = false) String startPositionH, 
-									@RequestParam(required = false) String startPositionV, 
-										@RequestParam(required = false) String endPositionH, 
-											@RequestParam(required = false) String endPositionV,
-												@RequestParam(required = false) String stepSizeH, 
-													@PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/scan/device/setup*", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam(required = false) String startPositionH,
+											@RequestParam(required = false) String startPositionV,
+												@RequestParam(required = false) String endPositionH,
+													@RequestParam(required = false) String endPositionV,
+														@RequestParam(required = false) String stepSizeH) {
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		String personKey = (String) beamlineSessionStateMap.get(STATE_KEY_CONTROLLER_UID);
-		
-		if(!SecurityUtil.getPerson().getUid().equals(personKey)) {
-			errors.reject("permission.denied", "Not permitted to set scan region.");
-			return responseView;
+		if(!canWriteBeamline()) {
+			return new FormResponseMap(false, "Not permitted to set scan region.");
 		}
 		
 		Map<String,Serializable> values = new HashMap<String,Serializable>();
@@ -112,14 +98,14 @@ public class UpdateScanDeviceController {
 			catch(NumberFormatException e) { /* ignore */ }
 		}
 		
-		if(sampleCameraStateMap.containsKey(VALUE_KEY_SAMPLE_CAMERA_IMAGE) &&
-				sampleCameraStateMap.containsKey(VALUE_KEY_SAMPLE_CAMERA_SCALE) &&
-				sampleCameraStateMap.containsKey(VALUE_KEY_SAMPLE_CAMERA_POSITION_X) &&
-				sampleCameraStateMap.containsKey(VALUE_KEY_SAMPLE_CAMERA_POSITION_Y)) {
-			values.put(VALUE_KEY_SAMPLE_IMAGE, sampleCameraStateMap.get(VALUE_KEY_SAMPLE_CAMERA_IMAGE));
-			values.put(VALUE_KEY_SAMPLE_IMAGE_SCALE, sampleCameraStateMap.get(VALUE_KEY_SAMPLE_CAMERA_SCALE));
-			values.put(VALUE_KEY_SAMPLE_IMAGE_POSITION_X, sampleCameraStateMap.get(VALUE_KEY_SAMPLE_CAMERA_POSITION_X));
-			values.put(VALUE_KEY_SAMPLE_IMAGE_POSITION_Y, sampleCameraStateMap.get(VALUE_KEY_SAMPLE_CAMERA_POSITION_Y));
+		if(sampleCameraProxy.containsKey(VALUE_KEY_SAMPLE_CAMERA_IMAGE) &&
+				sampleCameraProxy.containsKey(VALUE_KEY_SAMPLE_CAMERA_SCALE) &&
+				sampleCameraProxy.containsKey(VALUE_KEY_SAMPLE_CAMERA_POSITION_X) &&
+				sampleCameraProxy.containsKey(VALUE_KEY_SAMPLE_CAMERA_POSITION_Y)) {
+			values.put(VALUE_KEY_SAMPLE_IMAGE, sampleCameraProxy.get(VALUE_KEY_SAMPLE_CAMERA_IMAGE));
+			values.put(VALUE_KEY_SAMPLE_IMAGE_SCALE, sampleCameraProxy.get(VALUE_KEY_SAMPLE_CAMERA_SCALE));
+			values.put(VALUE_KEY_SAMPLE_IMAGE_POSITION_X, sampleCameraProxy.get(VALUE_KEY_SAMPLE_CAMERA_POSITION_X));
+			values.put(VALUE_KEY_SAMPLE_IMAGE_POSITION_Y, sampleCameraProxy.get(VALUE_KEY_SAMPLE_CAMERA_POSITION_Y));
 		}
 		else {
 			values.put(VALUE_KEY_SAMPLE_IMAGE, new byte[0]);
@@ -129,30 +115,23 @@ public class UpdateScanDeviceController {
 		}
 		
 		if(!values.isEmpty()) {
-			scanDeviceStateMap.putAll(values);
+			scanDeviceProxy.putAll(values);
 		}
 		
-		return responseView;
+		return new FormResponseMap(true);
 	}
 
-	public StateMap getScanDeviceStateMap() {
-		return scanDeviceStateMap;
+	public StateMap getScanDeviceProxy() {
+		return scanDeviceProxy;
 	}
-	public void setScanDeviceStateMap(StateMap scanDeviceStateMap) {
-		this.scanDeviceStateMap = scanDeviceStateMap;
-	}
-
-	public StateMap getSampleCameraStateMap() {
-		return sampleCameraStateMap;
-	}
-	public void setSampleCameraStateMap(StateMap sampleCameraStateMap) {
-		this.sampleCameraStateMap = sampleCameraStateMap;
+	public void setScanDeviceProxy(StateMap scanDeviceProxy) {
+		this.scanDeviceProxy = scanDeviceProxy;
 	}
 
-	public StateMap getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
+	public StateMap getSampleCameraProxy() {
+		return sampleCameraProxy;
 	}
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setSampleCameraProxy(StateMap sampleCameraProxy) {
+		this.sampleCameraProxy = sampleCameraProxy;
 	}
 }

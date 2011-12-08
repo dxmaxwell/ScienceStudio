@@ -17,36 +17,39 @@ import ca.sciencestudio.util.state.support.SessionStateMapException;
  */
 public abstract class AbstractSessionStateMap extends SimpleStateMap implements SessionStateMap {
 
-	protected static final String STATE_KEY_RUNNING_SESSION_ID = "sessionId";
+	protected static final String STATE_KEY_RUNNING_SESSION_GID = "sessionGID";
 	
-	protected static final int DEFAULT_RUNNING_SESSION_ID = 0;
+	protected static final String DEFAULT_RUNNING_SESSION_GID = "0";
 	
 	@Override
 	public boolean isRunning() {
-		return (DEFAULT_RUNNING_SESSION_ID < getRunningSessionId()); 
+		return (!DEFAULT_RUNNING_SESSION_GID.equalsIgnoreCase(getRunningSessionGid())); 
 	}
 	
 	@Override
-	public int getRunningSessionId() {
-		Serializable sessionId = get(STATE_KEY_RUNNING_SESSION_ID);
-		if(sessionId instanceof Number) {
-			return ((Number)sessionId).intValue();
+	public String getRunningSessionGid() {
+		Serializable sessionGid = get(STATE_KEY_RUNNING_SESSION_GID);
+		if(sessionGid instanceof String) {
+			return (String)sessionGid;
+		}
+		else if(sessionGid instanceof Object) {
+			return sessionGid.toString();
 		}
 		else {
-			return DEFAULT_RUNNING_SESSION_ID;
+			return DEFAULT_RUNNING_SESSION_GID;
 		}
 	}
 	
 	@Override
 	public void stopSession() throws SessionStateMapException {
-		stopSession(getRunningSessionId());
+		stopSession(getRunningSessionGid());
 	}
 
-	protected void setRunningSessionId(int sessionId) {
-		put(STATE_KEY_RUNNING_SESSION_ID, sessionId);
+	protected void setRunningSessionGid(String sessionGid) {
+		put(STATE_KEY_RUNNING_SESSION_GID, sessionGid);
 	}
 	
 	protected void setDefaultValues() {
-		setRunningSessionId(DEFAULT_RUNNING_SESSION_ID);
+		setRunningSessionGid(DEFAULT_RUNNING_SESSION_GID);
 	}
 }

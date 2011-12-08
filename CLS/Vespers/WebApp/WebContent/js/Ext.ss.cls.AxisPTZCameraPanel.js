@@ -317,9 +317,9 @@ Ext.extend(Ext.ss.cls.AxisPTZCameraPanel, Ext.Panel, {
 		controlRequestCallback:function(options, success, response) {
 			var json = response.responseJson||Ext.decode(response.responseText, true);
 			if(json && !json.success) {
-				if(json.globalErrors && json.globalErrors[0]) {
-					Ext.Msg.alert("Error", json.globalErrors[0]);
-				} else {	
+				if(json.message) {
+					Ext.Msg.alert("Error", message);
+				} else {
 					Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 				}
 			}

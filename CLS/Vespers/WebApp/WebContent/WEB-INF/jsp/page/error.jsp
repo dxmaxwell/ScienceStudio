@@ -23,7 +23,7 @@
 			<h3>${error}</h3>
 		</c:when>
 		<c:otherwise>
-			<h3>"An Unspecified Error has Occurred</h3>
+			<h3>An Unspecified Error has Occurred</h3>
 		</c:otherwise>
 	</c:choose>
 	<c:choose>

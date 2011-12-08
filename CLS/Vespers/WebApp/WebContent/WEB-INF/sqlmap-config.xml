@@ -15,11 +15,4 @@
 	
 	<sqlMap resource="ca/sciencestudio/login/model/dao/ibatis/maps/LoginSession.xml"/>
 	
-	<sqlMap resource="ca/sciencestudio/model/facility/dao/ibatis/maps/Laboratory.xml"/>
-	<sqlMap resource="ca/sciencestudio/model/project/dao/ibatis/maps/Project.xml"/>
-	<sqlMap resource="ca/sciencestudio/model/project/dao/ibatis/maps/ProjectPerson.xml"/>
-	<sqlMap resource="ca/sciencestudio/model/session/dao/ibatis/maps/Session.xml"/>
-	<sqlMap resource="ca/sciencestudio/model/session/dao/ibatis/maps/Experiment.xml"/>
-	<sqlMap resource="ca/sciencestudio/model/session/dao/ibatis/maps/Scan.xml"/>
-	
 </sqlMapConfig>

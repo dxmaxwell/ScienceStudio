@@ -44,9 +44,9 @@ biSubmitBtn.on('click', function () {
 		url: 'information.json',
 		failure: function(form, action) {
 			var json = Ext.decode(action.response.responseText, true);
-			if(json && json.globalErrors && json.globalErrors[0]) {
-				Ext.Msg.alert("Error", json.globalErrors[0]);
-			} else {	
+			if(json && json.message) {
+				Ext.Msg.alert("Error", json.message);
+			} else {
 				Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 			}
 		}

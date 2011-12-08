@@ -12,40 +12,63 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:servlet.properties"/>
+	</bean>
+
 	<context:annotation-config/>
 
 	<bean id="mainPageController"
 		class="ca.sciencestudio.vespers.service.admin.controllers.MainPageController">
+		<property name="facility" value="${servlet.facility}"/>
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="htmlHeaderTitle" value="Science Studio :: VESPERS Administration"/>
+		<property name="pageHeaderTitle" value="VESPERS Administration"/>
 	</bean>
 	
 	<bean id="laboratorySessionController"
 		class="ca.sciencestudio.vespers.service.admin.controllers.LaboratorySessionController">
-		<property name="facilityName" value="CLS"/>
-		<property name="laboratoryName" value="VESPERS"/>
-		<property name="beamlineSessionProxy" ref="beamlineSessionStateMap"/>
+		<property name="facility" value="${servlet.facility}"/>
+		<property name="laboratoryName" value="${servlet.laboratory.name}"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
 	<bean id="heartbeatController"
-		class="ca.sciencestudio.vespers.service.controllers.HeartbeatController">
-		<property name="stateMapList">
+		class="ca.sciencestudio.vespers.service.admin.controllers.HeartbeatController">
+		<property name="facility" value="${servlet.facility}"/>
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="deviceProxyList">
 		   	<list>
-				<ref bean="beamlineInformationStateMap"/>
+				<ref bean="beamlineInformationProxy"/>
 			</list>
 		</property>
-		<property name="beamlineSessionStateMap" ref="beamlineSessionStateMap"/>
 	</bean>
 
 	<bean id="beamlineInformationController"
 		class="ca.sciencestudio.vespers.service.admin.controllers.BeamlineInformationController">
-		<property name="beamlineInformationDeviceProxy" ref="beamlineInformationStateMap"/>
+		<property name="facility" value="${servlet.facility}"/>
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="beamlineInformationDeviceProxy" ref="beamlineInformationProxy"/>
 	</bean>
 
-	<bean id="laboratorySessionValidator"
-		class="ca.sciencestudio.vespers.service.admin.validators.LaboratorySessionValidator">
+	<bean id="webBindingInitializer"
+		class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
+		<property name="conversionService" ref="conversionService"/>
 	</bean>
 
 	<bean id="annotationMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="annoationMethodHandler"
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters" ref="httpMessageConverters"/>
+		<property name="webBindingInitializer" ref="webBindingInitializer"/>
 	</bean>
 
 	<bean id="viewResolver"

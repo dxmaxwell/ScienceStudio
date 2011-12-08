@@ -44,8 +44,8 @@ var heartbeatLoadCallback = function(options, success, response) {
 var heartbeatLoadSuccess = function(response, options) {
 	if(response) {
 		var json = response.responseJson||Ext.decode(response.responseText, true);
-		if(json && json.response) {
-			heartbeatData = json.response;
+		if(json) {
+			heartbeatData = json;
 			if(!heartbeatDataInitialized) {
 				heartbeatDataInitialized = true;
 				for(var idx in heartbeatTasksToStart) {

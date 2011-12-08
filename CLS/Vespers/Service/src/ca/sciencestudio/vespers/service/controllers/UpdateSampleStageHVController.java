@@ -12,47 +12,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.state.StateMap;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class UpdateSampleStageHVController {
+public class UpdateSampleStageHVController extends AbstractBeamlineAuthzController {
 
 	private static final String VALUE_KEY_SET_POINT_H = "setPointH";
 	private static final String VALUE_KEY_SET_POINT_V = "setPointV";
 	
-	private static final String STATE_KEY_CONTROLLER_UID = "controllerUid";
+	private StateMap sampleStateHVProxy;
 	
-	private StateMap sampleStateHVStateMap;
-	private StateMap beamlineSessionStateMap;
-	
-	@RequestMapping(value = "/sample/stage/hv.{format}", method = RequestMethod.POST)
-	public String handleRequest(@RequestParam(required=false) String setPointH, 
-									@RequestParam(required=false) String setPointV,
-											@PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/sample/stage/hv*", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam(required=false) String setPointH,
+											@RequestParam(required=false) String setPointV) {
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		String personUid = (String) beamlineSessionStateMap.get(STATE_KEY_CONTROLLER_UID);
-		
-		if(!SecurityUtil.getPerson().getUid().equals(personUid)) {
-			errors.reject("permission.denied", "Not permitted to set stage position.");
-			return responseView;
+		if(!canWriteBeamline()) {
+			return new FormResponseMap(false, "Not permitted to set stage position.");
 		}
 		
 		Map<String,Serializable> values = new HashMap<String,Serializable>();
@@ -72,23 +58,16 @@ public class UpdateSampleStageHVController {
 		}
 		
 		if(!values.isEmpty()) {
-			sampleStateHVStateMap.putAll(values);	
+			sampleStateHVProxy.putAll(values);
 		}
 		
-		return responseView;
-	}	
-	
-	public StateMap getSampleStateHVStateMap() {
-		return sampleStateHVStateMap;
-	}
-	public void setSampleStateHVStateMap(StateMap sampleStateHVStateMap) {
-		this.sampleStateHVStateMap = sampleStateHVStateMap;
+		return new FormResponseMap(true);
 	}
 
-	public StateMap getBeamlineSessionStateMap() {
-		return beamlineSessionStateMap;
+	public StateMap getSampleStateHVProxy() {
+		return sampleStateHVProxy;
 	}
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
+	public void setSampleStateHVProxy(StateMap sampleStateHVProxy) {
+		this.sampleStateHVProxy = sampleStateHVProxy;
 	}
 }

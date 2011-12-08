@@ -24,19 +24,24 @@ import ca.sciencestudio.device.control.component.impl.ProcessDevice;
  */
 public class BeamlineSession extends ProcessDevice implements DeviceEventListener {
 	
-	private static final long DEFAULT_PROCESS_INITIALIZE_WAIT = 2000L;
+	private static final String DEFAULT_SESSION_GID = "0";
+	private static final long DEFAULT_SESSION_END_TIME = 0;
+	private static final String DEFAULT_ADMINISTRATOR_GID = "0";
 	private static final long DEFAULT_PROCESS_MONITOR_WAIT = 2000L;
+	private static final long DEFAULT_PROCESS_INITIALIZE_WAIT = 2000L;
 	
-	protected static final String VALUE_KEY_SESSION_ID = "sessionId";
+	protected static final String VALUE_KEY_SESSION_GID = "sessionGid";
 	protected static final String VALUE_KEY_SESSION_TIMEOUT = "sessionTimeout";
 	protected static final String VALUE_KEY_SESSION_END_TIME = "sessionEndTime";
+	protected static final String VALUE_KEY_ADMINISTRATOR_GID = "administratorGid";
 	protected static final String VALUE_KEY_SESSION_START = "start";
 	protected static final String VALUE_KEY_SESSION_STOP = "stop";
 	
 	private long processInitializeWait = DEFAULT_PROCESS_INITIALIZE_WAIT;
 	
-	private int sessionId = 0;
-	private long sessionEndTime = 0;
+	private String sessionGid = DEFAULT_SESSION_GID;
+	private long sessionEndTime = DEFAULT_SESSION_END_TIME;
+	private String administratorGid = DEFAULT_ADMINISTRATOR_GID;
 	
 	public BeamlineSession(String id, List<DeviceEventPublisher> eventPublishers) {
 		super(id);
@@ -49,9 +54,10 @@ public class BeamlineSession extends ProcessDevice implements DeviceEventListene
 	
 	public Object getValue() {
 		Map<String,Object> valueMap = new HashMap<String,Object>();
-		valueMap.put(VALUE_KEY_SESSION_ID, getSessionId());
+		valueMap.put(VALUE_KEY_SESSION_GID, getSessionGid());
 		valueMap.put(VALUE_KEY_SESSION_TIMEOUT, getSessionTimeout());
 		valueMap.put(VALUE_KEY_SESSION_END_TIME, getSessionEndTime());
+		valueMap.put(VALUE_KEY_ADMINISTRATOR_GID, getAdministratorGid());
 		return valueMap;
 	}
 	
@@ -59,30 +65,42 @@ public class BeamlineSession extends ProcessDevice implements DeviceEventListene
 	public void setValue(Object value) {
 		try {
 			Map<String,Object> valueMap = (Map<String,Object>) value;
-			if(valueMap.containsKey(VALUE_KEY_SESSION_START)) { 
+			if(valueMap.containsKey(VALUE_KEY_SESSION_START)) {
 			
-				int sessionId = 0;
-				if(valueMap.containsKey(VALUE_KEY_SESSION_ID)) {
+				String sessionGid = DEFAULT_SESSION_GID;
+				if(valueMap.containsKey(VALUE_KEY_SESSION_GID)) {
 					try {
-						sessionId = (Integer) valueMap.get(VALUE_KEY_SESSION_ID);
+						sessionGid = (String) valueMap.get(VALUE_KEY_SESSION_GID);
 					}
 					catch(ClassCastException e) {
-						log.warn("Set value of " + VALUE_KEY_SESSION_ID + " wrong class, expecting Integer.");
+						log.warn("Set value of " + VALUE_KEY_SESSION_GID + " wrong class, expecting String.");
 					}
 				}
 				
-				long sessionEndTime = 0;
+				long sessionEndTime = DEFAULT_SESSION_END_TIME;
 				if(valueMap.containsKey(VALUE_KEY_SESSION_END_TIME)) {
 					try {
 						sessionEndTime = (Long) valueMap.get(VALUE_KEY_SESSION_END_TIME);
 					}
 					catch(ClassCastException e) {
-						log.warn("Set value of " + VALUE_KEY_SESSION_ID + " wrong class, expecting Long.");
+						log.warn("Set value of " + VALUE_KEY_SESSION_END_TIME + " wrong class, expecting Long.");
 					}
 				}
 				
-				if((sessionId > 0) && (sessionEndTime >0)) {
-					startProcess(sessionId, sessionEndTime);
+				String administratorGid = DEFAULT_ADMINISTRATOR_GID;
+				if(valueMap.containsKey(VALUE_KEY_ADMINISTRATOR_GID)) {
+					try {
+						administratorGid = (String) valueMap.get(VALUE_KEY_ADMINISTRATOR_GID);
+					}
+					catch(ClassCastException e) {
+						log.warn("Set value of " + VALUE_KEY_ADMINISTRATOR_GID + " wrong class, expecting String.");
+					}
+				}
+				
+				if((sessionEndTime > 0L) &&
+						(!DEFAULT_SESSION_GID.equalsIgnoreCase(sessionGid)) &&
+						(!DEFAULT_ADMINISTRATOR_GID.equalsIgnoreCase(administratorGid))) {
+					startProcess(sessionGid, sessionEndTime, administratorGid);
 				}
 			}
 			else if(valueMap.containsKey(VALUE_KEY_SESSION_STOP)) {
@@ -94,22 +112,23 @@ public class BeamlineSession extends ProcessDevice implements DeviceEventListene
 		}
 	}
 	
-	protected void startProcess(int sessionId, long sessionEndTime) { 
+	protected void startProcess(String sessionGid, long sessionEndTime, String administratorGid) {
 		if(!isProcessRunning()) {
-			long now = new Date().getTime(); 
+			long now = new Date().getTime();
 			if(sessionEndTime > now) {
-				setSessionId(sessionId);
+				setSessionGid(sessionGid);
 				setSessionEndTime(sessionEndTime);
+				setAdministratorGid(administratorGid);
 				startProcess();
 			}
 		}
 	}
 	
-	public int getSessionId() {
-		return sessionId;
+	public String getSessionGid() {
+		return sessionGid;
 	}
-	protected void setSessionId(int sessionId) {
-		this.sessionId = sessionId;
+	protected void setSessionGid(String sessionGid) {
+		this.sessionGid = sessionGid;
 	}
 
 	public long getSessionEndTime() {
@@ -119,6 +138,13 @@ public class BeamlineSession extends ProcessDevice implements DeviceEventListene
 		this.sessionEndTime = sessionEndTime;
 	}
 	
+	public String getAdministratorGid() {
+		return administratorGid;
+	}
+	public void setAdministratorGid(String administratorGid) {
+		this.administratorGid = administratorGid;
+	}
+
 	public int getSessionTimeout() {
 		long now = new Date().getTime();
 		long timeout = sessionEndTime - now;
@@ -185,10 +211,11 @@ public class BeamlineSession extends ProcessDevice implements DeviceEventListene
 							continue;
 						}
 						else {
-							setSessionId(0);
-							setSessionEndTime(0);
+							setSessionGid(DEFAULT_SESSION_GID);
+							setSessionEndTime(DEFAULT_SESSION_END_TIME);
+							setAdministratorGid(DEFAULT_ADMINISTRATOR_GID);
 							publishValue();
-						}	
+						}
 					}
 					else {
 						

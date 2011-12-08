@@ -36,7 +36,7 @@
 			});
 
 			/*</c:when><c:otherwise>*/
-
+			
 			var projectNameFld = new Ext.form.TextField({
 				fieldLabel: 'Project',
 				value: '${laboratorySession.projectName}'
@@ -44,7 +44,7 @@
 
 			var sessionNameFld = new Ext.form.TextField({
 				fieldLabel: 'Session',
-				value: '${laboratorySession.sessionName}'
+				value: '${laboratorySession.name}'
 			});
 
 			var proposalFld = new Ext.form.TextField({
@@ -52,14 +52,14 @@
 				value: '${laboratorySession.proposal}'
 			});
 
-			var startDateTimeFld = new Ext.form.TextField({
+			var startDateFld = new Ext.form.TextField({
 				fieldLabel: 'Start',
-				value: '${laboratorySession.startDate}${"  "}${laboratorySession.startTime}' 
+				value: Date.parseDate('${laboratorySession.startDay}T${laboratorySession.startTime}', 'c').format('Y-m-d H:i')
 			});
-
-			var endDateTimeFld = new Ext.form.TextField({
-				fieldLabel: 'End',
-				value: '${laboratorySession.endDate}${"  "}${laboratorySession.endTime}' 
+						
+			var endDateFld = new Ext.form.TextField({
+				fieldLabel: 'End', 
+				value: Date.parseDate('${laboratorySession.endDay}T${laboratorySession.endTime}', 'c').format('Y-m-d H:i')
 			});
 
 			var statusFld = new Ext.form.TextField({
@@ -97,7 +97,7 @@
 				text: 'Start',
 				handler: function() {
 					Ext.get('MAIN_PANEL').getUpdater().update({
-						url:'session/${laboratorySession.sessionId}/start.html',
+						url:'session/${laboratorySession.gid}/start.html',
 						text: 'Starting Session...',
 						scripts:true,
 						timeout:60
@@ -109,7 +109,7 @@
 				text: 'Stop',
 				handler: function() {
 					Ext.get('MAIN_PANEL').getUpdater().update({
-						url: 'session/${laboratorySession.sessionId}/stop.html',
+						url: 'session/${laboratorySession.gid}/stop.html',
 						text: 'Stopping Session...',
 						scripts:true,
 						timeout:60
@@ -121,16 +121,16 @@
 				text:'Edit',
 				handler: function() {
 					Ext.get('MAIN_PANEL').getUpdater().update({
-						url:'session/${laboratorySession.sessionId}/edit.html',
+						url:'session/${laboratorySession.gid}/edit.html',
 						scripts:true
 					});
 				}
 			});
 			
-			/*<c:choose><c:when test="${runningSessionId == laboratorySession.sessionId}">*/
+			/*<c:choose><c:when test="${runningSessionGid == laboratorySession.gid}">*/
 			startBtn.hide();
 			editBtn.hide(); 
-			/*</c:when><c:when test="${runningSessionId == 0}">*/
+			/*</c:when><c:when test="${runningSessionGid == '0'}">*/
 			stopBtn.hide();
 			/*</c:when><c:otherwise>*/
 			startBtn.hide();
@@ -148,8 +148,8 @@
 					projectNameFld,
 					sessionNameFld,
 					proposalFld,
-					startDateTimeFld,
-					endDateTimeFld,
+					startDateFld,
+					endDateFld,
 					statusFld,
 					{
 						xtype:'panel',

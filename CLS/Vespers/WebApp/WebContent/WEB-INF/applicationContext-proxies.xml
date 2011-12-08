@@ -25,18 +25,18 @@
 		class="ca.sciencestudio.device.proxy.messaging.SimpleDeviceMessageReceiverProxyEventPublisher">
 		<constructor-arg>
 			<list>
-				<ref bean="storageRingStatusStateMap"/>
-				<ref bean="shutterStatus"/>
-				<ref bean="monoStatus"/>
-				<ref bean="mirrorStatus"/>
-				<!--<ref bean="sampleStageXYZStateMap"/>-->
-				<ref bean="sampleStageHVStateMap"/>
-				<ref bean="sampleCameraStateMap"/>
-				<ref bean="fourElementDetectorStateMap"/>
-				<!--<ref bean="vortexDetectorStateMap"/>-->
-				<ref bean="scanDeviceStateMap"/>
-				<ref bean="beamlineInformationStateMap"/>
-				<ref bean="beamlineSessionStateMap"/>
+				<ref bean="storageRingStatusProxy"/>
+				<ref bean="shutterStatusProxy"/>
+				<ref bean="monoStatusProxy"/>
+				<ref bean="mirrorStatusProxy"/>
+				<!--<ref bean="sampleStageXYZProxy"/>-->
+				<ref bean="sampleStageHVProxy"/>
+				<ref bean="sampleCameraProxy"/>
+				<ref bean="fourElementDetectorProxy"/>
+				<!--<ref bean="vortexDetectorProxy"/>-->
+				<ref bean="scanDeviceProxy"/>
+				<ref bean="beamlineInformationProxy"/>
+				<ref bean="beamlineSessionProxy"/>
 				<!-- CCD device proxies disabled for initial release. -->
 				<!--<ref bean="ccdSetupStateMap"/>-->
 				<!--<ref bean="ccdCollectionStateMap"/>-->
@@ -75,78 +75,79 @@
 	
 	<!-- Device State Maps -->
 
-	<bean id="storageRingStatusStateMap"
+	<bean id="storageRingStatusProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="storageRingStatus"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<bean id="shutterStatus"
+	<bean id="shutterStatusProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="shutterStatus"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<bean id="monoStatus"
+	<bean id="monoStatusProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="monoStatus"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<bean id="mirrorStatus"
+	<bean id="mirrorStatusProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="mirrorStatus"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<bean id="fourElementDetectorStateMap"
+	<bean id="fourElementDetectorProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="fourElementDetector"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<!--<bean id="vortexDetectorStateMap"
+	<!--<bean id="vortexDetectorProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="vortexDetector"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>-->
 
-	<bean id="sampleCameraStateMap"
+	<bean id="sampleCameraProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="sampleCamera"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<bean id="sampleStageHVStateMap"
+	<bean id="sampleStageHVProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="sampleStageHV"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<!--<bean id="sampleStageXYZStateMap"
+	<!--<bean id="sampleStageXYZProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="sampleStageXYZ"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>-->
 
-	<bean id="scanDeviceStateMap"
+	<bean id="scanDeviceProxy"
 		class="ca.sciencestudio.vespers.device.proxy.event.ScanDeviceProxyEventListener">
-		<property name="scanDAO" ref="scanDAO"/>
 		<property name="deviceId" value="scanDevice"/>
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
+		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
 	</bean>
 
-	<bean id="beamlineInformationStateMap"
+	<bean id="beamlineInformationProxy"
 		class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="beamlineInformation"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 	</bean>
 
-	<bean id="beamlineSessionStateMap"
+	<bean id="beamlineSessionProxy"
 		class="ca.sciencestudio.vespers.device.proxy.event.BeamlineSessionProxyEventListener">
 		<property name="deviceId" value="beamlineSession"/>
-		<property name="projectDAO" ref="projectDAO"/>
-		<property name="sessionDAO" ref="sessionDAO"/>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
 		<!-- CCD configuration disabled for initial release. -->
 		<!--<property name="DEFAULT_XRD_MODE" value="${ccd.defaultMode}"/>-->

@@ -41,7 +41,7 @@
 		
 		<script type="text/javascript">
 			
-			var personUid = '${personUid}';
+			var personGid = '${personGid}';
 		
 			function initMainPage() {
 				

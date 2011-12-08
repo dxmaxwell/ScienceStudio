@@ -355,9 +355,9 @@ var bsControlBtn = new Ext.Button({
 			callback: function(options, success, response) {
 				var json = Ext.decode(response.responseText, true);
 				if(json && !json.success) {
-					if(json.globalErrors && json.globalErrors[0]) {
-						Ext.Msg.alert("Error", json.globalErrors[0]);
-					} else {	
+					if(json.message) {
+						Ext.Msg.alert("Error", json.message);
+					} else {
 						Ext.Msg.alert("Error", 'An unspecified error has occurred.');
 					}
 				}
@@ -405,7 +405,7 @@ var blSessionLoad = function() {
 		blSessionForm.getForm().setValues(bsData);
 		
 		if(sessionRunning) {
-			if(bsData.controllerUid == personUid) {
+			if(bsData.controllerGid == personGid) {
 				showSessionController();
 			}
 			else {
