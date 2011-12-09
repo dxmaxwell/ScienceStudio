@@ -32,17 +32,19 @@ public class ReadOnlyDeviceProxyEventListener extends SimpleDeviceProxy implemen
 	}
 	
 	public void queryDevice() {
-		DeviceMessage<HashMap<String,Serializable>> deviceMessage =
-						new DeviceMessage<HashMap<String,Serializable>>();
-		deviceMessage.setDeviceId(getDeviceId());
-		deviceMessage.setTimestamp(getTimestamp());
-		deviceMessage.setValue(new HashMap<String,Serializable>());
-		deviceMessage.setDeviceMessageType(DeviceMessageType.VALUE_QUERY);
-		deviceMessageSender.send(deviceMessage);
+		if(deviceMessageSender != null) {
+			DeviceMessage<HashMap<String,Serializable>> deviceMessage =
+							new DeviceMessage<HashMap<String,Serializable>>();
+			deviceMessage.setDeviceId(getDeviceId());
+			deviceMessage.setTimestamp(getTimestamp());
+			deviceMessage.setValue(new HashMap<String,Serializable>());
+			deviceMessage.setDeviceMessageType(DeviceMessageType.VALUE_QUERY);
+			deviceMessageSender.send(deviceMessage);
+		}
 	}
 	
 	public void handleEvent(DeviceProxyEvent deviceProxyEvent) {
-		if(getDeviceId().equals(deviceProxyEvent.getDeviceId())) {	
+		if(getDeviceId().equals(deviceProxyEvent.getDeviceId())) {
 			timestamp = deviceProxyEvent.getTimestamp();
 			if(timestamp == null) {
 				timestamp = new Date();
