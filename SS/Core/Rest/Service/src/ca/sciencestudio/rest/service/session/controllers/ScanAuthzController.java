@@ -182,8 +182,6 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		
 		scan.setGid(current.getGid());
 		scan.setExperimentGid(current.getExperimentGid());
-		scan.setParameters(current.getParameters());
-		scan.setStartDate(current.getStartDate());
 		
 		return doEdit(scan, response);
 	}
