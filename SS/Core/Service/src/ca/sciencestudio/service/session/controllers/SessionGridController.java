@@ -8,7 +8,9 @@
 package ca.sciencestudio.service.session.controllers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,38 +45,27 @@ public class SessionGridController extends AbstractModelController {
 		
 		List<Session> sessionList = sessionAuthzDAO.getAll(user).get();
 
-		List<ProjectContainer> projectContainerList = new ArrayList<ProjectContainer>();
+		Map<String,Data<Project>> dataProjectMap = new HashMap<String,Data<Project>>();
+		
 		for(Session session : sessionList) {
-			projectContainerList.add(new ProjectContainer(session, projectAuthzDAO.get(user, session.getProjectGid())));
+			if(!dataProjectMap.containsKey(session.getProjectGid())) {
+				dataProjectMap.put(session.getProjectGid(), projectAuthzDAO.get(user, session.getProjectGid()));
+			}
 		}
 		
 		List<SessionGridBacker> sessionGridBackerList = new ArrayList<SessionGridBacker>();
-		for(ProjectContainer projectContainer : projectContainerList) {
-			sessionGridBackerList.add(new SessionGridBacker(projectContainer.getProject(), projectContainer.getSession()));
+		
+		for(Session session : sessionList) {
+			Data<Project> dataProject = dataProjectMap.get(session.getProjectGid());
+			if(dataProject != null) {
+				Project project = dataProject.get();
+				if(project != null) {
+					sessionGridBackerList.add(new SessionGridBacker(project, session));
+				}
+			}
 		}
 		
 		return sessionGridBackerList;
-	}
-	
-	
-	private static class ProjectContainer {
-		
-		private Data<Project> dataProject;
-		private Session session;
-		
-		
-		public ProjectContainer(Session session, Data<Project> dataProject) {
-			this.session = session;
-			this.dataProject = dataProject;
-		}
-		
-		public Project getProject() {
-			return dataProject.get();
-		}
-		
-		public Session getSession() {
-			return session;
-		}
 	}
 
 	public ProjectAuthzDAO getProjectAuthzDAO() {
