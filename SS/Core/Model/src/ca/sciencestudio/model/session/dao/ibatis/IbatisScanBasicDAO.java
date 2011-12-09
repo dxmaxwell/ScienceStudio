@@ -128,7 +128,13 @@ public class IbatisScanBasicDAO extends AbstractIbatisModelBasicDAO<Scan> implem
 	}
 	
 	protected Parameters convertToParameters(String parameters, String parametersType) {
-		MediaType paramsMediaType = MediaType.parseMediaType(parametersType);
+		MediaType paramsMediaType;
+		try {
+			paramsMediaType = MediaType.parseMediaType(parametersType);
+		}
+		catch(Exception e) {
+			paramsMediaType = this.parametersType;
+		}
 		for(HttpMessageConverter<Object> mc : messageConverters) {
 			if(mc.canRead(Parameters.class, paramsMediaType)) {
 				try {
