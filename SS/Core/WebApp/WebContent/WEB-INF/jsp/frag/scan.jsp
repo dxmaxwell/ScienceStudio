@@ -182,7 +182,7 @@ Ext.onReady(function() {
 	});
 
 	viewScanDataButton.on('click', function() {
-		openDataViewTab(${scan.gid}, viewScanDataCheckbox.getValue());
+		openDataViewTab('${scan.gid}', viewScanDataCheckbox.getValue());
 	}, this);
 
 	var viewScanDataCheckbox = new Ext.form.Checkbox({

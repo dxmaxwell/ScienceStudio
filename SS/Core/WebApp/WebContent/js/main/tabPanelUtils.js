@@ -75,10 +75,10 @@ function activateHomeTab() {
 
 var labViewWindows = {};
 
-function openLabViewTab(sessionId, useWindow) {
+function openLabViewTab(sessionGid, useWindow) {
 	
-	if(sessionId) {
-		var labViewPanelId = 'LAB_VIEW_PANEL_' + sessionId;
+	if(sessionGid) {
+		var labViewPanelId = 'LAB_VIEW_PANEL_' + sessionGid;
 	
 		var centerTabPanel = Ext.getCmp('CENTER_TAB_PANEL');
 		if(centerTabPanel) {
@@ -89,7 +89,7 @@ function openLabViewTab(sessionId, useWindow) {
 			}
 		}
 		
-		var labViewWindowId = 'SS_LAB_VIEW_WINDOW_' + sessionId;
+		var labViewWindowId = 'SS_LAB_VIEW_WINDOW_' + sessionGid;
 		
 		var labViewWindow = labViewWindows[labViewWindowId];
 		if(labViewWindow && !labViewWindow.closed) {
@@ -97,7 +97,7 @@ function openLabViewTab(sessionId, useWindow) {
 			return;
 		}
 		
-		var labViewUrl = "laboratory/view.html?sessionId=" + sessionId; 
+		var labViewUrl = "laboratory/view.html?session=" + sessionGid; 
 			
 		if(useWindow) {
 			labViewWindow = window.open(labViewUrl, labViewWindowId);
@@ -132,10 +132,10 @@ function openLabViewTab(sessionId, useWindow) {
 
 var dataViewWindows = {};
 
-function openDataViewTab(scanId, useWindow) {
+function openDataViewTab(scanGid, useWindow) {
 	
-	if(scanId) {
-		var dataViewPanelId = 'DATA_VIEW_PANEL_' + scanId;
+	if(scanGid) {
+		var dataViewPanelId = 'DATA_VIEW_PANEL_' + scanGid;
 	
 		var centerTabPanel = Ext.getCmp('CENTER_TAB_PANEL');
 		if(centerTabPanel) {
@@ -146,7 +146,7 @@ function openDataViewTab(scanId, useWindow) {
 			}
 		}
 		
-		var dataViewWindowId = 'SS_DATA_VIEW_WINDOW_' + scanId;
+		var dataViewWindowId = 'SS_DATA_VIEW_WINDOW_' + scanGid;
 		
 		var dataViewWindow = dataViewWindows[dataViewWindowId];
 		if(dataViewWindow && !dataViewWindow.closed) {
@@ -154,7 +154,7 @@ function openDataViewTab(scanId, useWindow) {
 			return;
 		}
 		
-		var dataViewUrl = "scan/data/view.html?scanId=" + scanId;
+		var dataViewUrl = "scan/data/view.html?scan=" + scanGid;
 			
 		if(useWindow) {
 			dataViewWindow = window.open(dataViewUrl, dataViewWindowId);

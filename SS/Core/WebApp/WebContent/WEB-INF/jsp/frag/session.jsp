@@ -195,18 +195,18 @@ Ext.onReady(function() {
 		width: 400
 	});
 
-	addItemModelViewTab(sessionPanel, true);
+	addItemModelViewTab(sessionPanel, false);
 
 	<%--
 				
 		Join Session Form
 	--%>
-	<%--var joinSessionButton = new Ext.Button({
+	var joinSessionButton = new Ext.Button({
 		text:'Join Session'
 	});
 
 	joinSessionButton.on('click', function() {
-		openLabViewTab(${session.gid}, joinSessionCheckbox.getValue());
+		openLabViewTab('${session.gid}', joinSessionCheckbox.getValue());
 	}, this);
 
 	var joinSessionCheckbox = new Ext.form.Checkbox({
@@ -249,7 +249,7 @@ Ext.onReady(function() {
 		width: 400
 	});
 
-	addItemModelViewTab(joinSessionPanel, true);--%>
+	addItemModelViewTab(joinSessionPanel, true);
 });
 </script>
 </div>
