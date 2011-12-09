@@ -32,16 +32,19 @@
 	<!-- ===================================================================
   	-  Laboratory View Controllers
   	-  =================================================================== -->
-	<!--<bean id="laboratoryViewController"
+	<bean id="laboratoryViewController"
 		class="ca.sciencestudio.service.app.controllers.LaboratoryViewController">
-	</bean>-->
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
+	</bean>
 	
 	<!-- ===================================================================
   	-  Scan Data View Controllers
   	-  =================================================================== -->
-	<!--<bean id="scanDataViewController"
+	<bean id="scanDataViewController"
 		class="ca.sciencestudio.service.app.controllers.ScanDataViewController">
-	</bean>-->
+		<property name="scanDataViewUrl" value="/ssdata/view/main.html"/>
+	</bean>
 	
 	<bean id="annotationMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
