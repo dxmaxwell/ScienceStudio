@@ -29,6 +29,7 @@ import ca.sciencestudio.util.web.CustomPropertyEditor;
  * @author maxweld
  *
  */
+@Deprecated
 public abstract class BindAndValidateUtils extends ValidationUtils {
 
 	public static final DateFormat DATE_FORMAT_ISO8601_FULL = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.s z");

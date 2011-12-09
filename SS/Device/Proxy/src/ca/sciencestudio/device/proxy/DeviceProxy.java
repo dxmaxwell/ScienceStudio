@@ -13,7 +13,7 @@ import ca.sciencestudio.util.state.StateMap;
  * @author maxweld
  *
  */
-public interface DeviceProxy extends StateMap{
+public interface DeviceProxy extends StateMap {
 	
 	public String getDeviceId();
 }
