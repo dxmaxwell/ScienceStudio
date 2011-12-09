@@ -34,7 +34,7 @@ public class ScanValidator extends AbstractModelValidator<Scan> {
 	public static final String DEFAULT_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_EXPERIMENT_GID = GID.DEFAULT_GID;
 	public static final String DEFAULT_NAME = "";
-	public static final String DEFAULT_DATE_URL= "";
+	public static final String DEFAULT_DATA_URL= "";
 	public static final Parameters DEFAULT_PARAMETERS = new Parameters();
 	public static final Date DEFAULT_START_DATE = null;
 	public static final Date DEFAULT_END_DATE = null;
@@ -70,7 +70,7 @@ public class ScanValidator extends AbstractModelValidator<Scan> {
 		
 		errors.pushNestedPath("dataUrl");
 		if(scan.getDataUrl() == null) {
-			scan.setDataUrl(DEFAULT_DATE_URL);
+			scan.setDataUrl(DEFAULT_DATA_URL);
 		}
 		try {
 			URI.create(scan.getDataUrl());
@@ -104,8 +104,8 @@ public class ScanValidator extends AbstractModelValidator<Scan> {
 		}
 		errors.popNestedPath();
 		
-		if(!errors.hasFieldErrors("startDate") && !errors.hasFieldErrors("endDate") && !scan.getStartDate().before(scan.getEndDate())) {
-			errors.rejectValue("endDate", EC_AFTER, "End Date field before or equal to Start Date.");
+		if(!errors.hasFieldErrors("startDate") && !errors.hasFieldErrors("endDate") && scan.getEndDate().before(scan.getStartDate())) {
+			errors.rejectValue("endDate", EC_AFTER, "End Date field before Start Date.");
 		}
 	}
 	

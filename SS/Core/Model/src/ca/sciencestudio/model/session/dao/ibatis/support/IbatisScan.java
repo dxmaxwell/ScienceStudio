@@ -28,7 +28,7 @@ public class IbatisScan {
 	private int id = DEFAULT_ID;
 	private int experimentId = DEFAULT_EXPERIMENT_ID;
 	private String name = ScanValidator.DEFAULT_NAME;
-	private String dataUrl = ScanValidator.DEFAULT_DATE_URL;
+	private String dataUrl = ScanValidator.DEFAULT_DATA_URL;
 	private String parameters = DEFAULT_PARAMETERS;
 	private String parametersType = DEFAULT_PARAMETERS_TYPE;
 	private Date startDate = ScanValidator.DEFAULT_START_DATE;

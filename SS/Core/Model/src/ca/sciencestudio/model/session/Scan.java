@@ -35,7 +35,7 @@ public class Scan implements Model {
 		gid = ScanValidator.DEFAULT_GID;
 		experimentGid = ScanValidator.DEFAULT_EXPERIMENT_GID;
 		name = ScanValidator.DEFAULT_NAME;
-		dataUrl = ScanValidator.DEFAULT_DATE_URL;
+		dataUrl = ScanValidator.DEFAULT_DATA_URL;
 		parameters = new Parameters(ScanValidator.DEFAULT_PARAMETERS);
 		startDate = ScanValidator.DEFAULT_START_DATE;
 		endDate = ScanValidator.DEFAULT_END_DATE;
