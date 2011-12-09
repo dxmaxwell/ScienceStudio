@@ -7,6 +7,7 @@
  */
 package ca.sciencestudio.model.dao.rest;
 
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
 import ca.sciencestudio.model.Model;
@@ -28,6 +29,10 @@ public abstract class RestAuthoritiesModelAuthzDAO<T extends Model> extends Abst
 		Authorities authorities;
 		try {
 			authorities = getRestTemplate().getForObject(getAuthzUrl("/{gid}", "user={user}"), Authorities.class, gid, user);
+		}
+		catch(HttpClientErrorException e) {
+			logger.debug("HTTP Client Error exception while getting Authorities: " + e.getMessage());
+			return new SimpleData<Authorities>(new Authorities());
 		}
 		catch(RestClientException e) {
 			logger.warn("Rest Client exception while getting Authorities: " + e.getMessage());
