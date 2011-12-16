@@ -11,8 +11,8 @@ function dataStoreExceptionHandler(dataProxy, type, action, options, response, a
 	if(type == 'response') {
 		Ext.Msg.alert('Error', 'Network problem or unexpected response format.');
 	}
-	else if(response.globalErrors && response.globalErrors[0]) {
-		Ext.Msg.alert('Error', response.globalErrors[0]);
+	else if(response.message) {
+		Ext.Msg.alert('Error', response.message);
 	}
 	else {
 		Ext.Msg.alert('Error', 'An unspecified error has occurred.');
@@ -46,8 +46,8 @@ function ajaxRequestSuccessHandler(response, options) {
 		return false;
 	}
 	
-	if(json.globalErrors && json.globalErrors[0]) {
-		Ext.Msg.alert('Error', json.globalErrors[0]);
+	if(json.message) {
+		Ext.Msg.alert('Error', json.message);
 		return true;
 	}
 	

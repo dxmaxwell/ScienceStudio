@@ -17,7 +17,7 @@ import ca.sciencestudio.util.state.support.SessionStateMapException;
  */
 public abstract class AbstractSessionStateMap extends SimpleStateMap implements SessionStateMap {
 
-	protected static final String STATE_KEY_RUNNING_SESSION_GID = "sessionGID";
+	protected static final String STATE_KEY_RUNNING_SESSION_GID = "sessionGid";
 	
 	protected static final String DEFAULT_RUNNING_SESSION_GID = "0";
 	

@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 import ca.sciencestudio.util.net.Tunnel;
-import ca.sciencestudio.security.util.AuthorityUtil;
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.nanofab.service.controllers.AbstractSessionController;
 
@@ -30,21 +30,23 @@ import ca.sciencestudio.nanofab.service.controllers.AbstractSessionController;
 @Controller
 public class ControlSessionController extends AbstractSessionController {
 	
+	private PersonAuthzDAO personAuthzDAO;
+	
 	@RequestMapping(value = "/session/control.html", method = RequestMethod.GET)
 	public String getSessionControl(HttpServletRequest request, ModelMap model) {
 		
-		int projectId = nanofabSessionStateMap.getProjectId();
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_NANOFAB");
-		Object exptr = AuthorityUtil.buildProjectExperimenterAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(exptr, admin)) {
+		if(!canControlLaboratory()) {
 			return onFailure("Permission Denied", "Not permitted to control session.", model);
 		}
 		
-		Person person = SecurityUtil.getPerson();
+		tunnelManager.close(nanofabSessionStateMap.getControllerGid());
 		
-		tunnelManager.close(nanofabSessionStateMap.getControllerUid());
+		String user = SecurityUtil.getPersonGid();
+		Person person = personAuthzDAO.get(user, user).get();
+		if(person == null) {
+			return onFailure("Data Access Error", "Person not found.", model);
+		}
+		
 		nanofabSessionStateMap.setController(person);
 		
 		InetAddress acceptAddress;
@@ -57,12 +59,19 @@ public class ControlSessionController extends AbstractSessionController {
 		
 		Tunnel tunnel;
 		try {
-			tunnel = tunnelManager.open(person.getUid(), acceptAddress, true);
+			tunnel = tunnelManager.open(person.getGid(), acceptAddress, true);
 		}
 		catch(IOException e) {
 			return onFailure("Communication Error", "Unable to open tunnel for VNC connection.", model);
 		}
 		
 		return onSuccess(tunnel.getLocalPort(), model);
+	}
+
+	public PersonAuthzDAO getPersonAuthzDAO() {
+		return personAuthzDAO;
+	}
+	public void setPersonAuthzDAO(PersonAuthzDAO personAuthzDAO) {
+		this.personAuthzDAO = personAuthzDAO;
 	}
 }

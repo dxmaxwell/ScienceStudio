@@ -14,8 +14,8 @@
 	<bean id="nanofabSessionStateMap"
 		class="ca.sciencestudio.nanofab.state.NanofabSessionStateMap">
 		<property name="name" value="laboratorySession"/>
-		<property name="sessionDAO" ref="sessionDAO"/>
-		<property name="projectDAO" ref="projectDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
 		<property name="tunnelManager" ref="tunnelManager"/>
 	</bean>
 	

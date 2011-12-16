@@ -12,62 +12,58 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ca.sciencestudio.security.util.AuthorityUtil;
 import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.nanofab.state.NanofabSessionStateMap;
+import ca.sciencestudio.model.person.Person;
+import ca.sciencestudio.model.person.dao.PersonAuthzDAO;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class MainPageController {
+public class MainPageController extends AbstractLaboratoryControlController {
 
-	private static final String MODEL_KEY_PERSON_UID = "personUid";
+	private static final String MODEL_KEY_PERSON_GID = "personGid";
 	
 	private static final String SUCCESS_VIEW = "page/main";
 	private static final String FAILURE_VIEW = "page/error";
 
-	private static final String DEFAULT_PERSON_UID = "";
-	
-	private NanofabSessionStateMap nanofabSessionStateMap;
+	private PersonAuthzDAO personAuthzDAO;
 	
 	@RequestMapping(value = "/main.html", method = RequestMethod.GET)
-	public String getMainPage(@RequestParam int sessionId, ModelMap model) {
+	public String getMainPage(@RequestParam("session") String sessionGid, ModelMap model) {
 		
-		int runningSessionId = nanofabSessionStateMap.getRunningSessionId();
+		String runningSessionGid = nanofabSessionStateMap.getRunningSessionGid();
 		
-		if(runningSessionId != sessionId) {
+		if((runningSessionGid == null) || (!runningSessionGid.equalsIgnoreCase(sessionGid))) {
 			model.put("error", "Session has not been started.");
 			model.put("errorMessage", "<a href=\"\">Try Again</a>");
 			return FAILURE_VIEW;
 		}
 		
-		int projectId = nanofabSessionStateMap.getProjectId();
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_NANOFAB");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		Object exptr = AuthorityUtil.buildProjectExperimenterAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
+		if(!canObserveLaboratory()) {
 			model.put("error", "Not permitted to view session.");
 			model.put("errorMessage", "<a href=\"\">Try Again</a>");
 			return FAILURE_VIEW;
 		}
 		
-		if(nanofabSessionStateMap.getControllerUid().equals(DEFAULT_PERSON_UID)) {
-			if(SecurityUtil.hasAnyAuthority(exptr, admin)) {
-				nanofabSessionStateMap.setController(SecurityUtil.getPerson());
+		String user = SecurityUtil.getPersonGid();
+		
+		if(canControlLaboratory()) {
+			Person person = personAuthzDAO.get(user, user).get();
+			if(person != null) {
+				nanofabSessionStateMap.setControllerIfNotSet(person);
 			}
 		}
 		
-		model.put(MODEL_KEY_PERSON_UID, SecurityUtil.getPerson().getUid());
+		model.put(MODEL_KEY_PERSON_GID, user);
 		return SUCCESS_VIEW;
 	}
-	
-	public void setNanofabSessionStateMap(NanofabSessionStateMap nanofabSessionStateMap) {
-		this.nanofabSessionStateMap = nanofabSessionStateMap;
+
+	public PersonAuthzDAO getPersonAuthzDAO() {
+		return personAuthzDAO;
 	}
-	public NanofabSessionStateMap getNanofabSessionStateMap() {
-		return nanofabSessionStateMap;
+	public void setPersonAuthzDAO(PersonAuthzDAO personAuthzDAO) {
+		this.personAuthzDAO = personAuthzDAO;
 	}
 }

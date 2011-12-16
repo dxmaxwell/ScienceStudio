@@ -94,7 +94,7 @@ var laboratorySessionFormLoad = function() {
 		laboratorySessionForm.getForm().setValues(lsData);
 		
 		if(sessionRunning) {
-			if(lsData.controllerUid == personUid) {
+			if(lsData.controllerGid == personGid) {
 				showSessionController();
 			} else {
 				showSessionObserver();
@@ -185,13 +185,10 @@ var lsUpperPanel = new Ext.Panel({
 
 var lsExperimentStore = new Ext.data.JsonStore({
 	url: 'experiments.json',
-	root: 'response',
+	root:'experiments',
 	successProperty: 'success',
-	messageProperty: 'globalError',
-	fields:[
-	     { name:'id', mapping:'experiment.id' },
-	     { name:'name', mapping:'experiment.name' }
-	],
+	messageProperty: 'message',
+	fields:[ 'gid', 'name' ],
 	listeners: {
 		'exception':dataStoreExceptionHandler
 	}
@@ -199,7 +196,7 @@ var lsExperimentStore = new Ext.data.JsonStore({
 
 var lsExperimentField = new Ext.form.ComboBox({
 	hideLabel: true,
-	hiddenName:'experimentId',
+	hiddenName:'experimentGid',
 	store: lsExperimentStore,
 	emptyText: 'Select an Experiment',
 	mode: 'remote',
@@ -207,7 +204,7 @@ var lsExperimentField = new Ext.form.ComboBox({
 	triggerAction: 'all',
 	forceSelection: true,
 	displayField: 'name',
-	valueField: 'id',
+	valueField: 'gid',
 	border: false,
 	width:200,
 	listeners:{
@@ -346,14 +343,10 @@ var lsCreateScanPanel = new Ext.Panel({
 
 var lsDirectoryStore = new Ext.data.JsonStore({
     url: 'share/directories.json',
-    root: 'response',
+    root: 'directories',
     successProperty: 'success',
-    messageProperty: 'globalError',
-    fields: [
-        { name:'name', mapping:'fileProperties.name' },
-        { name:'path', mapping:'fileProperties.path' },
-        { name:'size', mapping:'fileProperties.size' }
-    ],
+    messageProperty: 'message',
+    fields: [ 'name', 'path', 'size' ],
     listeners: {
 		'exception': dataStoreExceptionHandler
 	}
@@ -390,14 +383,10 @@ var lsDirectoryCbx = new Ext.form.ComboBox({
 
 var lsFileStore = new Ext.data.JsonStore({
 	url: 'share/files.json',
-	root: 'response',
+	root: 'files',
     successProperty: 'success',
-    messageProperty: 'globalError',
-    fields: [
-        { name:'name', mapping:'fileProperties.name' },
-        { name:'path', mapping:'fileProperties.path' },
-        { name:'size', mapping:'fileProperties.size' }
-    ],
+    messageProperty: 'message',
+    fields: [ 'name', 'path', 'size' ],
     sortInfo: { 
 		field: 'name',
 		direction: 'ASC'

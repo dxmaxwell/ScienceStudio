@@ -17,9 +17,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import ca.sciencestudio.model.person.Person;
 import ca.sciencestudio.util.net.Tunnel;
-import ca.sciencestudio.security.util.AuthorityUtil;
 import ca.sciencestudio.security.util.SecurityUtil;
 
 /**
@@ -32,16 +30,11 @@ public class ObserveSessionController extends AbstractSessionController {
 	@RequestMapping(value = "/session/observe.html", method = RequestMethod.GET)
 	public String getSessionObserve(HttpServletRequest request, ModelMap model) {
 		
-		int projectId = nanofabSessionStateMap.getProjectId();
-		
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_NANOFAB");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
+		if(!canObserveLaboratory()) {
 			return onFailure("Permission Denied", "Not permitted to observe session.", model);
 		}
 		
-		Person person = SecurityUtil.getPerson();
+		String user = SecurityUtil.getPersonGid();
 		
 		InetAddress acceptAddress;
 		try {
@@ -53,7 +46,7 @@ public class ObserveSessionController extends AbstractSessionController {
 
 		Tunnel tunnel;
 		try {
-			tunnel = tunnelManager.open(person.getUid(), acceptAddress, true);
+			tunnel = tunnelManager.open(user, acceptAddress, true);
 		}
 		catch(IOException e) {
 			return onFailure("Communication Error", "Unable to open tunnel for VNC connection.", model);

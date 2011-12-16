@@ -7,58 +7,28 @@
  */
 package ca.sciencestudio.nanofab.service.controllers;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.nanofab.state.NanofabSessionStateMap;
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
  *
  */
 @Controller
-public class HeartbeatController {
-
-	private NanofabSessionStateMap nanofabSessionStateMap;
+public class HeartbeatController extends AbstractLaboratoryAuthzController {
 	
-	@RequestMapping(value = "/heartbeat.{format}", method = RequestMethod.GET)
-	public String getHeartbeat(@PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/heartbeat*", method = RequestMethod.GET)
+	public FormResponseMap getHeartbeat() {
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		int projectId = nanofabSessionStateMap.getProjectId();
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_NANOFAB");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			errors.reject("permission.denied", "Not permitted to view heartbeat.");
-			return responseView;
-		}
-		
-		Map<String,Object> response  = new HashMap<String,Object>();
+		// No security check here because the user needs to know if the session
+		// has been stopped, and that information comes from the heartbeat.
+		FormResponseMap response  = new FormResponseMap(true);
 		response.put(nanofabSessionStateMap.getName(),	nanofabSessionStateMap);
-		
-		model.put("response", response);
-		return responseView;
-	}
-
-	public NanofabSessionStateMap getNanofabSessionStateMap() {
-		return nanofabSessionStateMap;
-	}
-	public void setNanofabSessionStateMap(NanofabSessionStateMap nanofabSessionStateMap) {
-		this.nanofabSessionStateMap = nanofabSessionStateMap;
+		return response;
 	}
 }

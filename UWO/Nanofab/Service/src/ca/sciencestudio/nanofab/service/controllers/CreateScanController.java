@@ -23,22 +23,21 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.model.session.Scan;
 import ca.sciencestudio.model.session.Experiment;
-import ca.sciencestudio.model.session.dao.ScanDAO;
-import ca.sciencestudio.model.session.dao.ExperimentDAO;
+import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
+import ca.sciencestudio.model.session.dao.ScanAuthzDAO;
+import ca.sciencestudio.model.utilities.GID;
 import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
+import ca.sciencestudio.util.rest.ValidationResult;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 import ca.sciencestudio.nanofab.service.controllers.AbstractShareController;
-import ca.sciencestudio.nanofab.state.NanofabSessionStateMap;
 
 /**
  * @author maxweld
@@ -52,37 +51,28 @@ public class CreateScanController extends AbstractShareController {
 	
 	private File scanDataDirectory;
 	
-	private NanofabSessionStateMap nanofabSessionStateMap;
-	
-	private ScanDAO scanDAO;
-	private ExperimentDAO experimentDAO;
+	private ScanAuthzDAO scanAuthzDAO;
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	
 	protected Log logger = LogFactory.getLog(getClass());
 	
-	@RequestMapping(value = "/scan/create.{format}", method = RequestMethod.POST)
-	public String handleRequest(@RequestParam String scanName, @RequestParam String[] scanFiles, @PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/scan/create*", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam String scanName, @RequestParam String[] scanFiles) {
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		String personUid = nanofabSessionStateMap.getControllerUid();
-		if(!SecurityUtil.getPerson().getUid().equals(personUid)) {
-			errors.reject("permission.denied", "Must be controller to create scan.");
-			return responseView;
+		if(!canWriteLaboratory()) {
+			return new FormResponseMap(false, "Must be controller to create scan.");
 		}
 		
 		if((scanName == null) || (scanName.length() == 0)) {
-			errors.reject("scanName.invalid", "Please specify a scan name.");
-			return responseView;
+			return new FormResponseMap(false, "Please specify a scan name.");
 		}
 		
-		int experimentId = nanofabSessionStateMap.getExperimentId();
-		Experiment experiment = experimentDAO.getExperimentById(experimentId);
+		String user = SecurityUtil.getPersonGid();
+		String experimentGid = nanofabSessionStateMap.getExperimentGid();
+		Experiment experiment = experimentAuthzDAO.get(user, experimentGid).get();
 		if(experiment == null) {
-			errors.reject("experiment.notfound", "Please select an experiment.");
-			return responseView;
+			return new FormResponseMap(false, "Please select an experiment.");
 		}
 		
 		File shareParent = getShareDirectory();
@@ -99,14 +89,12 @@ public class CreateScanController extends AbstractShareController {
 			}
 			else {
 				logger.warn("Selected file does not exist or is not a regular file: " + scanFile);
-				errors.reject("file.invalid", "A selected data file does not exist.");
-				return responseView;
+				return new FormResponseMap(false, "A selected data file does not exist.");
 			}
 		}
 		
 		if(scanFileSet.isEmpty()) {
-			errors.reject("scanFileSet.empty", "Please select one or more data files.");
-			return responseView;
+			return new FormResponseMap(false, "Please select one or more data files.");
 		}
 		
 		File scanDataTempDirectory = null;
@@ -121,15 +109,13 @@ public class CreateScanController extends AbstractShareController {
 		} 
 		
 		if(scanDataTempDirectory == null) {
-			errors.reject("", "Error: Cannot create scan directory. (1)");
-			logger.warn("Could not find unique temporary directory."); 
-			return responseView;
+			logger.warn("Could not find unique temporary directory.");
+			return new FormResponseMap(false, "Could not find unique temporary directory.");
 		}
 		
 		if(!scanDataTempDirectory.mkdirs()) {
-			errors.reject("", "Error: Cannot create scan directory. (2)");
 			logger.warn("Could not create unique temporary directory.");
-			return responseView;
+			return new FormResponseMap(false, "Error: Cannot create scan directory.");
 		}
 		
 		Map<File,File> scanDataFileMap = new LinkedHashMap<File, File>();
@@ -139,9 +125,8 @@ public class CreateScanController extends AbstractShareController {
 				// CLEAN UP //
 				scanDataTempDirectory.delete();
 				//////////////
-				errors.reject("", "Error: Cannot find unique data file name.");
 				logger.warn("Could not find unique file in temporary directory: " + scanFile.getAbsolutePath());
-				return responseView;
+				return new FormResponseMap(false, "Error: Cannot find unique data file name.");
 			}
 			if(logger.isDebugEnabled()) {
 				logger.debug("Preparing to copy file: " + scanFile  + " to: " + scanDataFile);
@@ -162,9 +147,8 @@ public class CreateScanController extends AbstractShareController {
 				}
 				scanDataTempDirectory.delete();
 				//////////////
-				errors.reject("", "Error: Cannot copy data file to data directory.");
 				logger.warn("Could not copy data file to temporary directory: " + entry.getKey() + " to: " + entry.getValue());
-				return responseView;
+				return new FormResponseMap(false, "Error: Cannot copy data file to data directory.");
 			}
 			if(logger.isDebugEnabled()) {
 				logger.debug("Finished copying data file: " + entry.getKey() + " to: " + entry.getValue());
@@ -172,25 +156,39 @@ public class CreateScanController extends AbstractShareController {
 		}
 		
 		Date now = new Date();
-		Scan scan = scanDAO.createScan();
-		scan.setEndDate(now);
-		scan.setStartDate(now);
+		Scan scan = new Scan();
 		scan.setName(scanName);
-		scan.setExperimentId(experimentId);
-		int scanId = scanDAO.addScan(scan);
+		scan.setDataUrl(scanDataTempDirectory.getAbsolutePath());
+		scan.setExperimentGid(experimentGid);
+		scan.setStartDate(now);
+		scan.setEndDate(new Date(now.getTime()+60000L));
 		
-		File scanDirectory = new File(scanDataDirectory, DIRECTORY_PREFIX_DATA + scanId);
+		ValidationResult result = scanAuthzDAO.add(user, scan).get();
+		if(result.hasErrors()) {
+			logger.warn("Could not add Scan to experiment: " + experimentGid);
+			return new FormResponseMap(false, "Error: Cannot create new Scan. (1)");
+		}
+		
+		GID gid = GID.parse(scan.getGid());
+		if(gid == null) {
+			logger.warn("Could not parse Scan GID: " + scan.getGid());
+			return new FormResponseMap(false, "Error: Connot create new Scan. (2)");
+		}
+		
+		File scanDirectory = new File(scanDataDirectory, DIRECTORY_PREFIX_DATA + gid.getId());
 		if(scanDataTempDirectory.renameTo(scanDirectory)) {
 			scan.setDataUrl(scanDirectory.getAbsolutePath());
+			result = scanAuthzDAO.edit(user, scan).get();
+			if(result.hasErrors()) {
+				logger.warn("Could not edit Scan with GID: " + scan.getGid());
+			}
 		} else {
-			scan.setDataUrl(scanDataTempDirectory.getAbsolutePath());
 			logger.warn("Could not rename temporary directory to scan data directory.");
 		}
-		scanDAO.editScan(scan);
 		
 		// DELETE ORIGINAL FILES?? //
 			
-		return responseView;
+		return new FormResponseMap(true);
 	}
 		
 	protected File getUniqueScanDataFile(File parent, File file) {
@@ -228,25 +226,17 @@ public class CreateScanController extends AbstractShareController {
 		this.scanDataDirectory = scanDataDirectory;
 	}
 
-	public NanofabSessionStateMap getNanofabSessionStateMap() {
-		return nanofabSessionStateMap;
+	public ScanAuthzDAO getScanAuthzDAO() {
+		return scanAuthzDAO;
 	}
-	public void setNanofabSessionStateMap(
-			NanofabSessionStateMap nanofabSessionStateMap) {
-		this.nanofabSessionStateMap = nanofabSessionStateMap;
-	}
-
-	public ScanDAO getScanDAO() {
-		return scanDAO;
-	}
-	public void setScanDAO(ScanDAO scanDAO) {
-		this.scanDAO = scanDAO;
+	public void setScanAuthzDAO(ScanAuthzDAO scanAuthzDAO) {
+		this.scanAuthzDAO = scanAuthzDAO;
 	}
 
-	public ExperimentDAO getExperimentDAO() {
-		return experimentDAO;
+	public ExperimentAuthzDAO getExperimentAuthzDAO() {
+		return experimentAuthzDAO;
 	}
-	public void setExperimentDAO(ExperimentDAO experimentDAO) {
-		this.experimentDAO = experimentDAO;
+	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
+		this.experimentAuthzDAO = experimentAuthzDAO;
 	}
 }

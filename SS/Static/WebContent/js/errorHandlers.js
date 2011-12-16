@@ -22,7 +22,7 @@ function dataStoreExceptionHandler(dataProxy, type, action, options, response, a
 };
 
 var formActionFailureHandlerOptions = { 
-	messageProperty:'globalError'
+	messageProperty:'message'
 };
 
 function formActionFailureHandler(form, action) {

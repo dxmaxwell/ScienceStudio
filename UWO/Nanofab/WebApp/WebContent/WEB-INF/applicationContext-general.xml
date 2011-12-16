@@ -16,6 +16,7 @@
             <list>
                 <value>classpath:security.properties</value>
                 <value>classpath:jdbc.properties</value>
+                <value>classpath:dao.properties</value>
                 <value>classpath:vnc.properties</value>
             </list>
         </property>

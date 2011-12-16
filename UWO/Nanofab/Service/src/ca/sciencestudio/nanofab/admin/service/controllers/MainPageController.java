@@ -8,7 +8,6 @@ package ca.sciencestudio.nanofab.admin.service.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -17,17 +16,31 @@ import org.springframework.web.bind.annotation.RequestMethod;
  *
  */
 @Controller
-public class MainPageController {
+public class MainPageController extends AbstractLaboratoryAdminController {
 
-	private String htmlHeaderTitle = "Science Studio :: LEO1540XB Administration";
-	private String pageHeaderTitle = "LEO1540XB Administration";
+	private static final String MODEL_KEY_HTML_HEADER_TITLE = "htmlHeaderTitle";
+	private static final String MODEL_KEY_PAGE_HEADER_TITLE = "pageHeaderTitle";
+	
+	private static final String ERROR_VIEW = "page/error";
+	private static final String ADMIN_VIEW = "page/admin";
+	
+	private String htmlHeaderTitle;
+	private String pageHeaderTitle;
 	
 	@RequestMapping(value = "/main.html", method = RequestMethod.GET)
 	public String handleRequest(ModelMap model) {
-		return "page/admin";
+
+		if(!canAdminLaboratory()) {
+			model.put("error", "Authorization Error");
+			model.put("errorMessage", "Not authorized to administrate laboratory.");
+			return ERROR_VIEW;
+		}
+		
+		model.put(MODEL_KEY_HTML_HEADER_TITLE, htmlHeaderTitle);
+		model.put(MODEL_KEY_PAGE_HEADER_TITLE, pageHeaderTitle);
+		return ADMIN_VIEW;
 	}
 
-	@ModelAttribute("htmlHeaderTitle")
 	public String getHtmlHeaderTitle() {
 		return htmlHeaderTitle;
 	}
@@ -35,7 +48,6 @@ public class MainPageController {
 		this.htmlHeaderTitle = htmlHeaderTitle;
 	}
 
-	@ModelAttribute("pageHeaderTitle")
 	public String getPageHeaderTitle() {
 		return pageHeaderTitle;
 	}

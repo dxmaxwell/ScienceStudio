@@ -38,7 +38,7 @@
 
 			var sessionNameFld = new Ext.form.TextField({
 				fieldLabel: 'Session',
-				value: '${laboratorySession.sessionName}',
+				value: '${laboratorySession.name}',
 				disabled: true
 			});
 
@@ -50,13 +50,13 @@
 
 			var startDateTimeFld = new Ext.form.TextField({
 				fieldLabel: 'Start',
-				value: '${laboratorySession.startDate}  ${laboratorySession.startTime}',
+				value: Date.parseDate('${laboratorySession.startDay}T${laboratorySession.startTime}', 'c').format('Y-m-d H:i'),
 				disabled: true
 			});
 
 			var endDateTimeFld = new Ext.form.TextField({
 				fieldLabel: 'End',
-				value: '${laboratorySession.endDate}  ${laboratorySession.endTime}',
+				value: Date.parseDate('${laboratorySession.endDay}T${laboratorySession.endTime}', 'c').format('Y-m-d H:i'),
 				disabled: true
 			});
 
@@ -94,7 +94,7 @@
 				text: 'Start',
 				handler: function() {
 					Ext.get('mainPanel').getUpdater().update({
-						url:'session/${laboratorySession.sessionId}/start.html',
+						url:'session/${laboratorySession.gid}/start.html',
 						text: 'Starting Session...',
 						scripts:true,
 						nocache:true,
@@ -107,7 +107,7 @@
 				text: 'Stop',
 				handler: function() {
 					Ext.get('mainPanel').getUpdater().update({
-						url: 'session/${laboratorySession.sessionId}/stop.html',
+						url: 'session/${laboratorySession.gid}/stop.html',
 						text: 'Stopping Session...',
 						scripts:true,
 						nocache:true,
@@ -120,16 +120,16 @@
 				text:'Edit',
 				handler: function() {
 					Ext.get('mainPanel').getUpdater().update({
-						url:'session/${laboratorySession.sessionId}/edit.html',
+						url:'session/${laboratorySession.gid}/edit.html',
 						scripts:true
 					});	
 				}
 			});
 			
-			/*<c:choose><c:when test="${runningSessionId == laboratorySession.sessionId}">*/
+			/*<c:choose><c:when test="${runningSessionGid == laboratorySession.gid}">*/
 			startBtn.hide();
 			editBtn.hide(); 
-			/*</c:when><c:when test="${runningSessionId == 0}">*/
+			/*</c:when><c:when test="${runningSessionGid == '0'}">*/
 			stopBtn.hide();
 			/*</c:when><c:otherwise>*/
 			startBtn.hide();

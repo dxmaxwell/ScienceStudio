@@ -24,69 +24,85 @@
         </property>
     </bean>
 	
-	<bean id="viewportController"
+	<bean id="mainPageController"
 		class="ca.sciencestudio.nanofab.service.controllers.MainPageController">
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
 		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 	</bean>
 	
 	<bean id="observeSessionController"
 		class="ca.sciencestudio.nanofab.service.controllers.ObserveSessionController">
-		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
-		<property name="tunnelManager" ref="tunnelManager"/>
 		<property name="vncWidth" value="${vnc.width}"/>
 		<property name="vncHeight" value="${vnc.height}"/>
 		<property name="vncPassword" value="${vnc.password.view}"/>
+		<property name="tunnelManager" ref="tunnelManager"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 	</bean>
 	
 	<bean id="controlSessionController"
 		class="ca.sciencestudio.nanofab.service.controllers.ControlSessionController">
-		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
-		<property name="tunnelManager" ref="tunnelManager"/>
 		<property name="vncWidth" value="${vnc.width}"/>
 		<property name="vncHeight" value="${vnc.height}"/>
 		<property name="vncPassword" value="${vnc.password.full}"/>
+		<property name="tunnelManager" ref="tunnelManager"/>
+		<property name="personAuthzDAO" ref="personAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 	</bean>
 	
 	<bean id="shareDirectoryListController"
 		class="ca.sciencestudio.nanofab.service.controllers.ShareDirectoryListController">
-		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 		<property name="shareDirectory" value="${lab.shareDirectory}"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 	</bean>
 	
 	<bean id="shareFileListController"
 		class="ca.sciencestudio.nanofab.service.controllers.ShareFileListController">
-		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 		<property name="shareDirectory" value="${lab.shareDirectory}"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 	</bean>
 	
 	<bean id="heartbeatController"
 		class="ca.sciencestudio.nanofab.service.controllers.HeartbeatController">
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
 		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 	</bean>
 	
 	<bean id="getExperimentListController"
 		class="ca.sciencestudio.nanofab.service.controllers.GetExperimentListController">
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
 		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
-		<property name="experimentDAO" ref="experimentDAO"/>
 	</bean>
 	
 	<bean id="updateSessionController"
-			class="ca.sciencestudio.nanofab.service.controllers.UpdateSessionController">
+		class="ca.sciencestudio.nanofab.service.controllers.UpdateSessionController">
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
 		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
-		<property name="experimentDAO" ref="experimentDAO"/>
 	</bean>
 	
 	<bean id="createScanController"
 		class="ca.sciencestudio.nanofab.service.controllers.CreateScanController">
-		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
-		<property name="scanDAO" ref="scanDAO"/>
-		<property name="experimentDAO" ref="experimentDAO"/>
+		<property name="scanAuthzDAO" ref="scanAuthzDAO"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+		<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
 		<property name="shareDirectory" value="${lab.shareDirectory}"/>
 		<property name="scanDataDirectory" value="${lab.scanDataDirectory}"/>
+		<property name="nanofabSessionStateMap" ref="nanofabSessionStateMap"/>
 	</bean>
 
 	<bean id="annotationMapping"
 		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+	</bean>
+
+	<bean id="annoationMethodHandler"
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters" ref="httpMessageConverters"/>
 	</bean>
 
 	<bean id="viewResolver"

@@ -13,15 +13,11 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.util.io.FileProperties;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
@@ -30,21 +26,12 @@ import ca.sciencestudio.security.util.SecurityUtil;
 @Controller
 public class ShareDirectoryListController extends AbstractShareController {
 
-	@RequestMapping(value = "/share/directories.{format}")
-	public String getDirectoryList(@PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/share/directories*")
+	public FormResponseMap getDirectoryList() {
 		
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		int projectId = nanofabSessionStateMap.getProjectId();
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_NANOFAB");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			errors.reject("permission.denied", "Not permitted to view data directories.");
-			return responseView;
+		if(!canReadLaboratory()) {
+			return new FormResponseMap(false, "Not permitted to view data directories.");
 		}
 		
 		List<FileProperties> dirPropertiesList = new ArrayList<FileProperties>();
@@ -64,7 +51,8 @@ public class ShareDirectoryListController extends AbstractShareController {
 		
 		Collections.sort(dirPropertiesList);
 		
-		model.put("response", dirPropertiesList);
-		return responseView;
+		FormResponseMap response = new FormResponseMap(true);
+		response.put("directories", dirPropertiesList);
+		return response;
 	}
 }

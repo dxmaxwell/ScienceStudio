@@ -9,13 +9,12 @@ package ca.sciencestudio.nanofab.service.controllers;
 import java.util.Map;
 
 import ca.sciencestudio.util.net.TunnelManager;
-import ca.sciencestudio.nanofab.state.NanofabSessionStateMap;
 
 /**
  * @author maxweld
  *
  */
-public abstract class AbstractSessionController {
+public abstract class AbstractSessionController extends AbstractLaboratoryControlController {
 	
 	protected static final String DEFAULT_VNC_PASSWORD = "";
 	protected static final int DEFAULT_VNC_WIDTH = 800;
@@ -36,7 +35,6 @@ public abstract class AbstractSessionController {
 	protected static final int VNC_EXTRA_HEIGHT = 25;
 	
 	protected TunnelManager tunnelManager;
-	protected NanofabSessionStateMap nanofabSessionStateMap;
 	
 	private String vncPassword = DEFAULT_VNC_PASSWORD;
 	private int vncWidth = DEFAULT_VNC_WIDTH;
@@ -61,13 +59,6 @@ public abstract class AbstractSessionController {
 	}
 	public void setTunnelManager(TunnelManager tunnelManager) {
 		this.tunnelManager = tunnelManager;
-	}
-	
-	public NanofabSessionStateMap getNanofabSessionStateMap() {
-		return nanofabSessionStateMap;
-	}
-	public void setNanofabSessionStateMap(NanofabSessionStateMap nanofabSessionStateMap) {
-		this.nanofabSessionStateMap = nanofabSessionStateMap;
 	}
 	
 	public String getVncPassword() {

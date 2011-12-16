@@ -12,16 +12,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.util.io.FileProperties;
-import ca.sciencestudio.util.web.BindAndValidateUtils;
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * @author maxweld
@@ -30,21 +26,12 @@ import ca.sciencestudio.security.util.SecurityUtil;
 @Controller
 public class ShareFileListController extends AbstractShareController {
 	
-	@RequestMapping(value = "/share/files.{format}")
-	public String getFileList(@RequestParam String dir, @PathVariable String format, ModelMap model) {
+	@ResponseBody
+	@RequestMapping(value = "/share/files*")
+	public FormResponseMap getFileList(@RequestParam String dir) {
 	
-		BindException errors = BindAndValidateUtils.buildBindException();
-		model.put("errors", errors);
-		
-		String responseView = "response-" + format;
-		
-		int projectId = nanofabSessionStateMap.getProjectId();
-		Object admin = AuthorityUtil.buildRoleAuthority("ADMIN_NANOFAB");
-		Object group = AuthorityUtil.buildProjectGroupAuthority(projectId);
-		
-		if(!SecurityUtil.hasAnyAuthority(group, admin)) {
-			errors.reject("permission.denied", "Not permitted to view data files.");
-			return responseView;
+		if(!canReadLaboratory()) {
+			return new FormResponseMap(false, "Not permitted to view data files.");
 		}
 		
 		// Remove trailing 'separators' from path. //
@@ -55,13 +42,11 @@ public class ShareFileListController extends AbstractShareController {
 		File directory = new File(getShareDirectory(), dir);
 		
 		if(!directory.isDirectory()) {
-			errors.reject("file.notdirectory", "Specified path is not a directory.");
-			return responseView;
+			return new FormResponseMap(false, "Specified path is not a directory.");
 		}
 		
 		if(!directory.getPath().startsWith(getShareDirectory().getPath())) {
-			errors.reject("file.notchild", "Specified path is not in shared directory.");
-			return responseView;
+			return new FormResponseMap(false, "Specified path is not in shared directory.");
 		}
 		
 		List<FileProperties> filePropertiesList = new ArrayList<FileProperties>();
@@ -74,7 +59,8 @@ public class ShareFileListController extends AbstractShareController {
 		
 		Collections.sort(filePropertiesList);
 		
-		model.put("response", filePropertiesList);
-		return responseView;
+		FormResponseMap response = new FormResponseMap(true);
+		response.put("files", filePropertiesList);
+		return response;
 	}
 }

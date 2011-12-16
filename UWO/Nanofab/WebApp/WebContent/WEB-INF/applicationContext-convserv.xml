@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) Canadian Light Source, Inc. All rights reserved.
+	see license.txt for details.
+	
+	Description:
+		Conversion Service Configuration
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	
+	<!-- ===========================================================================================
+	-  Conversion Service Configuration 
+	-  ========================================================================================== -->
+	
+	<bean id="simpleDateToStringConverter"
+		class="ca.sciencestudio.util.convert.SimpleDateToStringConverter">
+	</bean>
+	
+	<bean id="simpleStringToDateConverter"
+		class="ca.sciencestudio.util.convert.SimpleStringToDateConverter">
+		<property name="patterns">
+			<list>
+				<value>yyyy-MM-dd HH:mm</value>
+				<value>yyyy-MM-dd</value>
+				<value>HH:mm</value>					
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="overridingGenericConverter"
+		class="ca.sciencestudio.util.convert.OverridingGenericConverter">
+		<property name="overriddenClasses">
+			<set>
+				<!-- The behaviour of the Spring 3 "ConversionService" and the      --> 
+				<!-- traditional "PropertyEditor" has changed how ALL "Map" types   -->
+				<!-- are handled during dependency injection.  In order to override -->
+				<!-- this new behaviour for the "StateMap" type, it is included     -->
+				<!-- in the list below.  Perhaps reversion to Spring 2 style        -->
+				<!-- PropertyEditors should be considered.  -Dylan                  -->
+				<value>ca.sciencestudio.util.state.StateMap</value>
+			</set>
+		</property>	
+	</bean>
+	
+	<bean id="conversionService"
+		class="org.springframework.context.support.ConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<ref local="simpleDateToStringConverter"/>
+				<ref local="simpleStringToDateConverter"/>
+				<ref local="overridingGenericConverter"/>
+			</set>
+		</property>
+	</bean>
+	
+	<bean class="ca.sciencestudio.util.bean.ConversionServiceHolderConfigBean">
+		<property name="conversionService" ref="conversionService"/>
+	</bean>
+	
+</beans>

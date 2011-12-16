@@ -29,18 +29,40 @@
 		
 			/*</c:when><c:otherwise>*/
 			
+			var gidFld = new Ext.form.Hidden({
+				name:'${gid}',
+				value:'${laboratorySession.gid}'
+			});
+			
+			var nameFld = new Ext.form.TextField({
+				name:'name',
+				fieldLabel: 'Session',
+				value: '${laboratorySession.name}',
+				cls:'x-item-disabled',
+				readOnly:true
+			});
+			
+			var descriptionFld = new Ext.form.Hidden({
+				name:'description',
+				value:'${laboratorySession.description}'
+			});
+			
+			var laboratoryGidFld = new Ext.form.Hidden({
+				name:'laboratoryGid',
+				value:'${laboratorySession.laboratoryGid}'
+			});
+			
+			var projectGidFld = new Ext.form.Hidden({
+				name:'projectGid',
+				value:'${laboratorySession.projectGid}'
+			});
+			
 			var projectNameFld = new Ext.form.TextField({
 				name:'projectName',
 				fieldLabel: 'Project',
 				value: '${laboratorySession.projectName}',
-				disabled:true
-			});
-
-			var sessionNameFld = new Ext.form.TextField({
-				name:'sessionName',
-				fieldLabel: 'Session',
-				value: '${laboratorySession.sessionName}',
-				disabled: true
+				cls:'x-item-disabled',
+				readOnly:true
 			});
 
 			/*<spring:bind path="laboratorySession.proposal">*/
@@ -55,12 +77,12 @@
 			/*</c:if></c:forEach>*/
 			/*</spring:bind>*/
 			
-			/*<spring:bind path="laboratorySession.startDate">*/
+			/*<spring:bind path="laboratorySession.startDay">*/
 			var startDateFld = new Ext.form.DateField({
 				name: '${status.expression}',
 				fieldLabel: 'Start',
 				value: '${status.value}',
-				format:'Y-m-d',
+				format: Date.patterns.ISO8601Date,
 				msgTarget: 'side'
 			});
 			/*<c:forEach items="${status.errorMessages}" var="msg" varStatus="forEachStatus"><c:if test="${forEachStatus.last}">*/
@@ -73,7 +95,8 @@
 				name: '${status.expression}',
 				fieldLabel: 'Start Time',
 				value: '${status.value}',
-				format: 'H:i',
+				format: Date.patterns.ISO8601TimeShrt,
+				altFormats: Date.patterns.ISO8601TimeFull,
 				hideLabel: true,
 				msgTarget: 'side',
 				width: 72
@@ -83,12 +106,12 @@
 			/*</c:if></c:forEach>*/
 			/*</spring:bind>*/
 			
-			/*<spring:bind path="laboratorySession.endDate">*/
+			/*<spring:bind path="laboratorySession.endDay">*/
 			var endDateFld = new Ext.form.DateField({
 				name: '${status.expression}',
 				fieldLabel: 'End',
 				value: '${status.value}',
-				format:'Y-m-d',
+				format: Date.patterns.ISO8601Date,
 				msgTarget: 'side'
 			});
 			/*<c:forEach items="${status.errorMessages}" var="msg" varStatus="forEachStatus"><c:if test="${forEachStatus.last}">*/
@@ -101,7 +124,8 @@
 				name: '${status.expression}',
 				fieldLabel: 'End Time',
 				value: '${status.value}',
-				format: 'H:i',
+				format: Date.patterns.ISO8601TimeShrt,
+				altFormats: Date.patterns.ISO8601TimeFull,
 				hideLabel: true,
 				msgTarget: 'side',
 				width: 72
@@ -115,7 +139,8 @@
 				name: 'status',
 				fieldLabel: 'Status',
 				value: '${laboratorySession.status}',
-				disabled: true
+				cls:'x-item-disabled',
+				readOnly:true
 			});
 			
 			var updateBtn = new Ext.Button({
@@ -125,7 +150,7 @@
 					if(updater) {
 						updater.formUpdate(
 							'laboratorySessionEditForm',
-							'session/${laboratorySession.sessionId}/edit.html'
+							'session/${laboratorySession.gid}/edit.html'
 						);
 					}
 				}
@@ -137,7 +162,7 @@
 					var updater = new Ext.Updater('mainPanel');
 					if(updater) {
 						updater.update({
-							url:'session/${laboratorySession.sessionId}/show.html',
+							url:'session/${laboratorySession.gid}/show.html',
 							scripts:true
 						});
 					}
@@ -148,10 +173,14 @@
 				formId:'laboratorySessionEditForm',
 				title: 'Edit Session',
 				labelAlign: 'right',
-				labelWidth: 60,			
+				labelWidth: 60,
 				items: [
+				    projectGidFld,
 					projectNameFld,
-					sessionNameFld,
+					gidFld,
+					nameFld,
+					descriptionFld,
+					laboratoryGidFld,
 					proposalFld,
 					{
 						layout: 'column',

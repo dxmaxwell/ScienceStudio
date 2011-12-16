@@ -11,10 +11,10 @@ import java.util.Date;
 
 import ca.sciencestudio.model.person.Person;
 import ca.sciencestudio.model.project.Project;
-import ca.sciencestudio.model.project.dao.ProjectDAO;
+import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.Session;
-import ca.sciencestudio.model.session.dao.SessionDAO;
+import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.util.net.TunnelManager;
 import ca.sciencestudio.util.state.AbstractSessionStateMap;
 import ca.sciencestudio.util.state.support.SessionStateMapException;
@@ -25,54 +25,57 @@ import ca.sciencestudio.util.state.support.SessionStateMapException;
  */
 public class NanofabSessionStateMap extends AbstractSessionStateMap {
 	
-	protected static final String STATE_KEY_PROJECT_ID = "projectId";
+	protected static final String STATE_KEY_PROJECT_GID = "projectGid";
 	protected static final String STATE_KEY_PROJECT_NAME = "projectName";
-	protected static final String STATE_KEY_SESSION_ID = "sessionId";
+	protected static final String STATE_KEY_SESSION_GID = "sessionGid";
 	protected static final String STATE_KEY_SESSION_NAME = "sessionName";
 	protected static final String STATE_KEY_SESSION_TIMEOUT = "sessionTimeout";
 	protected static final String STATE_KEY_SESSION_END_TIME = "sessionEndTime";
-	protected static final String STATE_KEY_EXPERIMENT_ID = "experimentId";
+	protected static final String STATE_KEY_EXPERIMENT_GID = "experimentGid";
 	protected static final String STATE_KEY_EXPERIMENT_NAME = "experimentName";
-	protected static final String STATE_KEY_CONTROLLER_UID = "controllerUid";
+	protected static final String STATE_KEY_CONTROLLER_GID = "controllerGid";
 	protected static final String STATE_KEY_CONTROLLER_NAME = "controllerName";
+	protected static final String STATE_KEY_ADMINISTRATOR_GID = "administratorGid";
 	
-	protected static final int DEFAULT_PROJECT_ID = 0;
+	protected static final String DEFAULT_PROJECT_GID = "0";
 	protected static final String DEFAULT_PROJECT_NAME = "NOT AVAILABLE";
-	protected static final int DEFAULT_SESSION_ID = 0;
+	protected static final String DEFAULT_SESSION_GID = "0";
 	protected static final String DEFAULT_SESSION_NAME = "NOT AVAILABLE";
 	protected static final long DEFAULT_SESSION_TIMEOUT = 0L;
 	protected static final long DEFAULT_SESSION_END_TIME = 0L;
-	protected static final int DEFAULT_EXPERIMENT_ID = 0;
+	protected static final String DEFAULT_EXPERIMENT_GID = "0";
 	protected static final String DEFAULT_EXPERIMENT_NAME = "SELECT AN EXPERIMENT";
-	protected static final String DEFAULT_CONTROLLER_UID = "";
+	protected static final String DEFAULT_CONTROLLER_GID = "0";
 	protected static final String DEFAULT_CONTROLLER_NAME = "NOT AVAILABLE";
+	protected static final String DEFAULT_ADMINISTRATOR_GID = "0";
 	
 	private static final long SESSION_THREAD_SLEEP_TIME = 1000L; 
 	
 	private Thread sessionThread;
 	
-	private SessionDAO sessionDAO;
-	private ProjectDAO projectDAO;
+	private SessionAuthzDAO sessionAuthzDAO;
+	private ProjectAuthzDAO projectAuthzDAO;
 	private TunnelManager tunnelManager;
 	
 	public NanofabSessionStateMap() {
 		setDefaultValues();
 	}
 	
-	public void startSession(int sessionId) throws SessionStateMapException {
+	
+	public void startSession(String user, String sessionGid) throws SessionStateMapException {
 		
 		if(isRunning()) {
 			throw new SessionStateMapException("Session is already running.");
 		}
 		
-		Session session = sessionDAO.getSessionById(sessionId);
+		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
-			throw new SessionStateMapException("Session not found. Invalid Session ID.");
+			throw new SessionStateMapException("Session not found. Invalid Session GID.");
 		}
 		
-		Project project = projectDAO.getProjectById(session.getProjectId());
+		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
-			throw new SessionStateMapException("Project not found. Invalid Project ID.");
+			throw new SessionStateMapException("Project not found. Invalid Project GID.");
 		}
 		
 		Date now = new Date();
@@ -92,16 +95,18 @@ public class NanofabSessionStateMap extends AbstractSessionStateMap {
 		setProject(project);
 		setSession(session);
 		updateSessionTimeout();
-		setRunningSessionId(sessionId);
+		setAdministratorGid(user);
+		setRunningSessionGid(sessionGid);
 	}
 
-	public void stopSession(int sessionId) throws SessionStateMapException {
+	@Override
+	public void stopSession(String sessionGid) throws SessionStateMapException {
 		
 		if(!isRunning()) {
 			throw new SessionStateMapException("Session is already stopped.");
 		}
 		
-		if(sessionId != getRunningSessionId()) {
+		if((sessionGid != null) && !sessionGid.equalsIgnoreCase(getRunningSessionGid())) {
 			throw new SessionStateMapException("Session is not running.");
 		}
 		
@@ -115,14 +120,14 @@ public class NanofabSessionStateMap extends AbstractSessionStateMap {
 	protected void doStopSession() throws SessionStateMapException {
 		setDefaultValues();
 		tunnelManager.closeAndRemoveAll();
-		put(STATE_KEY_RUNNING_SESSION_ID, DEFAULT_RUNNING_SESSION_ID);
+		put(STATE_KEY_RUNNING_SESSION_GID, DEFAULT_RUNNING_SESSION_GID);
 	}
 	
-	public int getProjectId() {
-		return (Integer) get(STATE_KEY_PROJECT_ID);
+	public String getProjectGid() {
+		return (String) get(STATE_KEY_PROJECT_GID);
 	}
-	protected void setProjectId(int projectId) {
-		put(STATE_KEY_PROJECT_ID, projectId);
+	protected void setProjectGid(String projectGid) {
+		put(STATE_KEY_PROJECT_GID, projectGid);
 	}
 	
 	public String getProjectName() {
@@ -134,16 +139,16 @@ public class NanofabSessionStateMap extends AbstractSessionStateMap {
 	
 	protected void setProject(Project project) {
 		if(project != null) {
-			setProjectId(project.getId());
+			setProjectGid(project.getGid());
 			setProjectName(project.getName());
 		}
 	}
 	
-	public int getSessionId() {
-		return (Integer) get(STATE_KEY_SESSION_ID);
+	public String getSessionGid() {
+		return (String) get(STATE_KEY_SESSION_GID);
 	}
-	protected void setSessionId(int sessionId) {
-		put(STATE_KEY_SESSION_ID, sessionId);
+	protected void setSessionGid(String sessionGid) {
+		put(STATE_KEY_SESSION_GID, sessionGid);
 	}
 	
 	public String getSessionName() {
@@ -170,17 +175,17 @@ public class NanofabSessionStateMap extends AbstractSessionStateMap {
 	
 	protected void setSession(Session session) {
 		if(session != null) {
-			setSessionId(session.getId());
+			setSessionGid(session.getGid());
 			setSessionName(session.getName());
 			setSessionEndTime(session.getEndDate().getTime());
 		}
 	}
 	
-	public int getExperimentId() {
-		return (Integer) get(STATE_KEY_EXPERIMENT_ID);
+	public String getExperimentGid() {
+		return (String) get(STATE_KEY_EXPERIMENT_GID);
 	}
-	protected void setExperimentId(int experimentId) {
-		put(STATE_KEY_EXPERIMENT_ID, experimentId);
+	protected void setExperimentGid(String experimentGid) {
+		put(STATE_KEY_EXPERIMENT_GID, experimentGid);
 	}
 	
 	public String getExperimentName() {
@@ -191,15 +196,15 @@ public class NanofabSessionStateMap extends AbstractSessionStateMap {
 	}
 	
 	public void setExperiment(Experiment experiment) {
-		setExperimentId(experiment.getId());
+		setExperimentGid(experiment.getGid());
 		setExperimentName(experiment.getName());
 	}
 	
-	public String getControllerUid() {
-		return (String) get(STATE_KEY_CONTROLLER_UID);
+	public String getControllerGid() {
+		return (String) get(STATE_KEY_CONTROLLER_GID);
 	}
-	protected void setControllerUid(String controllerUid) {
-		put(STATE_KEY_CONTROLLER_UID, controllerUid);
+	protected void setControllerGid(String controllerGid) {
+		put(STATE_KEY_CONTROLLER_GID, controllerGid);
 	}
 	
 	public String getControllerName() {
@@ -209,34 +214,55 @@ public class NanofabSessionStateMap extends AbstractSessionStateMap {
 		put(STATE_KEY_CONTROLLER_NAME, controllerName);
 	}
 	
-	public void setController(Person person) {		
+	public void setController(Person person) {
 		if(person != null) {
-			setControllerUid(person.getUid());
-			setControllerName(person.getFirstName() + " " + person.getLastName());
+			setControllerGid(person.getGid());
+			setControllerName(Person.getFullName(person));
 		}
 	}
 
+	public void setControllerIfNotSet(Person person) {
+		String controllerGid = getControllerGid();
+		if((controllerGid == null) || controllerGid.equalsIgnoreCase(DEFAULT_CONTROLLER_GID)) {
+			setController(person);
+		}
+	}
+	
+	public String getAdministratorGid() {
+		return (String) get(STATE_KEY_ADMINISTRATOR_GID);
+	}
+	public void setAdministratorGid(String administratorGid) {
+		put(STATE_KEY_ADMINISTRATOR_GID, administratorGid);
+	}
+	
 	protected void setDefaultValues() {
 		super.setDefaultValues();
-		setControllerUid(DEFAULT_CONTROLLER_UID);
+		setAdministratorGid(DEFAULT_ADMINISTRATOR_GID);
+		setControllerGid(DEFAULT_CONTROLLER_GID);
 		setControllerName(DEFAULT_CONTROLLER_NAME);
-		setProjectId(DEFAULT_PROJECT_ID);
+		setProjectGid(DEFAULT_PROJECT_GID);
 		setProjectName(DEFAULT_PROJECT_NAME);
-		setSessionId(DEFAULT_SESSION_ID);
+		setSessionGid(DEFAULT_SESSION_GID);
 		setSessionName(DEFAULT_SESSION_NAME);
-		setExperimentId(DEFAULT_EXPERIMENT_ID);
+		setExperimentGid(DEFAULT_EXPERIMENT_GID);
 		setExperimentName(DEFAULT_EXPERIMENT_NAME);
 		setSessionEndTime(DEFAULT_SESSION_END_TIME);
 		updateSessionTimeout();
 		setTimestamp(new Date());
 	}
-	
-	public void setSessionDAO(SessionDAO sessionDAO) {
-		this.sessionDAO = sessionDAO;
+
+	public SessionAuthzDAO getSessionAuthzDAO() {
+		return sessionAuthzDAO;
 	}
-	
-	public void setProjectDAO(ProjectDAO projectDAO) {
-		this.projectDAO = projectDAO;
+	public void setSessionAuthzDAO(SessionAuthzDAO sessionAuthzDAO) {
+		this.sessionAuthzDAO = sessionAuthzDAO;
+	}
+
+	public ProjectAuthzDAO getProjectAuthzDAO() {
+		return projectAuthzDAO;
+	}
+	public void setProjectAuthzDAO(ProjectAuthzDAO projectAuthzDAO) {
+		this.projectAuthzDAO = projectAuthzDAO;
 	}
 
 	public void setTunnelManager(TunnelManager tunnelManager) {
