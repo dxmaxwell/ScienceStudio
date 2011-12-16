@@ -436,7 +436,7 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		} else if(dataUrl.getScheme().equals(URI_SCHEME_FILE)) {
 			dataDirectory = new File(dataUrl);
 		}
-		System.out.println(dataDirectory);
+		
 		if((dataDirectory == null) || !dataDirectory.isDirectory()) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return Collections.emptyList();
@@ -445,7 +445,6 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		String dataPath = getRelativePath(request.getRequestURI(), "/file/list/");
 		
 		File dataFile = new File(dataDirectory, dataPath);
-		System.out.println(dataFile);
 		
 		if(!dataFile.exists()) {
 			response.setStatus(HttpStatus.GONE.value());
@@ -578,7 +577,7 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		} else if(dataUrl.getScheme().equals(URI_SCHEME_FILE)) {
 			dataDirectory = new File(dataUrl);
 		}
-		System.out.println(dataDirectory);
+		
 		if((dataDirectory == null) || !dataDirectory.isDirectory()) {
 			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			return;
@@ -587,7 +586,6 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		String dataPath = getRelativePath(request.getRequestURI(), "/file/data/");
 		
 		File dataFile = new File(dataDirectory, dataPath);
-		System.out.println(dataFile);
 		
 		InputStream dataInputStream;
 		try {
@@ -664,7 +662,7 @@ public class ScanAuthzController extends AbstractSessionAuthzController<Scan> im
 		}
 
 		try {
-			System.out.println(IOUtils.copy(dataInputStream, dataOutputStream));
+			IOUtils.copy(dataInputStream, dataOutputStream);
 		}
 		catch(IOException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
