@@ -49,24 +49,35 @@ public class Person implements Model {
 	}
 	
 	public static String getFullName(Person person, boolean initial) {
-		StringBuffer buffer = new StringBuffer(person.getFirstName());
-		if(initial) {
-			String middleName = person.getMiddleName();
-			if((middleName != null) && (middleName.length() > 0)) {
+		StringBuffer buffer = new StringBuffer();
+		if(person.getFirstName() != null) {
+			buffer.append(person.getFirstName().trim());
+		}
+		if(initial && (person.getMiddleName() != null)) {
+			String middleName = person.getMiddleName().trim();
+			if(middleName.length() > 0) {
 				String middleInitial = middleName.substring(0,1);
 				buffer.append(" ").append(middleInitial).append(".");
 			}
 		}
-		return buffer.append(" ").append(person.getLastName()).toString();
+		if(person.getLastName() != null) {
+			buffer.append(" ").append(person.getLastName().trim());
+		}
+		return buffer.toString();
 	}
 	
 	public static String getCompleteName(Person person) {
-		StringBuffer buffer = new StringBuffer(person.getFirstName());
-		String middleName = person.getMiddleName();
-		if((middleName != null) && (middleName.length() > 0)) {
-			buffer.append(" ").append(middleName);
+		StringBuffer buffer = new StringBuffer();
+		if(person.getFirstName() != null) {
+			buffer.append(person.getFirstName().trim());
 		}
-		return buffer.append(" ").append(person.getLastName()).toString();
+		if(person.getMiddleName() != null) {
+			buffer.append(" ").append(person.getMiddleName().trim());
+		}
+		if(person.getLastName() != null) {
+			buffer.append(" ").append(person.getLastName().trim());
+		}
+		return buffer.toString();
 	}
 	////////////////////////////////////////////////////////
 	
