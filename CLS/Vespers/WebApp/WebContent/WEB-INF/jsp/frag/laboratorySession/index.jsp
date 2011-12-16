@@ -15,6 +15,7 @@
 			var laboratorySessionFields = [
 				{name: 'gid', type: 'string'},
 				{name: 'name', type: 'string'},
+				{name: 'projectGid', type: 'string'},
 				{name: 'projectName', type: 'string'},
 				{name: 'proposal', type: 'string'},
 				{name: 'startDate', type: 'date', dateFormat:'c' },
@@ -22,12 +23,22 @@
 				{name: 'status', type: 'string'}
 			];
 		
-			var laboratorySessionData = [ ];
-			//<c:if test="${not empty laboratorySessionList}">
-			laboratorySessionData = <hmc:write source="${laboratorySessionList}"/>;
-			//</c:if>
+			var laboratorySessionData = [
+   			/*<c:forEach items="${laboratorySessionList}" var="laboratorySession" varStatus="status">*/
+   				[
+   					'${laboratorySession.gid}',
+   					'${laboratorySession.name}',
+   					'${laboratorySession.projectGid}',
+   					'${laboratorySession.projectName}',
+   					'${laboratorySession.proposal}',
+   					'${laboratorySession.startDay}T${laboratorySession.startTime}',
+   					'${laboratorySession.endDay}T${laboratorySession.endTime}',
+   					'${laboratorySession.status}'
+   				 ]/*<c:if test="${!status.last}">*/,/*</c:if>*/
+   			/*</c:forEach>*/
+   			];
 		
-			var labSessionStore = new Ext.data.JsonStore({
+			var labSessionStore = new Ext.data.SimpleStore({
 				fields:laboratorySessionFields,
 				data:laboratorySessionData
 			}); 

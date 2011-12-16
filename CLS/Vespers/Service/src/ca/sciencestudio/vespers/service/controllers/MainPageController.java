@@ -26,8 +26,6 @@ public class MainPageController extends AbstractBeamlineControlController {
 	
 	private static final String MODEL_KEY_PERSON_GID = "personGid";
 	
-	private static final String VALUE_KEY_SESSION_GID = "sessionGid";
-	
 	private static final String SUCCESS_VIEW = "page/main";
 	private static final String FAILURE_VIEW = "page/error";
 
@@ -38,9 +36,9 @@ public class MainPageController extends AbstractBeamlineControlController {
 	@RequestMapping(value = "/main.html", method = RequestMethod.GET)
 	public String handleRequest(@RequestParam("session") String sessionGid, ModelMap model) {
 				
-		String currentSessionGid = (String) beamlineSessionProxy.get(VALUE_KEY_SESSION_GID);
+		String runningSessionGid = beamlineSessionProxy.getRunningSessionGid();
 		
-		if((currentSessionGid == null) || (!currentSessionGid.equalsIgnoreCase(sessionGid))) {
+		if((runningSessionGid == null) || (!runningSessionGid.equalsIgnoreCase(sessionGid))) {
 			model.put("error", "Session has not been started.");
 			model.put("errorMessage", "<a href=\"\">Try Again</a>");
 			return FAILURE_VIEW;
@@ -51,16 +49,17 @@ public class MainPageController extends AbstractBeamlineControlController {
 			model.put("errorMessage", "<a href=\"\">Try Again</a>");
 			return FAILURE_VIEW;
 		}
-			
+	
+		String user = SecurityUtil.getPersonGid();
+	
 		if(canControlBeamline()) {
-			String user = SecurityUtil.getPersonGid();
 			Person person = personAuthzDAO.get(user, user).get();
 			if(person != null) {
 				beamlineSessionProxy.setControllerIfNotSet(person);
 			}
 		}
 		
-		model.put(MODEL_KEY_PERSON_GID, SecurityUtil.getPersonGid());
+		model.put(MODEL_KEY_PERSON_GID, user);
 		return successView;
 	}
 	

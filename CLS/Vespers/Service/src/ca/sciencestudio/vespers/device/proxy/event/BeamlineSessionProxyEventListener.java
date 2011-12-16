@@ -236,7 +236,7 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 	}
 	
 	public void setControllerIfNotSet(Person person) {
-		String controllerGid = (String) get(VALUE_KEY_CONTROLLER_GID);
+		String controllerGid = getControllerGid();
 		if((controllerGid == null) || controllerGid.equalsIgnoreCase(DEFAULT_CONTROLLER_GID)) {
 			setController(person);
 		}

@@ -162,11 +162,22 @@ public class LaboratorySessionController extends AbstractBeamlineAdminController
 			return VIEW_SHOW;
 		}
 		
+		String laboratoryGid = getLaboratoryGid();
+		if(laboratoryGid == null) {
+			model.put(MODEL_KEY_ERROR_MESSAGE, "Facility or Laboratory not found.");
+			return VIEW_SHOW;
+		}
+		
 		String user = SecurityUtil.getPersonGid();
 		
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
 			model.put(MODEL_KEY_ERROR_MESSAGE, "Laboratory Session not found. Invalid session GID.");
+			return VIEW_SHOW;
+		}
+		
+		if(!session.getLaboratoryGid().equalsIgnoreCase(laboratoryGid)) {
+			model.put(MODEL_KEY_ERROR_MESSAGE, "Session is not for the specified Laboratory.");
 			return VIEW_SHOW;
 		}
 		
@@ -235,22 +246,11 @@ public class LaboratorySessionController extends AbstractBeamlineAdminController
 			return VIEW_SHOW;
 		}
 		
-		String laboratoryGid = getLaboratoryGid();
-		if(laboratoryGid == null) {
-			model.put(MODEL_KEY_ERROR_MESSAGE, "Facility or Laboratory not found.");
-			return VIEW_SHOW;
-		}
-		
 		String user = SecurityUtil.getPersonGid();
 		
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
 			model.put(MODEL_KEY_ERROR_MESSAGE, "Laboratory Session not found. Invalid session GID.");
-			return VIEW_SHOW;
-		}
-		
-		if(!session.getLaboratoryGid().equalsIgnoreCase(laboratoryGid)) {
-			model.put(MODEL_KEY_ERROR_MESSAGE, "Session is not for the specified Laboratory.");
 			return VIEW_SHOW;
 		}
 		
