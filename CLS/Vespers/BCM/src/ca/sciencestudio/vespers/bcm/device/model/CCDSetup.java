@@ -21,10 +21,6 @@ import ca.sciencestudio.device.control.event.DeviceEventType;
 public class CCDSetup extends DeviceComposite<DeviceComponent> {
 
 	/*setup*/
-
-
-//	protected static final String COMPONENT_KEY_MANUFACTURER = "manufacturer";
-//	protected static final String COMPONENT_KEY_MODEL = "model";
 	protected static final String COMPONENT_KEY_PORTNAME_RBV = "portNameRBV";
 	protected static final String COMPONENT_KEY_AsynIO_CNNT = "asynIOCNNT";
 	protected static final String COMPONENT_KEY_TEMPERATURE = "temperature";
@@ -50,8 +46,6 @@ public class CCDSetup extends DeviceComposite<DeviceComponent> {
 	protected static final String COMPONENT_KEY_REGIONSIZEY_RBV = "regionSizeYRBV";
 
 
-//	public static final String VALUE_KEY_MANUFACTURER = "manufacturer";
-//	public static final String VALUE_KEY_MODEL = "model";
 	public static final String VALUE_KEY_PORTNAME_RBV = "portNameRBV";
 	public static final String VALUE_KEY_AsynIO_CNNT = "asynIOCNNT";
 	public static final String VALUE_KEY_TEMPERATURE = "temperature";
@@ -99,27 +93,19 @@ public class CCDSetup extends DeviceComposite<DeviceComponent> {
 
 	public Object getValue() {
 		Map<String,Object> value = new HashMap<String,Object>();
-//		value.put(VALUE_KEY_MANUFACTURER, getManufacturer());
-//		value.put(VALUE_KEY_MODEL, getModel());
 		value.put(VALUE_KEY_PORTNAME_RBV, getStringFromComponent(COMPONENT_KEY_PORTNAME_RBV, VALUE_KEY_PORTNAME_RBV));
 		value.put(VALUE_KEY_AsynIO_CNNT, getEnumString(getShortFromComponent(COMPONENT_KEY_AsynIO_CNNT, VALUE_KEY_AsynIO_CNNT), NO_YES));
-//		value.put(VALUE_KEY_TEMPERATURE, getDoubleFromComponent(COMPONENT_KEY_TEMPERATURE, VALUE_KEY_TEMPERATURE));
 		value.put(VALUE_KEY_TEMPERATURE_RBV, getDoubleFromComponent(COMPONENT_KEY_TEMPERATURE_RBV, VALUE_KEY_TEMPERATURE_RBV));
 		value.put(VALUE_KEY_BINX_RBV, getIntFromComponent(COMPONENT_KEY_BINX_RBV, VALUE_KEY_BINX_RBV));
 		value.put(VALUE_KEY_BINY_RBV, getIntFromComponent(COMPONENT_KEY_BINY_RBV, VALUE_KEY_BINY_RBV));
 		value.put(VALUE_KEY_IMAGEREVERSEX_RBV, getEnumString(getShortFromComponent(COMPONENT_KEY_IMAGEREVERSEX_RBV, VALUE_KEY_IMAGEREVERSEX_RBV), NO_YES));
 		value.put(VALUE_KEY_IMAGEREVERSEY_RBV, getEnumString(getShortFromComponent(COMPONENT_KEY_IMAGEREVERSEY_RBV, VALUE_KEY_IMAGEREVERSEY_RBV), NO_YES));
-//		value.put(VALUE_KEY_AUTODATATYPE, getEnumString(getShortFromComponent(COMPONENT_KEY_AUTODATATYPE, VALUE_KEY_AUTODATATYPE), NO_YES));
 		value.put(VALUE_KEY_AUTODATATYPE_RBV, getEnumString(getShortFromComponent(COMPONENT_KEY_AUTODATATYPE_RBV, VALUE_KEY_AUTODATATYPE_RBV), NO_YES));
 		value.put(VALUE_KEY_DATATYPE_RBV, getEnumString(getShortFromComponent(COMPONENT_KEY_DATATYPE_RBV, VALUE_KEY_DATATYPE_RBV), DATA_TYPE));
-//		value.put(VALUE_KEY_DATATYPE, getEnumString(getShortFromComponent(COMPONENT_KEY_DATATYPE, VALUE_KEY_DATATYPE), DATA_TYPE));
-//		value.put(VALUE_KEY_GAIN, getDoubleFromComponent(COMPONENT_KEY_GAIN, VALUE_KEY_GAIN));
 		value.put(VALUE_KEY_GAIN_RBV, getDoubleFromComponent(COMPONENT_KEY_GAIN_RBV, VALUE_KEY_GAIN_RBV));
 		value.put(VALUE_KEY_IMAGESIZE_RBV, getIntFromComponent(COMPONENT_KEY_IMAGESIZE_RBV, VALUE_KEY_IMAGESIZE_RBV));
 		value.put(VALUE_KEY_REGIONSTARTX, getIntFromComponent(COMPONENT_KEY_REGIONSTARTX, VALUE_KEY_REGIONSTARTX));
 		value.put(VALUE_KEY_REGIONSTARTY, getIntFromComponent(COMPONENT_KEY_REGIONSTARTY, VALUE_KEY_REGIONSTARTY));
-//		value.put(VALUE_KEY_REGIONSIZEX, getIntFromComponent(COMPONENT_KEY_REGIONSIZEX, VALUE_KEY_REGIONSIZEX));
-//		value.put(VALUE_KEY_REGIONSIZEY, getIntFromComponent(COMPONENT_KEY_REGIONSIZEY, VALUE_KEY_REGIONSIZEY));
 		value.put(VALUE_KEY_REGIONSIZEX_RBV, getIntFromComponent(COMPONENT_KEY_REGIONSIZEX_RBV, VALUE_KEY_REGIONSIZEX_RBV));
 		value.put(VALUE_KEY_REGIONSIZEY_RBV, getIntFromComponent(COMPONENT_KEY_REGIONSIZEY_RBV, VALUE_KEY_REGIONSIZEY_RBV));
 		return value;

@@ -15,8 +15,8 @@ import ca.sciencestudio.device.control.event.DeviceEventType;
 
 /**
  * @author medrand
- *
- * Modified this class since Aug. 27, 2009
+ * 
+ *         Modified this class since Aug. 27, 2009
  * @author Dong Liu
  */
 public class CCDStage extends DeviceComposite<SimpleMotor> {
@@ -24,8 +24,6 @@ public class CCDStage extends DeviceComposite<SimpleMotor> {
 	protected static final String COMPONENT_KEY_MOTOR_Z = "motorZ";
 
 	public static final String VALUE_KEY_POSITION_Z = "positionZ";
-	// public static final String VALUE_KEY_SET_POINT_Z = "setPointZ";
-	// public static final String VALUE_KEY_MOVING = "moving";
 
 	private CcdStageDeviceEventListener listener;
 
@@ -44,49 +42,13 @@ public class CCDStage extends DeviceComposite<SimpleMotor> {
 	public Object getValue() {
 		Map<String, Object> value = new HashMap<String, Object>();
 		value.put(VALUE_KEY_POSITION_Z, getPositionZ());
-		// value.put(VALUE_KEY_SET_POINT_Z, getSetPointZ());
-		// value.put(VALUE_KEY_MOVING, isMoving());
 		return value;
 	}
-
-	/*@SuppressWarnings("unchecked")
-	public void setValue(Object value) {
-		try {
-			Map<String,Object> valueMap = (Map<String, Object>) value;
-
-			if(valueMap.containsKey(VALUE_KEY_SET_POINT_Z)) {
-				try {
-					setSetPointZ((Double)valueMap.get(VALUE_KEY_SET_POINT_Z));
-				}
-				catch(ClassCastException e) {
-					log.warn("Set value for '" + VALUE_KEY_SET_POINT_Z + "', is not expected class (Double).");
-				}
-			}
-		}
-		catch(ClassCastException e) {
-			log.warn("Set value argument is not expected class (Map<String,Object>).");
-		}
-	}*/
 
 	public double getPositionZ() {
 		SimpleMotor motor = getComponent(COMPONENT_KEY_MOTOR_Z);
 		return motor.getPosition();
 	}
-
-	/*public double getSetPointZ() {
-		SimpleMotor motor = getComponent(COMPONENT_KEY_MOTOR_Z);
-		return motor.getSetPoint();
-	}*/
-
-	/*public boolean isMoving() {
-		SimpleMotor motor = getComponent(COMPONENT_KEY_MOTOR_Z);
-		return motor.isMoving();
-	}*/
-
-	/*public void setSetPointZ(double setPointZ) {
-		SimpleMotor simpleMotor = getComponent(COMPONENT_KEY_MOTOR_Z);
-		simpleMotor.setSetPoint(setPointZ);
-	}*/
 
 	protected void initDeviceEventListeners() {
 		listener = new CcdStageDeviceEventListener();
@@ -101,7 +63,6 @@ public class CCDStage extends DeviceComposite<SimpleMotor> {
 				return entry.getKey();
 			}
 		}
-//		return new String();
 		return null;
 	}
 
@@ -121,44 +82,20 @@ public class CCDStage extends DeviceComposite<SimpleMotor> {
 			switch (deviceEventType) {
 			case VALUE_CHANGE:
 				try {
-					Map<String, Object> valueMap = (Map<String, Object>) event
-							.getValue();
+					Map<String, Object> valueMap = (Map<String, Object>) event.getValue();
 					HashMap<String, Object> newValueMap = new HashMap<String, Object>();
 
 					if (COMPONENT_KEY_MOTOR_Z.equals(componentKey)) {
-						if (valueMap
-								.containsKey(SimpleMotor.VALUE_KEY_POSITION)) {
-							Object value = valueMap
-									.get(SimpleMotor.VALUE_KEY_POSITION);
+						if (valueMap.containsKey(SimpleMotor.VALUE_KEY_POSITION)) {
+							Object value = valueMap.get(SimpleMotor.VALUE_KEY_POSITION);
 							newValueMap.put(VALUE_KEY_POSITION_Z, value);
-						} /*else if (valueMap
-								.containsKey(SimpleMotor.VALUE_KEY_SET_POINT)) {
-							Object value = valueMap
-									.get(SimpleMotor.VALUE_KEY_SET_POINT);
-							newValueMap.put(VALUE_KEY_SET_POINT_Z, value);
-						} else if (valueMap
-								.containsKey(SimpleMotor.VALUE_KEY_MOVING)) {
-							try {
-								Boolean movingZ = (Boolean) valueMap
-										.get(SimpleMotor.VALUE_KEY_MOVING);
-								newValueMap.put(VALUE_KEY_MOVING, movingZ);
-							} catch (ClassCastException e) {
-								log
-										.warn(COMPONENT_KEY_MOTOR_Z
-												+ ": Value for '"
-												+ VALUE_KEY_MOVING
-												+ "', is not expected class (Boolean).");
-							}
-						}*/
+						}
 					}
 					if (!newValueMap.isEmpty()) {
-						publishEvent(new DeviceEvent(
-								DeviceEventType.VALUE_CHANGE, id, newValueMap,
-								status, alarm));
+						publishEvent(new DeviceEvent(DeviceEventType.VALUE_CHANGE, id, newValueMap, status, alarm));
 					}
 				} catch (ClassCastException e) {
-					log
-							.warn("Device event value is not expected class (Map<String,Object>).");
+					log.warn("Device event value is not expected class (Map<String,Object>).");
 				}
 				break;
 
@@ -167,8 +104,7 @@ public class CCDStage extends DeviceComposite<SimpleMotor> {
 				break;
 
 			default:
-				log.warn("DeviceEventType, " + deviceEventType.toString()
-						+ ", not supported.");
+				log.warn("DeviceEventType, " + deviceEventType.toString() + ", not supported.");
 				break;
 			}
 		}
