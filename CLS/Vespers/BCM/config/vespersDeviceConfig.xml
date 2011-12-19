@@ -53,10 +53,10 @@
 				<ref bean="fourElementDetector"/>
 				<!--<ref bean="vortexDetector"/>-->
 				<ref bean="scanDevice"/>
-				<!--<ref bean="ccdSetup"/>-->
-				<!--<ref bean="ccdCollection"/>-->
-				<!--<ref bean="ccdStage"/>-->
-				<!--<ref bean="ccdFile"/>-->
+				<ref bean="ccdSetup"/>
+				<ref bean="ccdCollection"/>
+				<ref bean="ccdStage"/>
+				<ref bean="ccdFile"/>
 			</list>
 		 </constructor-arg>
 		<property name="deviceEventSender" ref="jmsDeviceEventSender"/>
@@ -1021,72 +1021,30 @@
 
 
 	<!-- CCD Stage -->
-	<!--<bean id="ccdStage" class="ca.sciencestudio.vespers.bcm.device.model.SimpleCCDStage">
+	<bean id="ccdStage" class="ca.sciencestudio.vespers.bcm.device.model.SimpleCCDStage">
 		<constructor-arg value="ccdStage" />
 		<constructor-arg>
 			<map>
 				<entry key="motorZ" value-ref="SMTR1607-2-B21-18_mm_sp" />
 			</map>
 		</constructor-arg>
-	</bean>-->
+	</bean>
 
-	<!--<bean id="ccdStage" class="ca.sciencestudio.vespers.bcm.device.model.CCDStage">
-		<constructor-arg value="ccdStage" />
-		<constructor-arg>
-			<map>
-				<entry key="motorZ" value-ref="ccdStageMotorZ" />
-			</map>
-		</constructor-arg>
-	</bean>-->
-
-	<!-- CCD Stage (SimpleMotors) -->
-
-<!--cannot use simple motor now because we do not publish the set point-->
-	<!--<bean id="ccdStageMotorZ" class="ca.sciencestudio.vespers.bcm.device.model.SimpleMotor">
-		<constructor-arg value="ccdStageMotorZ" />
-		<constructor-arg>
-			<map>
-				<entry key="position" value-ref="SMTR1607-2-B21-18_mm_fbk" />
-				<entry key="setPoint" value-ref="SMTR1607-2-B21-18_mm"/>
-				<entry key="status" value-ref="SMTR1607-2-B21-18_status"/>
-			</map>
-		</constructor-arg>
-	</bean>-->
-
+	
 	<!-- CCD Stage MotorZ (PVs) -->
 	<!--Just use the single PV for the CCD stage-->
-	<!--<bean id="SMTR1607-2-B21-18_mm_sp" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+	<bean id="SMTR1607-2-B21-18_mm_sp" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
 		<constructor-arg value="SMTR1607-2-B21-18:mm:sp" />
 		<constructor-arg ref="ccdSetupContext" />
-	</bean>-->
+	</bean>
 
-	<!--
-		<bean id="SMTR1607-2-B21-18_mm"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
-		<constructor-arg value="SMTR1607-2-B21-18:mm"/> <constructor-arg
-		ref="cajContext"/> </bean>
-	-->
-
-	<!--
-		<bean id="SMTR1607-2-B21-18_status"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
-		<constructor-arg value="SMTR1607-2-B21-18:status"/> <constructor-arg
-		ref="cajContext"/> </bean>
-	-->
-	
 	<!-- CCD Setup -->
-	<!--
+	
 	<bean id="ccdSetup" class="ca.sciencestudio.vespers.bcm.device.model.CCDSetup">
 		<constructor-arg value="ccdSetup" />
 		<constructor-arg>
 			<map>
-	-->
-				<!--
-					<entry key="manufacturer"
-					value-ref="IOC1607-003_det1_CCDManufacturer" />
-				-->
-				<!--<entry key="model" value-ref="IOC1607-003_det1_CCDModel" />-->
-				<!--<entry key="portNameRBV" value-ref="IOC1607-003_det1_PortName_RBV"></entry>
+				<entry key="portNameRBV" value-ref="IOC1607-003_det1_PortName_RBV"></entry>
 				<entry key="asynIOCNNT" value-ref="IOC1607-003_det1_AsynIO.CNCT"></entry>
 				<entry key="temperature" value-ref="IOC1607-003_det1_Temp" />
 				<entry key="temperatureRBV" value-ref="IOC1607-003_det1_Temp_RBV" />
@@ -1112,19 +1070,7 @@
 			</map>
 		</constructor-arg>
 	</bean>
-	-->
 	
-	<!--<bean id="IOC1607-003_det1_CCDManufacturer" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
-		<constructor-arg value="IOC1607-003:det1:CCDManufacturer" />
-		<constructor-arg ref="ccdCAJContext" />
-	</bean>-->
-
-	<!--<bean id="IOC1607-003_det1_CCDModel" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
-		<constructor-arg value="IOC1607-003:det1:CCDModel" />
-		<constructor-arg ref="ccdCAJContext" />
-	</bean>-->
-
-	<!--
 	<bean id="IOC1607-003_det1_PortName_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
 		<constructor-arg value="IOC1607-003:det1:PortName_RBV" />
 		<constructor-arg ref="ccdSetupContext" />
@@ -1239,13 +1185,13 @@
 		<constructor-arg value="IOC1607-003:det1:SizeY_RBV"></constructor-arg>
 		<constructor-arg ref="ccdSetupContext"></constructor-arg>
 	</bean>
-	-->
-
-	<!-- CCD CAJ Context -->
-	<!--<bean id="ccdSetupContext" class="com.cosylab.epics.caj.CAJContext" />-->
 	
 
-	<!--
+	<!-- CCD CAJ Context -->
+	<bean id="ccdSetupContext" class="com.cosylab.epics.caj.CAJContext" />
+	
+
+	<!-- CCD collection -->
 	<bean id="ccdCollection" class="ca.sciencestudio.vespers.bcm.device.model.CCDCollection">
 		<constructor-arg value="ccdCollection" />
 		<constructor-arg>
@@ -1274,10 +1220,6 @@
 			</map>
 		</constructor-arg>
 	</bean>
-
-
-
-
 
 	<bean id="IOC1607-003_det1_AcquireTime" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
 		<constructor-arg value="IOC1607-003:det1:AcquireTime" />
@@ -1383,12 +1325,14 @@
 		<constructor-arg value="IOC1607-003:det1:ImageRate_RBV"></constructor-arg>
 		<constructor-arg ref="ccdCollectionContext"></constructor-arg>
 	</bean>
-	-->
+	
 	
 	<!-- CCD CAJ Context -->
-	<!--<bean id="ccdCollectionContext" class="com.cosylab.epics.caj.CAJContext" />-->
+	<bean id="ccdCollectionContext" class="com.cosylab.epics.caj.CAJContext" />
 
-	<!-- CCD File --><!--
+	<!-- CCD File -->
+	
+	
 	<bean id="ccdFile" class="ca.sciencestudio.vespers.bcm.device.model.CCDFile">
 		<constructor-arg value="ccdFile"></constructor-arg>
 		<constructor-arg>
@@ -1454,9 +1398,9 @@
 	</bean>
 	<bean id="IOC1607-003_det1_FileTemplate_RBV" class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
 		<constructor-arg value="IOC1607-003:det1:FileTemplate_RBV"></constructor-arg>
-		<constructor-arg ref="ccdFileContext"></constructor-arg>x
+		<constructor-arg ref="ccdFileContext"></constructor-arg>
 	</bean>
-	-->
+	
 	<!-- CCD File Context -->
-	<!--<bean id="ccdFileContext" class="com.cosylab.epics.caj.CAJContext" />-->
+	<bean id="ccdFileContext" class="com.cosylab.epics.caj.CAJContext" />
 </beans>

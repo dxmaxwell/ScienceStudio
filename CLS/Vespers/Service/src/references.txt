@@ -1,4 +1,5 @@
 SS_Core_Model
+SS-Core_Service
 SS_Device_Core
 SS_Device_Proxy
 SS_Login_Model

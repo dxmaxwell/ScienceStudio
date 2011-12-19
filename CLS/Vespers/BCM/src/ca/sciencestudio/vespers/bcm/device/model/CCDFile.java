@@ -237,8 +237,7 @@ public class CCDFile extends DeviceComposite<DeviceComponent> {
 			}
 
 			if(valueMap.containsKey(VALUE_KEY_AUTOINCREMENT)) {
-				short autoInrement = ((Short) valueMap.get(VALUE_KEY_AUTOINCREMENT)).shortValue();
-				setShortToComponent(autoInrement,COMPONENT_KEY_AUTOINCREMENT);
+				setShortToComponent(valueMap.get(VALUE_KEY_AUTOINCREMENT), COMPONENT_KEY_AUTOINCREMENT);
 			}
 
 			if(valueMap.containsKey(VALUE_KEY_FILETEMPLATE)) {
@@ -246,20 +245,21 @@ public class CCDFile extends DeviceComposite<DeviceComponent> {
 				setStringToComponent(COMPONENT_KEY_FILETEMPLATE,fileTemplate);
 			}
 
-		}
-		catch(ClassCastException e) {
-			log.warn("Set value from a map. ", e);
+		} catch (ClassCastException e) {
+			log.warn("Set value argument is not expected class (Map<String,Object>).");
 		}
 	}
 
-
-	private void setShortToComponent(short number,
-			String componentKey) {
+	private void setShortToComponent(Object object, String componentKey) {
 		DeviceComponent deviceComponent = getComponent(componentKey);
-		deviceComponent.setValue(new short[] { number });
+		try {
+			short[] value = new short[] { ((Integer) object).shortValue() };
+			deviceComponent.setValue(value);
+		} catch (ClassCastException e) {
+			log.warn("Set value of " + componentKey + " wrong class, expecting Integer.");
+	    }
 
 	}
-
 
 	/**
 	 * @param number

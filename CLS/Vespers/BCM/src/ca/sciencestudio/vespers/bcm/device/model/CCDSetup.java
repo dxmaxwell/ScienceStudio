@@ -275,13 +275,10 @@ public class CCDSetup extends DeviceComposite<DeviceComponent> {
 
 	@SuppressWarnings("unchecked")
 	public void setValue(Object value) {
-		try {
 			Map<String,Object> valueMap = (Map<String,Object>) value;
 			if(valueMap.containsKey(VALUE_KEY_TEMPERATURE)){
 				setDoubleToComponent(valueMap.get(VALUE_KEY_TEMPERATURE), COMPONENT_KEY_TEMPERATURE);
 			}
-
-			// TODO verify the type of these pv's
 			if(valueMap.containsKey(VALUE_KEY_BINX)){
 				setIntToComponent(((Integer)valueMap.get(VALUE_KEY_BINX)).intValue(), COMPONENT_KEY_BINX);
 			}
@@ -302,26 +299,22 @@ public class CCDSetup extends DeviceComposite<DeviceComponent> {
 			}
 
 		}
-		catch(ClassCastException e) {
-			log.warn("Set value argument is not expected class (Map<String,Object>).");
+
+	private void setIntToComponent(Object object, String componentKey) {
+		DeviceComponent deviceComponent = getComponent(componentKey);
+		try {
+			deviceComponent.setValue(new int[] { ((Integer) object).intValue() });
+		} catch (ClassCastException e) {
+			log.warn("Set value of " + componentKey + ": wrong class expecting Integer.");
 		}
 	}
 
-
-	private void setIntToComponent(int number,
-			String componentKey) {
-		DeviceComponent deviceComponent = getComponent(componentKey);
-		deviceComponent.setValue(new int[] { number });
-	}
-
-	private void setDoubleToComponent(Object object,
-			String componentKey) {
+	private void setDoubleToComponent(Object object, String componentKey) {
 		DeviceComponent deviceComponent = getComponent(componentKey);
 		try{
-			double[] value = new double[] {(Double)object};
-			deviceComponent.setValue(value);
+			deviceComponent.setValue(new double[] { ((Double) object).doubleValue() });
 		} catch (ClassCastException e) {
-			log.warn("Set value of " + componentKey + " wrong class, expecting Double.");
+			log.warn("Set value of " + componentKey + ": wrong class expecting Double.");
 		}
 
 	}

@@ -316,7 +316,7 @@ public class CCDCollection extends DeviceComposite<DeviceComponent> {
 			String componentKey) {
 		DeviceComponent deviceComponent = getComponent(componentKey);
 		try{
-			double[] value = new double[] {(Double)object};
+			double[] value = new double[] { ((Double) object).doubleValue() };
 			deviceComponent.setValue(value);
 		} catch (ClassCastException e) {
 			log.warn("Set value of " + componentKey + " wrong class, expecting Double.");
@@ -328,8 +328,7 @@ public class CCDCollection extends DeviceComposite<DeviceComponent> {
 			String componentKey) {
 		DeviceComponent deviceComponent = getComponent(componentKey);
 		try{
-			short[] value = new short[] {((Integer)object).shortValue()};
-			deviceComponent.setValue(value);
+			deviceComponent.setValue(new short[] { ((Integer) object).shortValue() });
 		} catch (ClassCastException e) {
 			log.warn("Set value of " + componentKey + " wrong class, expecting Integer.");
 		}
