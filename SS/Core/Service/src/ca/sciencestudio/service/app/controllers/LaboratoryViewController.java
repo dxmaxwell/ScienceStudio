@@ -19,6 +19,9 @@ import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
 import ca.sciencestudio.security.util.SecurityUtil;
 
 /**
+ * 
+ * Not sure the authz work should be done here or at the controller for the viewurl
+ * 
  * @author maxweld
  *
  */

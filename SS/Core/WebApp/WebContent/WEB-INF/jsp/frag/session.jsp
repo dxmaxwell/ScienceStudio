@@ -201,6 +201,9 @@ Ext.onReady(function() {
 				
 		Join Session Form
 	--%>
+
+	<c:if test="${fn:containsIgnoreCase(sessionType,'daq')==true}"> 
+
 	var joinSessionButton = new Ext.Button({
 		text:'Join Session'
 	});
@@ -250,6 +253,66 @@ Ext.onReady(function() {
 	});
 
 	addItemModelViewTab(joinSessionPanel, true);
+	</c:if> 
+
+	<%--
+				
+		import data Form
+	--%>
+
+	<c:if test="${fn:containsIgnoreCase(sessionType,'import')==true}">
+
+	var loadDataButton = new Ext.Button({
+		text:'Load Data'
+	});
+
+	loadDataButton.on('click', function() {
+		openLabViewTab('${session.gid}', loadDataCheckbox.getValue(), '/ssimport/scans/main.html');
+	}, this);
+
+	var loadDataCheckbox = new Ext.form.Checkbox({
+		labelSeparator:''
+	});	
+
+	var loadDataCheckboxLabel = new Ext.form.Label({
+		text:' Explore and load data in new window?',
+		cls:'x-form-item-label',
+		width:200
+	});
+
+	var loadDataForm = new Ext.form.FormPanel({
+		items: [{
+			layout: 'column',
+			defaults: {
+				layout: 'form',
+				border: false
+			},
+			items: [{
+				columnWidth: 0.3,
+				items: [ loadDataCheckbox ]
+			},{
+				columnWidth: 0.7,
+				items: [ loadDataCheckboxLabel ]
+			}],
+			cls:'x-form-item',
+			border: false
+		}],
+		buttons: [ loadDataButton ],
+		buttonAlign: 'center',
+		labelWidth: 85,
+		border: false
+	});
+
+	var loadDataPanel = new Ext.Panel({
+		title:"Load",
+		items: [ loadDataForm ],
+		style: { "margin":"10px" },
+		width: 400
+	});
+
+	addItemModelViewTab(loadDataPanel, true);
+	</c:if>
+
 });
 </script>
 </div>

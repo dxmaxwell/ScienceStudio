@@ -1,0 +1,5 @@
+include the following projects in the build path
+
+ss core model
+ss utility
+ss security

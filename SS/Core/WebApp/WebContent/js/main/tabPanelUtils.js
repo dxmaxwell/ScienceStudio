@@ -75,7 +75,7 @@ function activateHomeTab() {
 
 var labViewWindows = {};
 
-function openLabViewTab(sessionGid, useWindow) {
+function openLabViewTab(sessionGid, useWindow, viewUrl) {
 	
 	if(sessionGid) {
 		var labViewPanelId = 'LAB_VIEW_PANEL_' + sessionGid;
@@ -97,7 +97,14 @@ function openLabViewTab(sessionGid, useWindow) {
 			return;
 		}
 		
-		var labViewUrl = "laboratory/view.html?session=" + sessionGid; 
+		var labViewUrl;
+		if (viewUrl) {
+			labViewUrl = viewUrl + "?session=" + sessionGid; 
+		} else {
+			labViewUrl = "laboratory/view.html?session=" + sessionGid;
+		}
+		
+//		var labViewUrl = "laboratory/view.html?session=" + sessionGid; 
 			
 		if(useWindow) {
 			labViewWindow = window.open(labViewUrl, labViewWindowId);

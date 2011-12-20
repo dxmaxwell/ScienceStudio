@@ -1,0 +1,6 @@
+include the following projects in the deployment assembly 
+
+ss core model
+ss utility
+ss security
+ss import service

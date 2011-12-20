@@ -7,7 +7,11 @@
  */
 package ca.sciencestudio.service.session.controllers;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -23,11 +27,12 @@ import ca.sciencestudio.model.project.Project;
 import ca.sciencestudio.model.project.dao.ProjectAuthzDAO;
 import ca.sciencestudio.model.session.Session;
 import ca.sciencestudio.model.session.dao.SessionAuthzDAO;
+import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.service.controllers.AbstractModelController;
 import ca.sciencestudio.service.session.backers.SessionFormBacker;
 import ca.sciencestudio.service.utilities.ModelPathUtils;
-import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.authz.Authorities;
+import ca.sciencestudio.util.json.JsonProperties;
 
 /**
  * @author maxweld
@@ -45,6 +50,15 @@ public class SessionPageController extends AbstractModelController {
 	private FacilityAuthzDAO facilityAuthzDAO;
 	
 	private LaboratoryAuthzDAO laboratoryAuthzDAO;
+	
+	private String jsonFile = "session.json";
+	
+	private Map<?,?> sessionType;
+	
+	@PostConstruct
+	public void init() throws IOException {
+		sessionType = (Map<?,?>) JsonProperties.loadMap(jsonFile);
+	}
 	
 	@RequestMapping(value = ModelPathUtils.SESSION_PATH + ".html")
 	public String getSessionsPage(@RequestParam("project") String projectGid, ModelMap model) {
@@ -82,24 +96,36 @@ public class SessionPageController extends AbstractModelController {
 			return ERROR_VIEW;
 		}
 		
-		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
-		
-		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, session.getGid());
-		
-		Data<List<Laboratory>> laboratoryListData = laboratoryAuthzDAO.getAll(); //ByFacility??
-		
 		Project project = projectAuthzDAO.get(user, session.getProjectGid()).get();
 		if(project == null) {
 			model.put("error", "Project not found.");
 			return ERROR_VIEW;
 		}
 		
+		Data<Authorities> projectAuthoritiesData = projectAuthzDAO.getAuthorities(user, session.getProjectGid());
+		
+		Data<Authorities> sessionAuthoritiesData = sessionAuthzDAO.getAuthorities(user, session.getGid());
+		
+		Data<List<Laboratory>> laboratoryListData = laboratoryAuthzDAO.getAll(); //ByFacility??
+		
 		Authorities authorities = mergeAuthorities(projectAuthoritiesData.get(), sessionAuthoritiesData.get());
+		
+		// get the configuration for daq and import
+		String type = "unknown";
+		
+		Laboratory lab = laboratoryAuthzDAO.get(session.getLaboratoryGid()).get();
+		
+		String labName = lab.getName().toLowerCase();
+		
+		if (sessionType.containsKey(labName)) {
+			type = (String) sessionType.get(labName);
+		}
 		
 		model.put("session", new SessionFormBacker(session));
 		model.put("laboratoryList", laboratoryListData.get());
 		model.put("authorities", authorities);
 		model.put("project", project);
+		model.put("sessionType", type); // available session type
 		return "frag/session";
 	}
 
