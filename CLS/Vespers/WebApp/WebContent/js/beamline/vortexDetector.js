@@ -6,10 +6,6 @@
  *
  */
 
-/**
- *
- * @include "include.js"
- */
 
 fieldWidth = 100;
 

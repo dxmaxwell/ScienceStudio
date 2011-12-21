@@ -7,6 +7,9 @@
  */
 package ca.sciencestudio.importer.service.controllers;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.eclipse.jetty.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -31,12 +34,14 @@ public class MainPageController{
 
 	@RequestMapping(value = {"/", "/main.html"}, method = RequestMethod.GET)
 	public String handleRequest(@RequestParam("session") String sessionGid, 
+			final HttpServletResponse response,
 			ModelMap model) {
 		
 		String user = SecurityUtil.getPersonGid();
 
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
+			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			model.put("error", "Session not found.");
 			return "page/error";
 		}

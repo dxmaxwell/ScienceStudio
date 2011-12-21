@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,31 +42,28 @@ public class StartStopPauseScanDeviceController extends AbstractBeamlineAuthzCon
 	
 	private static final String DEFAULT_EXPERIMENT_GID = "0";
 	
-	/* Removed for initial production release *
-	private static final String VALUE_KEY_MODE = "xrdMode";
-	*/
-	
 	private static final String ACTION_VALUE_START = "start";
 	private static final String ACTION_VALUE_STOP = "stop";
 	private static final String ACTION_VALUE_PAUSE = "pause";
 
-	/* Removed for initial production release *
-	private static final String VALUE_KEY_TRIGGERMODE = "triggerMode";
+	private static final String VALUE_KEY_TECHNIQUE = "technique"; 
+	private static final String VALUE_KEY_MODE = "xrdMode";
+//	private static final String VALUE_KEY_TRIGGERMODE = "triggerMode";
 	private static final String VALUE_KEY_FILEPATH = "filePath";
 	private static final String VALUE_KEY_FILETEMPLATE = "fileTemplate";
 	private static final String VALUE_KEY_AUTOINCREMENT = "autoIncrement";
 	private static final String VALUE_KEY_FILENAME = "fileName";
 	private static final String VALUE_KEY_FILENUMBER = "fileNumber";
-	*/
 
 	private StateMap scanDeviceProxy;
 
-	/* Removed for initial production release *
-	private StateMap ccdCollectionStateMap;
-	private StateMap ccdFileStateMap;
+//	@Autowired
+//	private StateMap ccdCollectionProxy;
+	@Autowired
+	private StateMap ccdFileProxy;
 	private String templateScan;
 	private String filePath;
-	*/
+//	private String scanTriggerMode;
 	
 	private ScanAuthzDAO scanAuthzDAO;
 
@@ -111,23 +109,23 @@ public class StartStopPauseScanDeviceController extends AbstractBeamlineAuthzCon
 			beamlineSessionProxy.put(VALUE_KEY_SCAN_GID, scan.getGid());
 			beamlineSessionProxy.put(VALUE_KEY_SCAN_NAME, scan.getName());
 			
-			/* Removed for initial production release *
-			// FIXME checking the session type when there is session type as XRF+XRD
-			Map<String,Serializable> fileValues = new HashMap<String,Serializable>();
-			// FIXME need a better solution later, commented for testing
-			//fileValues.put(VALUE_KEY_FILEPATH, filePath+scanId+"\\");
-			fileValues.put(VALUE_KEY_FILEPATH, filePath);
+			// check if xrd settings are required
+			if (((String) beamlineSessionProxy.get(VALUE_KEY_TECHNIQUE)).contains("XRD")) {
+				Map<String,Serializable> fileValues = new HashMap<String,Serializable>();
+				fileValues.put(VALUE_KEY_FILEPATH, filePath+"scan-"+gid.getId()+"\\");
+				fileValues.put(VALUE_KEY_FILENUMBER, new Integer(1)); // always starts from 1
 
-			if(beamlineSessionProxy.get(VALUE_KEY_MODE)!= null && !((String)beamlineSessionProxy.get(VALUE_KEY_MODE)).equals("scan")) { // has not switched
-				beamlineSessionProxy.put(VALUE_KEY_MODE, "scan");
-				fileValues.put(VALUE_KEY_FILENAME, "scan");
-				fileValues.put(VALUE_KEY_FILENUMBER, 1);
-				fileValues.put(VALUE_KEY_FILETEMPLATE, templateScan);
-				fileValues.put(VALUE_KEY_AUTOINCREMENT, 1);
-				ccdCollectionStateMap.put(VALUE_KEY_TRIGGERMODE, 0); // freerun, does not hurt
+				if(beamlineSessionProxy.get(VALUE_KEY_MODE)!= null && !((String)beamlineSessionProxy.get(VALUE_KEY_MODE)).equals("scan")) { // has not switched
+					beamlineSessionProxy.put(VALUE_KEY_MODE, "scan");
+					fileValues.put(VALUE_KEY_FILENAME, "scan");
+					fileValues.put(VALUE_KEY_FILENUMBER, new Integer(1));
+					fileValues.put(VALUE_KEY_FILETEMPLATE, templateScan);
+					fileValues.put(VALUE_KEY_AUTOINCREMENT, new Integer(1));
+//					ccdCollectionProxy.put(VALUE_KEY_TRIGGERMODE, new Integer(scanTriggerMode));  // daq cfg handles this
+				}
+				ccdFileProxy.putAll(fileValues);
+				
 			}
-			ccdFileStateMap.putAll(fileValues);
-			*/
 			
 			values.put(VALUE_KEY_SCAN_ID, gid.getId());
 			values.put(ACTION_VALUE_START, 1);
@@ -160,15 +158,6 @@ public class StartStopPauseScanDeviceController extends AbstractBeamlineAuthzCon
 		this.scanAuthzDAO = scanAuthzDAO;
 	}
 
-	/* Removed for initial production release *
-	public void setCcdCollectionStateMap(StateMap ccdCollectionStateMap) {
-		this.ccdCollectionStateMap = ccdCollectionStateMap;
-	}
-
-	public void setCcdFileStateMap(StateMap ccdFileStateMap) {
-		this.ccdFileStateMap = ccdFileStateMap;
-	}
-
 	public void setTemplateScan(String templateScan) {
 		this.templateScan = templateScan;
 	}
@@ -176,5 +165,9 @@ public class StartStopPauseScanDeviceController extends AbstractBeamlineAuthzCon
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
-	*/
+	
+//	public void setScanTriggerMode(String scanTriggerMode) {
+//		this.scanTriggerMode = scanTriggerMode;
+//	}
+	
 }

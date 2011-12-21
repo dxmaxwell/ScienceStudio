@@ -18,9 +18,10 @@
 		<script type="text/javascript" src="/ssstatic/js/numberUtils.js"></script>
 		<script type="text/javascript" src="/ssstatic/js/activityMeter.js"></script>
 		<script type="text/javascript" src="/ssstatic/js/dygraph-1.2/dygraph-combined.js"></script>
+		<script type="text/javascript" src="/ssstatic/js/canvastext.js"></script>
 		
 		<script type="text/javascript" src="<c:url value="/js/Ext.ss.cls.AxisPTZCameraPanel.js"/>"></script>
-		<!--<script type="text/javascript" src="/ssvespers/js/Ext.ux.CCDImageCanvas.js"></script>-->
+		<script type="text/javascript" src="<c:url value="/js/Ext.ux.CCDImageCanvas.js"/>"></script>
 		
 		<script type="text/javascript" src="<c:url value="/js/beamline/heartbeat.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/js/beamline/help.js"/>"></script>
@@ -29,15 +30,15 @@
 		<script type="text/javascript" src="<c:url value="/js/beamline/experiment.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/js/beamline/sampleImage.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/js/beamline/fourElementDetector.js"/>"></script>
+		<script type="text/javascript" src="<c:url value="/js/beamline/ccdDetectorPanels.js"/>"></script>
 		
 		<script type="text/javascript" src="<c:url value="/js/beamline/viewport-north.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/js/beamline/viewport-center.js"/>"></script>
 		
 		<!--<script type="text/javascript" src="/ssvespers/js/vortexDetectorPanels.js"></script>-->
-		<!--<script type="text/javascript" src="/ssvespers/js/ccdDetectorPanels.js"></script>-->
 		<!--<script type="text/javascript" src="/ssvespers/js/deviceFunctions.js"></script>-->
 		<!--<script type="text/javascript" src="/ssvespers/js/taskRunners.js"></script>-->
-		<!--<script type="text/javascript" src="/ssvespers/js/canvastext.js"></script>-->
+
 		
 		<script type="text/javascript">
 			

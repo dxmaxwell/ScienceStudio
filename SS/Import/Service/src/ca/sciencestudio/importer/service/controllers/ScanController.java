@@ -109,6 +109,7 @@ public class ScanController {
 		
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
+			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			model.put("error", "Session not found.");
 			return "frag/error";
 		}
@@ -170,7 +171,7 @@ public class ScanController {
 				out.close();
 				return null;
 			} else if (responseStatus == HttpStatus.UNAUTHORIZED_401) {
-				response.setStatus(HttpStatus.BAD_REQUEST_400);
+				response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
 				model.put("error", "proxy not authenrized.");
 				return "page/error";
 			} else {
@@ -191,7 +192,7 @@ public class ScanController {
 			model.put("error", "proxy cancelled.");
 		}
 
-		response.setStatus(HttpStatus.BAD_REQUEST_400);
+		response.setStatus(HttpStatus.BAD_GATEWAY_502);
 		return "page/error";
 	}
 	

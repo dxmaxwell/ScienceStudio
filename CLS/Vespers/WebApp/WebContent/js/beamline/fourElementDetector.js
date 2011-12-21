@@ -6,11 +6,6 @@
  *
  */
 
-/**
- *
- * @include "include.js"
- */
-
 
 fieldWidth = 100;
 fieldWidthFED = 70;
@@ -98,8 +93,7 @@ var fedAcqTask = {
 	run: fedAcqLoad,
 	interval: heartbeatInterval * 2
 };
-
-heartbeatTasksToStart.push(fedAcqTask);
+xrfTasksToStart.push(fedAcqTask);
 
 /************************** Four Element Setup Panel **************************/
 
@@ -180,7 +174,7 @@ var fedSetupTask = {
 	interval: heartbeatInterval * 2
 };
 
-heartbeatTasksToStart.push(fedSetupTask);
+xrfTasksToStart.push(fedSetupTask);
 
 /************************** Four Element Status Panel **************************/
 var fedElapsedTimeLbl = new Ext.form.NumberField({
@@ -341,8 +335,7 @@ var fedStatusTask = {
 	run: fedStatusLoad,
 	interval: heartbeatInterval * 2
 };
-
-heartbeatTasksToStart.push(fedStatusTask);
+xrfTasksToStart.push(fedStatusTask);
 
 /*********************** Four Element Plot Style Panel **********************/
 
@@ -495,8 +488,7 @@ var fedSpectrumRefreshTask = {
 	run: fedSpectrumRefresh,
 	interval: heartbeatInterval * 3
 };
-
-heartbeatTasksToStart.push(fedSpectrumRefreshTask);
+xrfTasksToStart.push(fedSpectrumRefreshTask);
 
 var fedControlsPanel = new Ext.Panel({
 	region: 'west',
@@ -522,5 +514,6 @@ var fourElementDetectorPanel = new Ext.Panel({
 	    fedDataPanel,
 	    fedControlsPanel
 	],
-	autoScroll: true
+	autoScroll: true, 
+	disabled: true
 });

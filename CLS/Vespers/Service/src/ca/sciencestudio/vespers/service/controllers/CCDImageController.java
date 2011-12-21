@@ -11,27 +11,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.client.ContentExchange;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpExchange;
 import org.eclipse.jetty.http.HttpHeaders;
 import org.eclipse.jetty.http.HttpSchemes;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.Buffer;
-import org.eclipse.jetty.io.EofException;
 import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.log.Log;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import ca.sciencestudio.security.util.AuthorityUtil;
-import ca.sciencestudio.security.util.SecurityUtil;
-import ca.sciencestudio.util.state.StateMap;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * The controller to get CCD image. This controller acts as a proxy to get
@@ -40,16 +43,16 @@ import ca.sciencestudio.util.state.StateMap;
  * @author Dong Liu
  *
  */
-public class CCDImageController implements Controller {
+
+@Controller
+public class CCDImageController extends AbstractBeamlineAuthzController{
 
 	private static final String PARAM_TYPE = "type";
 	private static final String PARAM_FILE = "file";
 	private static final String PARAM_NUMBER = "number";
 	private static final String PARAM_DOWN = "download";
-	private static final String VALUE_KEY_PROJECT_ID = "projectId";
 	private static final String VALUE_KEY_SCAN_ID = "scanId";
 
-	private StateMap beamlineSessionStateMap;
 	private String imageServiceURL;
 	private String fileTemplate;
 
@@ -57,6 +60,7 @@ public class CCDImageController implements Controller {
 
 	private HttpClient _client;
 
+	@PostConstruct
 	public void init() throws ServletException {
 		_client = new HttpClient();
 		_client.setConnectorType(HttpClient.CONNECTOR_SELECT_CHANNEL);
@@ -69,43 +73,26 @@ public class CCDImageController implements Controller {
 
 	}
 
+	@PreDestroy
 	public void destroy() throws Exception {
 		_client.stop();
 	}
 
-	public ModelAndView handleRequest(HttpServletRequest request,
-			final HttpServletResponse response) throws Exception {
+	@ResponseBody
+	@RequestMapping(value = "/ccdImage", method = RequestMethod.GET)
+	public FormResponseMap handleRequest(
+			@RequestParam(PARAM_TYPE) String typeParam,
+			@RequestParam(PARAM_FILE) String fileParam,
+			@RequestParam(PARAM_NUMBER) String numberParam,
+			@RequestParam(value=PARAM_DOWN, required=false) String downloadParam,
+			HttpServletRequest request,
+			final HttpServletResponse response) throws IOException, InterruptedException {
 
-		Map<String, Object> model = new HashMap<String, Object>();
-
-		if (!request.getMethod().equalsIgnoreCase("GET")) {
-			model.put("errors", "<error>Only GET is supported.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
+		if (!canReadBeamline()) {
+			response.setStatus(HttpStatus.UNAUTHORIZED_401);
+			return new FormResponseMap(false, "Not permitted to setup CCD.");
 		}
-
-		Integer projectId = (Integer) beamlineSessionStateMap.get(VALUE_KEY_PROJECT_ID);
-		if (projectId == null) {
-			projectId = new Integer(0);
-		}
-
-		if (!(SecurityUtil.hasAuthority(AuthorityUtil.buildProjectGroupAuthority(projectId)))) {
-			model.put("errors", "<error>Not permitted.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
-		}
-
-		String typeParam = request.getParameter(PARAM_TYPE);
-		String fileParam = request.getParameter(PARAM_FILE);
-		String numberParam = request.getParameter(PARAM_NUMBER);
-		String downloadParam = request.getParameter(PARAM_DOWN);
-
-		if ((typeParam == null) || (fileParam == null) || (numberParam == null)) {
-			model.put("errors", "<error>Parameters missed.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
-		}
-
+		
 		// construct the file name
 		String fileName = fileTemplate.replaceFirst("%s", "");
 		fileName = fileName.replaceFirst(".\\w{3}$", "");
@@ -116,73 +103,30 @@ public class CCDImageController implements Controller {
 		if (downloadParam != null){
 			response.addHeader("Content-Disposition", "attachment; filename=" + fileName + "." + typeParam);
 		}
+		
 		final InputStream in = request.getInputStream();
 		final OutputStream out = response.getOutputStream();
 
-		Integer scanId = (Integer) beamlineSessionStateMap.get(VALUE_KEY_SCAN_ID);
+		Integer scanId = (Integer) beamlineSessionProxy.get(VALUE_KEY_SCAN_ID);
 
+		String url = URIUtil.addPaths(imageServiceURL, "scan"+ scanId + URIUtil.SLASH + fileName + "." + typeParam);
 
-		String url = URIUtil.addPaths(imageServiceURL, scanId + URIUtil.SLASH + fileName + "." + typeParam);
-
-		HttpExchange exchange = new HttpExchange() {
-			/*protected void onRequestCommitted() throws IOException {
-			}
-
-			protected void onRequestComplete() throws IOException {
-			}*/
-
-			protected void onResponseComplete() throws IOException {
-				response.flushBuffer();
-			}
-
-			protected void onResponseContent(Buffer content) throws IOException {
-				content.writeTo(out);
-			}
-
-			/*protected void onResponseHeaderComplete() throws IOException {
-			}*/
-
-			protected void onResponseStatus(Buffer version, int status,
-					Buffer reason) throws IOException {
-
-				if (reason != null && reason.length() > 0)
-					response.sendError(status, reason.toString());
-				else
-					response.setStatus(status);
-			}
-
+		// use a content exchange here
+		ContentExchange getImage = new ContentExchange(false){
 			protected void onResponseHeader(Buffer name, Buffer value)
-					throws IOException {
-				//String s = name.toString().toLowerCase();
+			throws IOException {
+				// there might be some headers not wanted
 				response.addHeader(name.toString(), value.toString());
+				super.onResponseHeader(name, value);
+
 			}
 
-			protected void onConnectionFailed(Throwable ex) {
-				onException(ex);
-			}
-
-			protected void onException(Throwable ex) {
-				if (ex instanceof EofException) {
-					Log.ignore(ex);
-					return;
-				}
-				Log.warn(ex.toString());
-				if (!response.isCommitted())
-					response
-							.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			}
-
-			protected void onExpire() {
-				if (!response.isCommitted())
-					response
-							.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			}
 		};
+		getImage.setScheme(HttpSchemes.HTTP_BUFFER);
+		getImage.setMethod(request.getMethod());
+		getImage.setURL(url);
+		getImage.setVersion(request.getProtocol());
 
-		exchange.setScheme(HttpSchemes.HTTP_BUFFER);
-		exchange.setMethod(request.getMethod());
-		exchange.setURL(url);
-		exchange.setVersion(request.getProtocol());
 
 		// copy headers
 		boolean xForwardedFor = false;
@@ -197,7 +141,7 @@ public class CCDImageController implements Controller {
 				hasContent = true;
 			else if ("content-length".equals(lhdr)) {
 				contentLength = request.getContentLength();
-				exchange.setRequestHeader(HttpHeaders.CONTENT_LENGTH, Long
+				getImage.setRequestHeader(HttpHeaders.CONTENT_LENGTH, Long
 						.toString(contentLength));
 				if (contentLength > 0)
 					hasContent = true;
@@ -208,30 +152,40 @@ public class CCDImageController implements Controller {
 			while (vals.hasMoreElements()) {
 				String val = (String) vals.nextElement();
 				if (val != null) {
-					exchange.setRequestHeader(hdr, val);
+					getImage.setRequestHeader(hdr, val);
 				}
 			}
 		}
-
-		exchange.setRequestHeader("Via", "CCDImageController");
+		getImage.setRequestHeader("Via", "CCDFocusImageController");
 		if (!xForwardedFor)
-			exchange.addRequestHeader("X-Forwarded-For", request
+			getImage.addRequestHeader("X-Forwarded-For", request
 					.getRemoteAddr());
 
 		if (hasContent)
-			exchange.setRequestContentSource(in);
+			getImage.setRequestContentSource(in);
 
-		_client.send(exchange);
+		_client.send(getImage);
 
-		// have to wait here, then return null. Not sure what is the best to return.
-		/*int exchangeState = */ exchange.waitForDone();
+		int exchangeStatus = getImage.waitForDone();
+        int responseStatus = getImage.getResponseStatus();
+
+        if (exchangeStatus != HttpExchange.STATUS_COMPLETED) {
+            Log.warn(getImage.toString() + " cannot complete with a status " + exchangeStatus);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+            out.close();
+            return new FormResponseMap(false, "Proxy failed.");
+        }
+
+        if (responseStatus != HttpStatus.OK_200) {
+            Log.warn(getImage.toString() + " status code " + responseStatus);
+        }
+
+        response.setStatus(responseStatus);
+
+        out.write(getImage.getResponseContentBytes());
 
 		return null;
 
-	}
-
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
 	}
 
 	public void setImageServiceURL(String imageServiceURL) {

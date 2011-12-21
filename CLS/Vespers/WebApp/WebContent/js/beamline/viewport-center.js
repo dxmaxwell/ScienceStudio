@@ -64,10 +64,9 @@ var centerPanel = new Ext.TabPanel({
 	    beamlinePanel,
 	    experimentPanel,
 	    fourElementDetectorPanel,
+	    xrdPanel,
 	    camerasPanel,
 	    helpPanel
-	    //xrfTab,
-	    //xrdTab,
 	],
 	deferredRender: false,
 	autoScroll : true

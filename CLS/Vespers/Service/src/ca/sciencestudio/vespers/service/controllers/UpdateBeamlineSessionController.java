@@ -7,6 +7,7 @@
  */
 package ca.sciencestudio.vespers.service.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.web.FormResponseMap;
+import ca.sciencestudio.model.facility.dao.InstrumentTechniqueAuthzDAO;
+import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
 import ca.sciencestudio.model.session.Experiment;
 import ca.sciencestudio.model.session.dao.ExperimentAuthzDAO;
 
@@ -28,7 +31,14 @@ public class UpdateBeamlineSessionController extends AbstractBeamlineAuthzContro
 	private static final String VALUE_KEY_EXPERIMENT_GID = "experimentGid";
 	private static final String VALUE_KEY_EXPERIMENT_NAME = "experimentName";
 	
-	private ExperimentAuthzDAO experimentAuthzDAO;
+	private static final String VALUE_KEY_TECHNIQUE = "technique";
+	private static final String VALUE_KEY_TECHNIQUE_CHANGE = "techniqueChanged";
+	
+	private ExperimentAuthzDAO experimentAuthzDAO; 
+	@Autowired
+	private TechniqueAuthzDAO techniqueAuthzDAO;
+	@Autowired
+	private InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO;
 	
 	@ResponseBody
 	@RequestMapping(value = "/session*", method = RequestMethod.POST)
@@ -49,6 +59,8 @@ public class UpdateBeamlineSessionController extends AbstractBeamlineAuthzContro
 		
 		beamlineSessionProxy.put(VALUE_KEY_EXPERIMENT_GID, experiment.getGid());
 		beamlineSessionProxy.put(VALUE_KEY_EXPERIMENT_NAME, experiment.getName());
+		beamlineSessionProxy.put(VALUE_KEY_TECHNIQUE, techniqueAuthzDAO.get(instrumentTechniqueAuthzDAO.get(experiment.getInstrumentTechniqueGid()).get().getTechniqueGid()).get().getName());
+		beamlineSessionProxy.put(VALUE_KEY_TECHNIQUE_CHANGE, "Yes");
 		
 		return new FormResponseMap(true);
 	}

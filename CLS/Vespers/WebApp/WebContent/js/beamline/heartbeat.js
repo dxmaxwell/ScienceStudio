@@ -6,15 +6,13 @@
  *    
  */
 
-/**
- *
- * @include "include.js"
- */
-
 var heartbeatData = {};
 var heartbeatDataInitialized = false;
 
 var heartbeatTasksToStart = [];
+
+var xrfTasksToStart = [];
+var xrdTasksToStart = [];
 
 var heartbeatInterval = 1000; /* milliseconds */
 
@@ -55,6 +53,53 @@ var heartbeatLoadSuccess = function(response, options) {
 			}
 			if(heartbeatActivityMeter) {
 				heartbeatActivityMeter.showActivity();
+			}
+			
+			// TODO more technique cases need to be considered
+			var beamlineSession = heartbeatData.beamlineSession;
+				if(beamlineSession && beamlineSession.technique && beamlineSession.techniqueChanged === 'Yes') {
+					if (beamlineSession.technique === 'XRF') {
+						if (fourElementDetectorPanel.disabled) {
+							fourElementDetectorPanel.enable();
+							for(var idx in xrfTasksToStart) {
+								Ext.TaskMgr.start(xrfTasksToStart[idx]);
+							}
+						}
+						if (!xrdPanel.disabled) {
+							xrdPanel.disable();
+							for(var idx in xrdTasksToStart) {
+								Ext.TaskMgr.stop(xrdTasksToStart[idx]);
+							}
+						}	
+						
+					} else if (beamlineSession.technique === ('XRD')) {
+						if (xrdPanel.disabled) {
+							xrdPanel.enable();
+							for(var idx in xrdTasksToStart) {
+								Ext.TaskMgr.start(xrdTasksToStart[idx]);
+							}
+						}
+						if (!fourElementDetectorPanel.disabled) {
+							fourElementDetectorPanel.disable();
+							for(var idx in xrfTasksToStart) {
+								Ext.TaskMgr.stop(xrfTasksToStart[idx]);
+							}
+						}
+							
+					} else if (beamlineSession.technique.indexOf('XRF') != -1 && beamlineSession.technique.indexOf('XRD') != -1) {
+						if (fourElementDetectorPanel.disabled) {
+							fourElementDetectorPanel.enable();
+							for(var idx in xrfTasksToStart) {
+								Ext.TaskMgr.start(xrfTasksToStart[idx]);
+							}
+						}
+						if (xrdPanel.disabled) {
+							xrdPanel.enable();
+							for(var idx in xrdTasksToStart) {
+								Ext.TaskMgr.start(xrdTasksToStart[idx]);
+							}
+						}
+					}
 			}
 		}
 	}

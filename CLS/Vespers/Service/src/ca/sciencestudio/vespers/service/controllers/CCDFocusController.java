@@ -7,28 +7,35 @@
  */
 package ca.sciencestudio.vespers.service.controllers;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.eclipse.jetty.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.state.StateMap;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * the controller to start or stop CCD focus.
- *
+ * 
  * @author Dong Liu
- *
+ * 
  */
-public class CCDFocusController implements Controller {
+
+@Controller
+public class CCDFocusController extends AbstractBeamlineAuthzController {
 
 	private static final String PARAM_ACQUIRE = "acquire";
 	private static final String ACQUIRE_START = "start";
@@ -36,9 +43,7 @@ public class CCDFocusController implements Controller {
 	private static final String DATE_FORMAT = "yyMMddHHmmssS";
 
 	private static final String VALUE_KEY_MODE = "xrdMode";
-	private static final String VALUE_KEY_PERSON_KEY = "personKey";
 	private static final String VALUE_KEY_ACQUIRE = "acquire";
-	private static final String VALUE_KEY_TRIGGERMODE = "triggerMode";
 	private static final String VALUE_KEY_FILEPATH = "filePath";
 	private static final String VALUE_KEY_FILENAME = "fileName";
 	private static final String VALUE_KEY_FILETEMPLATE = "fileTemplate";
@@ -46,88 +51,51 @@ public class CCDFocusController implements Controller {
 	private String filePath;
 	private String templateFocus;
 
-	private StateMap beamlineSessionStateMap;
-	private StateMap ccdCollectionStateMap;
-	private StateMap ccdFileStateMap;
+	@Autowired
+	private StateMap ccdCollectionProxy;
+	@Autowired
+	private StateMap ccdFileProxy;
 
-	public ModelAndView handleRequest(HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+	@ResponseBody
+	@RequestMapping(value = "/ccdfocus", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam(PARAM_ACQUIRE) String acquireParam, HttpServletResponse response) throws IOException {
 
-		Map<String,Object> model = new HashMap<String,Object>();
-
-		if (!request.getMethod().equalsIgnoreCase("POST")) {
-			model.put("errors", "<error>Only POST is supported.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
+		if (!canWriteBeamline()) {
+			response.setStatus(HttpStatus.UNAUTHORIZED_401);
+			return new FormResponseMap(false, "Not permitted to setup CCD.");
 		}
 
-		String personKey = (String) beamlineSessionStateMap.get(VALUE_KEY_PERSON_KEY);
-
-		if(!SecurityUtil.getUsername().equals(personKey)) {
-			model.put("errors", "<error>You do not have permission to view this session.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
+		if (((String) beamlineSessionProxy.get(VALUE_KEY_MODE)).equals("scan")) {
+			response.setStatus(HttpStatus.CONFLICT_409);
+			return new FormResponseMap(false, "wrong XRD mode.");
 		}
 
-		if(((String)beamlineSessionStateMap.get(VALUE_KEY_MODE)).equals("scan")) {
-			model.put("errors", "<error>Wrong mode.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
-		}
-
-		String acquireParam = request.getParameter(PARAM_ACQUIRE);
-		if(acquireParam != null) {
-			if (acquireParam.equals(ACQUIRE_START)){
+		if (acquireParam != null) {
+			if (acquireParam.equals(ACQUIRE_START)) {
 				// set file path and name
-				Map<String,Serializable> values = new HashMap<String,Serializable>();
+				Map<String, Serializable> values = new HashMap<String, Serializable>();
 				Calendar cal = Calendar.getInstance();
 				SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 				String date = dateFormat.format(cal.getTime());
 				values.put(VALUE_KEY_FILEPATH, filePath);
 				values.put(VALUE_KEY_FILETEMPLATE, templateFocus);
 				values.put(VALUE_KEY_FILENAME, date);
-				ccdFileStateMap.putAll(values);
-
-
-
-				Map<String,Serializable> focus = new HashMap<String,Serializable>();
-				focus.put(VALUE_KEY_TRIGGERMODE, 0); // free run
-				focus.put(VALUE_KEY_ACQUIRE, 1);
-
-				ccdCollectionStateMap.putAll(focus);
-
+				ccdFileProxy.putAll(values);
+				ccdCollectionProxy.put(VALUE_KEY_ACQUIRE, new Integer(1));
 			} else if (acquireParam.equals(ACQUIRE_STOP)) {
-				ccdCollectionStateMap.put(VALUE_KEY_ACQUIRE, 0);
+				ccdCollectionProxy.put(VALUE_KEY_ACQUIRE, new Integer(0));
 			} else {
-				model.put("success", false);
-				model.put("errors", "<error>Parameter value wrong.</error>");
-				return new ModelAndView("response", model);
+				response.setStatus(HttpStatus.BAD_REQUEST_400);
+				return new FormResponseMap(false, "Wrong parameter value.");
 			}
-
 		} else {
-			model.put("success", false);
-			model.put("errors", "<error>No parameter named acquire.</error>");
-			return new ModelAndView("response", model);
+			response.setStatus(HttpStatus.BAD_REQUEST_400);
+			return new FormResponseMap(false, "Parameter not found.");
 		}
 
-		model.put("success", true);
-		return new ModelAndView("response", model);
+		return new FormResponseMap(true, "Set focus state.");
+
 	}
-
-
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
-	}
-
-
-	public void setCcdCollectionStateMap(StateMap ccdCollectionStateMap) {
-		this.ccdCollectionStateMap = ccdCollectionStateMap;
-	}
-
-	public void setCcdFileStateMap(StateMap ccdFileStateMap) {
-		this.ccdFileStateMap = ccdFileStateMap;
-	}
-
 
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;

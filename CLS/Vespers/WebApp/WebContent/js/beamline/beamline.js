@@ -6,13 +6,6 @@
  *     
  */
 
-
-
-  /**
- *
- * @include "include.js"
- */
-
 var labelWidth = 80;
 var fieldWidth = 175;
 var txtFldWidth = 175;

@@ -9,6 +9,9 @@ package ca.sciencestudio.importer.service.controllers;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.eclipse.jetty.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -38,12 +41,14 @@ public class ExperimentList {
 	
 	@ResponseBody
 	@RequestMapping(value = "/experiments*", method = RequestMethod.POST)
-	public FormResponseMap requestHandler(@RequestParam String sessionGid) {
+	public FormResponseMap requestHandler(@RequestParam String sessionGid,
+			final HttpServletResponse response) {
 
 		String user = SecurityUtil.getPersonGid(); 
 
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
 		if(session == null) {
+			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			return new FormResponseMap(false, "Session not found.");
 		}
 		
@@ -51,12 +56,13 @@ public class ExperimentList {
 		
 		List<Experiment> experimentList = experimentListData.get();
 		if(experimentList == null) {
+			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			return new FormResponseMap(false, "Experiments not found.");
 		}
 		
-		FormResponseMap response = new FormResponseMap(true);
-		response.put("experiments", experimentList);
-		return response;
+		FormResponseMap formResponse = new FormResponseMap(true);
+		formResponse.put("experiments", experimentList);
+		return formResponse;
 	}
 
 }

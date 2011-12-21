@@ -6,11 +6,6 @@
  *     
  */
 
- /**
- *
- * @include "include.js"
- */
-
 //var width = 640;
 //var height = 480;
 //var baseScale = .4;

@@ -3,12 +3,6 @@
  *
  *  Description:
  *     experiment.js
- *     
- */
-
-/**
- *
- * @include "include.js"
  */
 
 fieldWidth = 100;

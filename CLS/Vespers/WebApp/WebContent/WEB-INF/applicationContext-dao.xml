@@ -109,5 +109,27 @@
 			</bean>
 		</property>
 	</bean>
+	
+	<bean id="instrumentTechniqueAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.async.AsyncInstrumentTechniqueAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="instrumentTechniqueAuthzDAO">	
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestInstrumentTechniqueAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="techniqueAuthzDAO"
+		class="ca.sciencestudio.model.facility.dao.async.AsyncTechniqueAuthzDAO">
+		<property name="executor" ref="executor"/>
+		<property name="techniqueAuthzDAO">
+			<bean class="ca.sciencestudio.model.facility.dao.rest.RestTechniqueAuthzDAO">
+				<property name="restTemplate" ref="restTempalate"/>
+				<property name="baseUrl" value="${dao.rest.url}"/>
+			</bean>
+		</property>
+	</bean>
 
 </beans>

@@ -37,11 +37,10 @@
 				<ref bean="scanDeviceProxy"/>
 				<ref bean="beamlineInformationProxy"/>
 				<ref bean="beamlineSessionProxy"/>
-				<!-- CCD device proxies disabled for initial release. -->
-				<!--<ref bean="ccdSetupStateMap"/>-->
-				<!--<ref bean="ccdCollectionStateMap"/>-->
-				<!--<ref bean="ccdStageStateMap"/>-->
-				<!--<ref bean="ccdFileStateMap"/>-->
+				<ref bean="ccdSetupProxy"/>
+				<ref bean="ccdCollectionProxy"/>
+				<ref bean="ccdStageProxy"/>
+				<ref bean="ccdFileProxy"/>
 			</list>
 		</constructor-arg>
 	</bean>
@@ -149,32 +148,29 @@
 		<property name="projectAuthzDAO" ref="projectAuthzDAO"/>
 		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
-		<!-- CCD configuration disabled for initial release. -->
-		<!--<property name="DEFAULT_XRD_MODE" value="${ccd.defaultMode}"/>-->
-		<!--<property name="DEFAULT_XRD_TRIGGER_MODE" value="${ccd.defaultTriggerMode}"/>-->
 	</bean>
 
 	<!-- CCD device proxies disabled for initial release. -->
 	
-	<!--<bean id="ccdSetupStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+	<bean id="ccdSetupProxy" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="ccdSetup"></property>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
-	</bean>-->
+	</bean>
 
-	<!--<bean id="ccdCollectionStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+	<bean id="ccdCollectionProxy" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="ccdCollection"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
-	</bean>-->
+	</bean>
 
-	<!--<bean id="ccdStageStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+	<bean id="ccdStageProxy" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="ccdStage"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
-	</bean>-->
+	</bean>
 
-	<!--<bean id="ccdFileStateMap" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
+	<bean id="ccdFileProxy" class="ca.sciencestudio.device.proxy.event.ReadWriteDeviceProxyEventListener">
 		<property name="deviceId" value="ccdFile"/>
 		<property name="deviceMessageSender" ref="deviceMessageSender"/>
-	</bean>-->
+	</bean>
 
 
 	<!-- Axis PTZ Video Cameras -->

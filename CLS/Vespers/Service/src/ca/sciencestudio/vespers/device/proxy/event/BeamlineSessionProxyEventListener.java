@@ -48,7 +48,8 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 	private static final String VALUE_KEY_CONTROLLER_NAME = "controllerName";
 	private static final String VALUE_KEY_ADMINISTRATOR_GID = "administratorGid";
 	private static final String VALUE_KEY_XRD_MODE = "xrdMode";
-	private static final String VALUE_KEY_XRD_TRIGGER_MODE = "triggerMode";
+	private static final String VALUE_KEY_TECHNIQUE = "technique"; 
+	private static final String VALUE_KEY_TECHNIQUE_CHANGE = "techniqueChanged";
 
 	private static final String DEFAULT_PROJECT_GID = "0";
 	private static final String DEFAULT_PROJECT_NAME = "NOT AVAILABLE";
@@ -63,6 +64,11 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 	private static final String DEFAULT_SCAN_NAME = "NOT AVAILABLE";
 	private static final String DEFAULT_CONTROLLER_GID = "0";
 	private static final String DEFAULT_CONTROLLER_NAME = "NOT AVAILABLE";
+
+	private static final String DEFAULT_XRD_MODE = "init";
+	private static final String DEFAULT_TECHNIQUE = "TBD"; 
+	private static final String DEFAULT_TECHNIQUE_CHANGE = "No";
+
 	protected static final String DEFAULT_ADMINISTRATOR_GID = "0";
 	
 	protected static final String DEFAULT_RUNNING_SESSION_GID = "0";
@@ -74,9 +80,6 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 	private ProjectAuthzDAO projectAuthzDAO;
 	private SessionAuthzDAO sessionAuthzDAO;
 
-	private String DEFAULT_XRD_MODE;
-	private String DEFAULT_XRD_TRIGGER_MODE;
-	
 	public BeamlineSessionProxyEventListener() {
 		super();
 		setDefaultValues();
@@ -259,7 +262,8 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 		put(VALUE_KEY_ADMINISTRATOR_GID, DEFAULT_ADMINISTRATOR_GID);
 		put(VALUE_KEY_TIMESTAMP, new Date());
 		put(VALUE_KEY_XRD_MODE, DEFAULT_XRD_MODE);
-		put(VALUE_KEY_XRD_TRIGGER_MODE, DEFAULT_XRD_TRIGGER_MODE);
+		put(VALUE_KEY_TECHNIQUE, DEFAULT_TECHNIQUE);
+		put(VALUE_KEY_TECHNIQUE_CHANGE, DEFAULT_TECHNIQUE_CHANGE);
 	}
 	
 	public ProjectAuthzDAO getProjectAuthzDAO() {
@@ -276,11 +280,4 @@ public class BeamlineSessionProxyEventListener extends ReadOnlyDeviceProxyEventL
 		this.sessionAuthzDAO = sessionAuthzDAO;
 	}
 
-	public void setDEFAULT_XRD_MODE(String defaultxrdmode) {
-		DEFAULT_XRD_MODE = defaultxrdmode;
-	}
-
-	public void setDEFAULT_XRD_TRIGGER_MODE(String defaultxrdtriggermode) {
-		DEFAULT_XRD_TRIGGER_MODE = defaultxrdtriggermode;
-	}	
 }

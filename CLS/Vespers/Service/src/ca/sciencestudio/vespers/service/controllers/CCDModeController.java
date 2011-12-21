@@ -7,120 +7,100 @@
  */
 package ca.sciencestudio.vespers.service.controllers;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.Controller;
+import org.eclipse.jetty.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.state.StateMap;
+import ca.sciencestudio.util.web.FormResponseMap;
 
 /**
  * The controller to switch CCD mode
- * <p> The file pv's are set to some default values when the mode is switched. The user still has the freedom the modify them further though.
+ * <p>
+ * The file pv's are set to some default values when the mode is switched. The
+ * user still has the freedom the modify them further though.
  * </p>
- *
+ * 
  * @author Dong Liu
- *
+ * 
  */
-public class CCDModeController implements Controller {
+@Controller
+public class CCDModeController extends AbstractBeamlineAuthzController {
 
-	private static final String PARAM_MODE = "mode";
-	private static final String VALUE_KEY_PERSON_KEY = "personKey";
 	private static final String VALUE_KEY_MODE = "xrdMode";
 
-
-	private StateMap beamlineSessionStateMap;
-	private StateMap ccdCollectionStateMap;
-	private StateMap ccdFileStateMap;
+	@Autowired
+	private StateMap ccdCollectionProxy;
+	@Autowired
+	private StateMap ccdFileProxy;
 
 	private String templateScan;
-
-
+	private String focusTriggerMode;
+	private String scanTriggerMode;
 
 	private static final String VALUE_KEY_TRIGGERMODE = "triggerMode";
-//	private static final String VALUE_KEY_FILEPATH = "filePath";
 	private static final String VALUE_KEY_FILENAME = "fileName";
 	private static final String VALUE_KEY_FILENUMBER = "fileNumber";
 	private static final String VALUE_KEY_FILETEMPLATE = "fileTemplate";
-	public static final String VALUE_KEY_AUTOINCREMENT = "autoIncrement";
+	private static final String VALUE_KEY_AUTOINCREMENT = "autoIncrement";
 
-	public ModelAndView handleRequest(HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+	@ResponseBody
+	@RequestMapping(value = "/ccdmode*", method = RequestMethod.POST)
+	public FormResponseMap handleRequest(@RequestParam("mode") String mode, HttpServletResponse response) throws IOException {
 
-		Map<String,Object> model = new HashMap<String,Object>();
-
-		if (!request.getMethod().equalsIgnoreCase("POST")) {
-			model.put("errors", "<error>Only POST is supported.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
+		if (!canWriteBeamline()) {
+			response.setStatus(HttpStatus.UNAUTHORIZED_401);
+			return new FormResponseMap(false, "Not permitted to setup CCD.");
 		}
 
-		String personKey = (String) beamlineSessionStateMap.get(VALUE_KEY_PERSON_KEY);
-
-		if(!SecurityUtil.getUsername().equals(personKey)) {
-			model.put("errors", "<error>You do not have permission to view this session.</error>");
-			model.put("success", "false");
-			return new ModelAndView("response", model);
+		if (mode != null) {
+			if (mode.equals("scan")) {
+				beamlineSessionProxy.put(VALUE_KEY_MODE, mode);
+				ccdCollectionProxy.put(VALUE_KEY_TRIGGERMODE, new Integer(scanTriggerMode)); // as
+				// set some file pv's. The user can change them from the file form.
+				Map<String, Serializable> values = new HashMap<String, Serializable>();
+				values.put(VALUE_KEY_FILENAME, "scan");
+				values.put(VALUE_KEY_FILENUMBER, new Integer(1));
+				values.put(VALUE_KEY_FILETEMPLATE, templateScan);
+				values.put(VALUE_KEY_AUTOINCREMENT, new Integer(1));
+				ccdFileProxy.putAll(values);
+			} else if (mode.equals("focus")) {
+				beamlineSessionProxy.put(VALUE_KEY_MODE, mode);
+				ccdCollectionProxy.put(VALUE_KEY_TRIGGERMODE, new Integer(focusTriggerMode)); // as
+			} else {
+				response.setStatus(HttpStatus.BAD_REQUEST_400);
+				return new FormResponseMap(false, "Wrong parameter value.");
+			}
+		} else {
+			response.setStatus(HttpStatus.BAD_REQUEST_400);
+			return new FormResponseMap(false, "Parameter not found.");
 		}
 
-		String modeParam = request.getParameter(PARAM_MODE);
+		return new FormResponseMap(true, "Set mode.");
 
-		if (modeParam == null) {
-			model.put("success", false);
-			model.put("errors", "<error>No parameter named mode.</error>");
-			return new ModelAndView("response", model);
-		}
-
-		if (modeParam.equals("scan")) {
-			beamlineSessionStateMap.put(VALUE_KEY_MODE, modeParam);
-			// TODO this needs to be changed if the user is able to use the external trigger mode
-			ccdCollectionStateMap.put(VALUE_KEY_TRIGGERMODE, 0); // free run
-
-			// set some file pv's. The user can change them from the file form.
-			Map<String,Serializable> values = new HashMap<String,Serializable>();
-			values.put(VALUE_KEY_FILENAME, "scan");
-			values.put(VALUE_KEY_FILENUMBER, new Integer(1));
-			values.put(VALUE_KEY_FILETEMPLATE, templateScan);
-			values.put(VALUE_KEY_AUTOINCREMENT, new Short((short) 1));
-			ccdFileStateMap.putAll(values);
-
-		}
-		else if (modeParam.equals("focus")) {
-			beamlineSessionStateMap.put(VALUE_KEY_MODE, modeParam);
-			ccdCollectionStateMap.put(VALUE_KEY_TRIGGERMODE, 0); // free run
-		}
-		else {
-			model.put("success", false);
-			model.put("errors", "<error>Unknown mode.</error>");
-			return new ModelAndView("response", model);
-		}
-
-
-		model.put("success", true);
-		return new ModelAndView("response", model);
-
-	}
-
-	public void setBeamlineSessionStateMap(StateMap beamlineSessionStateMap) {
-		this.beamlineSessionStateMap = beamlineSessionStateMap;
-	}
-
-	public void setCcdCollectionStateMap(StateMap ccdCollectionStateMap) {
-		this.ccdCollectionStateMap = ccdCollectionStateMap;
-	}
-
-	public void setCcdFileStateMap(StateMap ccdFileStateMap) {
-		this.ccdFileStateMap = ccdFileStateMap;
 	}
 
 	public void setTemplateScan(String templateScan) {
 		this.templateScan = templateScan;
+	}
+
+	public void setFocusTriggerMode(String focusTriggerMode) {
+		this.focusTriggerMode = focusTriggerMode;
+	}
+
+	public void setScanTriggerMode(String scanTriggerMode) {
+		this.scanTriggerMode = scanTriggerMode;
 	}
 
 }

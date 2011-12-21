@@ -3,12 +3,6 @@
  *
  *  Description:
  *    heartbeat.js
- *    
- */
-
-/**
- *
- * @include "include.js"
  */
 
 var heartbeatData = {};
