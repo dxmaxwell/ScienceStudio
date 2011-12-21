@@ -24,36 +24,33 @@ import ca.sciencestudio.security.util.SecurityUtil;
 import ca.sciencestudio.util.authz.Authorities;
 
 @Controller
-public class MainPageController{
-	
-	@Autowired
-	private LaboratoryAuthzDAO laboratoryAuthzDAO; 
-	
-	@Autowired
-	private SessionAuthzDAO sessionAuthzDAO;	
+public class MainPageController {
 
-	@RequestMapping(value = {"/", "/main.html"}, method = RequestMethod.GET)
-	public String handleRequest(@RequestParam("session") String sessionGid, 
-			final HttpServletResponse response,
-			ModelMap model) {
-		
+	@Autowired
+	private LaboratoryAuthzDAO laboratoryAuthzDAO;
+
+	@Autowired
+	private SessionAuthzDAO sessionAuthzDAO;
+
+	@RequestMapping(value = { "/", "/main.html" }, method = RequestMethod.GET)
+	public String handleRequest(@RequestParam("session") String sessionGid, HttpServletResponse response, ModelMap model) {
+
 		String user = SecurityUtil.getPersonGid();
 
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
-		if(session == null) {
+		if (session == null) {
 			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			model.put("error", "Session not found.");
 			return "page/error";
 		}
-		
+
 		String labName = laboratoryAuthzDAO.get(session.getLaboratoryGid()).get().getName();
-		
+
 		Authorities authorities = LabAuthz.createInstance(labName, sessionGid, sessionAuthzDAO).getAuthorities();
-				
+
 		model.put("sessionGid", sessionGid);
 		model.put("authorities", authorities);
 		return "page/main";
 	}
-	
-}
 
+}

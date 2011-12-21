@@ -48,22 +48,22 @@ import ca.sciencestudio.util.rest.AddResult;
 @Controller
 public class ScanController {
 	private static final String PARAM_ID = "id";
-	
+
 	private String realm;
 	private String jsonFile;
-	
+
 	@Autowired
 	private SessionAuthzDAO sessionAuthzDAO;
 
 	@Autowired
 	private LaboratoryAuthzDAO laboratoryAuthzDAO;
-	
+
 	@Autowired
 	private ScanAuthzDAO scanAuthzDAO;
-	
+
 	private HttpClient _client;
 
-	private Map dataSource; 
+	private Map dataSource;
 
 	@PostConstruct
 	public void init() throws ServletException, IOException {
@@ -76,46 +76,35 @@ public class ScanController {
 			throw new ServletException(e);
 		}
 		HashRealmResolver realmResolver = new HashRealmResolver();
-        try {
+		try {
 			ClientRealmUtil.addRealms(realmResolver, realm);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        _client.setRealmResolver(realmResolver);
-        dataSource = (Map) JsonProperties.loadMap(jsonFile);
+		_client.setRealmResolver(realmResolver);
+		dataSource = (Map) JsonProperties.loadMap(jsonFile);
 
 	}
-	
+
 	@PreDestroy
 	public void destroy() throws Exception {
 		_client.stop();
 	}
 
-	
-	// TODO change the mapping url
 	@RequestMapping(value = "/origin", method = RequestMethod.GET)
-	public String requestHandler(
-			@RequestParam String sessionGid, 
-			@RequestParam(value=PARAM_ID, required=false) String idParam,
-			HttpServletRequest request,
-			final HttpServletResponse response,
-			ModelMap model)
-			throws Exception {
+	public String requestHandler(@RequestParam String sessionGid, @RequestParam(value = PARAM_ID, required = false) String idParam, HttpServletRequest request, final HttpServletResponse response, ModelMap model) throws Exception {
 
-
-//		String responseView = "response-json"; 
-		
 		String user = SecurityUtil.getPersonGid();
-		
+
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
-		if(session == null) {
+		if (session == null) {
 			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			model.put("error", "Session not found.");
 			return "frag/error";
 		}
-		
+
 		String labName = laboratoryAuthzDAO.get(session.getLaboratoryGid()).get().getName();
-		
+
 		LabAuthz labAuthz = LabAuthz.createInstance(labName, sessionGid, sessionAuthzDAO);
 
 		if (!labAuthz.canRead()) {
@@ -134,7 +123,7 @@ public class ScanController {
 		}
 
 		String import_url = (String) dataSource.get(labName.toLowerCase());
-		
+
 		if (import_url == null) {
 			model.put("error", "Import server not known.");
 			response.setStatus(HttpStatus.BAD_REQUEST_400);
@@ -177,7 +166,7 @@ public class ScanController {
 			} else {
 				model.put("error", content.getResponseContent());
 			}
-			
+
 		}
 
 		if (exchangeStatus == HttpExchange.STATUS_EXPIRED) {
@@ -195,31 +184,22 @@ public class ScanController {
 		response.setStatus(HttpStatus.BAD_GATEWAY_502);
 		return "page/error";
 	}
-	
-	
-	// TODO change the mapping url
+
 	@RequestMapping(value = "/ss", method = RequestMethod.POST)
-	public String ceateScanHandler(
-			@RequestParam String sessionGid, 
-			@RequestParam String experimentGid,
-			@RequestParam String path,
-			@RequestParam String scanName,
-			HttpServletRequest request,
-			final HttpServletResponse response,
-			ModelMap model)
+	public String ceateScanHandler(@RequestParam String sessionGid, @RequestParam String experimentGid, @RequestParam String path, @RequestParam String scanName, HttpServletRequest request, final HttpServletResponse response, ModelMap model)
 			throws Exception {
-		
+
 		String user = SecurityUtil.getPersonGid();
-		
+
 		Session session = sessionAuthzDAO.get(user, sessionGid).get();
-		if(session == null) {
+		if (session == null) {
 			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			model.put("error", "Session not found.");
 			return "page/error";
 		}
-		
+
 		String labName = laboratoryAuthzDAO.get(session.getLaboratoryGid()).get().getName();
-		
+
 		LabAuthz labAuthz = LabAuthz.createInstance(labName, sessionGid, sessionAuthzDAO);
 
 		if (!labAuthz.canWrite()) {
@@ -227,7 +207,7 @@ public class ScanController {
 			model.put("error", "Not permitted to create scan.");
 			return "page/error";
 		}
-		
+
 		Date now = new Date();
 		Scan scan = new Scan();
 		scan.setName(scanName);
@@ -235,30 +215,30 @@ public class ScanController {
 		scan.setExperimentGid(experimentGid);
 		scan.setStartDate(now);
 		scan.setEndDate(now);
-		
+
 		AddResult result = scanAuthzDAO.add(SecurityUtil.getPersonGid(), scan).get();
-		if(result.hasErrors()) {
+		if (result.hasErrors()) {
 			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			model.put("error", "Error while adding new scan. (1)");
 			return "page/error";
 		}
-		
+
 		GID gid = GID.parse(scan.getGid());
-		if(gid == null) {
+		if (gid == null) {
 			response.setStatus(HttpStatus.BAD_REQUEST_400);
 			model.put("error", "Error while adding new scan. (2)");
 			return "page/error";
 		}
-		
+
 		model.put("response", scan);
-		
+
 		return "response-json";
 	}
-	
+
 	public void setRealm(String realm) {
 		this.realm = realm;
 	}
-	
+
 	public String getJsonFile() {
 		return jsonFile;
 	}
@@ -266,6 +246,5 @@ public class ScanController {
 	public void setJsonFile(String jsonFile) {
 		this.jsonFile = jsonFile;
 	}
-
 
 }
