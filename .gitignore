@@ -5,6 +5,7 @@ Servers/
 .settings/
 .project
 .classpath
+.springBeans
 
 # Java compilation files. #
 build/
