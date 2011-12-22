@@ -195,7 +195,7 @@ Ext.onReady(function() {
 		width: 400
 	});
 
-	addItemModelViewTab(sessionPanel, false);
+	addItemModelViewTab(sessionPanel, true);
 
 	<%--
 				
@@ -267,7 +267,7 @@ Ext.onReady(function() {
 	});
 
 	loadDataButton.on('click', function() {
-		openLabViewTab('${session.gid}', loadDataCheckbox.getValue(), '/ssimport/scans/main.html');
+		openLabViewTab('${session.gid}', loadDataCheckbox.getValue());
 	}, this);
 
 	var loadDataCheckbox = new Ext.form.Checkbox({
