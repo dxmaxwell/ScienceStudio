@@ -82,10 +82,10 @@ public class ScienceStudioServiceTicketValidator implements TicketValidator {
 			}
 			catch(TicketValidationException e) {
 				if(first == null) { first = e; }
-				logger.warn("Error while validating CAS ticket: " + ticket + ", and service: " + service, e);
+				logger.debug("Error while attempting to validating CAS ticket: " + ticket + ", and service: " + service + ", with: " + casServerUrlPrefix, e);
 			}
 			catch(Exception e) {
-				logger.warn("Error while attempting to validate service ticket with CAS server: " + casServerUrlPrefix, e);
+				logger.warn("Error while attempting to validating CAS ticket: " + ticket + ", and service: " + service + ", with: " + casServerUrlPrefix, e);
 			}
 		}
 		
