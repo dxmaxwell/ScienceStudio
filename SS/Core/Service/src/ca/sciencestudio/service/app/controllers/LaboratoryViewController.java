@@ -57,7 +57,14 @@ public class LaboratoryViewController {
 			return ERROR_VIEW;
 		}
 		
-		return "redirect:" + viewUrl + "?session=" + sessionGid;
+		String redirectUrl = "redirect:" + viewUrl + "?session=" + sessionGid;
+		
+		String authc = SecurityUtil.getAuthenticator();
+		if((authc != null) && (authc.length() > 0)) {
+			redirectUrl += "&authc=" + authc;
+		}
+		
+		return redirectUrl;
 	}
 
 	public SessionAuthzDAO getSessionAuthzDAO() {
