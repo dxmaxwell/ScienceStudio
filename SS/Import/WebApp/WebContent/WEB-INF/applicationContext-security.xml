@@ -16,11 +16,16 @@
 	<sec:http
 		entry-point-ref="casAuthcAuthenticationEntryPoint"
 		security-context-repository-ref="daoSecurityContextRepository">
+		<sec:request-cache ref="httpSessionRequestCache"/>
 		<sec:custom-filter position="FIRST" ref="redirectContextRootFilter"/>
 		<sec:custom-filter position="CAS_FILTER" ref="casAuthenticationFilter"/>
 		<sec:intercept-url pattern="/**" access="ROLE_EVERYBODY" requires-channel="https" />
 		<!--<sec:port-mappings><sec:port-mapping http="8080" https="8443"/></sec:port-mappings>-->
 	</sec:http>
+  
+  	<bean id="httpSessionRequestCache"
+  		class="org.springframework.security.web.savedrequest.HttpSessionRequestCache">
+  	</bean>
   
   	<!--  ### Session management configuration used instead of "<session-management/>". ### -->
   	
