@@ -16,6 +16,7 @@
 	<sec:http
 		entry-point-ref="casAuthcAuthenticationEntryPoint"
 		security-context-repository-ref="daoSecurityContextRepository">
+		<sec:request-cache ref="httpSessionRequestCache"/>
 		<sec:custom-filter position="FIRST" ref="redirectContextRootFilter"/>
 		<sec:custom-filter position="CAS_FILTER" ref="casAuthenticationFilter"/>
 		<sec:intercept-url pattern="/cls/vespers/util/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
@@ -24,13 +25,10 @@
 		<!--<sec:port-mappings><sec:port-mapping http="8080" https="8443"/></sec:port-mappings>-->
 	</sec:http>
   
-  	<!--  ### Session management configuration used instead of "<session-management/>". ### -->
-  	
-  	<bean id="daoSecurityContextRepository"
-  		class="ca.sciencestudio.security.spring.web.context.DaoSecurityContextRepository">
-  		<property name="loginSessionDAO" ref="loginSessionDAO"/>
+	<bean id="httpSessionRequestCache"
+  		class="org.springframework.security.web.savedrequest.HttpSessionRequestCache">
   	</bean>
-  	
+   	
   	<!-- Custom filter to redirect context root. Avoids the use of welcome file (index.jsp). -->
   	
   	<bean id="redirectContextRootFilter"
@@ -38,7 +36,12 @@
   		<property name="redirectUrl" value="${security.cas.successUrl}"/>
   		<property name="contextRelative" value="true"/>
   	</bean>
-	  
+	
+	<bean id="daoSecurityContextRepository"
+  		class="ca.sciencestudio.security.spring.web.context.DaoSecurityContextRepository">
+  		<property name="loginSessionDAO" ref="loginSessionDAO"/>
+  	</bean>
+	 
   	<!-- #################### Authentication Manager ########################## -->
   
 	<sec:authentication-manager alias="authenticationManager">
