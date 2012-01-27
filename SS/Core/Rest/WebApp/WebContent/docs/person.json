@@ -1,0 +1,59 @@
+[
+	"Person",
+	"The Person object tracks...",
+	{
+		"gid": "[GID]",
+		"title": "'Mr.' | 'Mrs.' | 'Ms.' | ...",
+		"firstName": "John",
+		"middleName": "Q",
+		"lastName": "Public",
+		"phoneNumber": "000-000-0000",
+		"mobileNumber": "000-000-0000",
+		"emailAddress": "john.q.public@example.com",
+		"modificationDate": "[DATE]"
+	},
+	[
+		{
+			"name": 	"Get Person by Name",
+			"verb": 	"get",
+			"uri": 		"/model/persons?name={personName}",
+			"sample": 	"",
+			"desc": 	""
+		},
+		{
+			"name": 	"Get Person by ID",
+			"verb": 	"get",
+			"uri": 		"/model/persons/{personGid}",
+			"sample": 	"",
+			"desc": 	""
+		},
+		{
+			"name": 	"Get Person by Username and Facility",
+			"verb": 	"get",
+			"uri": 		"/model/persons/whois?username={username}&facility={facilityName}",
+			"sample": 	"",
+			"desc": 	""
+		},
+		{
+			"name": 	"Create a New Person",
+			"verb": 	"post",
+			"uri": 		"/model/persons?user={personGid}",
+			"sample": 	"",
+			"desc": 	""
+		},
+		{
+			"name": 	"Update a Person",
+			"verb": 	"put",
+			"uri": 		"/model/persons/{personGid}?user={personGid}",
+			"sample": 	"",
+			"desc": 	""
+		},
+		{
+			"name": 	"Delete a Person",
+			"verb": 	"delete",
+			"uri": 		"/model/persons/{personGid}?user={personGid}  ",
+			"sample": 	"",
+			"desc": 	""
+		}
+	]
+]

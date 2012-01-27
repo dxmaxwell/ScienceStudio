@@ -1,0 +1,54 @@
+[
+	"Project",
+	"The Project object contains...",
+	{
+		"gid": "[GID]",
+		"name": "'Sample Scan Name'",
+		"description": "'Scan used as an example'",
+		"status": "'ACTIVE' | 'SOMETHING ELSE'",
+		"startDate": "[DATE]",
+		"endDate": "[DATE]",
+		"facilityGid": "[GID]"
+	},
+	[
+		{
+			"name": "Get Project as User",
+			"verb": "get",
+			"uri": "/authz/projects/{projectGid}?user={personGid}",
+			"sample": "",
+			"desc": "Returns the information for the Project given by 'projectGid' that the user given by 'personGid' is authorized to see."
+		},
+		
+		{
+			"name": "List Projects as User",
+			"verb": "get",
+			"uri": "/model/projects?user={personGid}",
+			"sample": "/model/projects?user=CLS1U",
+			"desc": "Returns a list of all projectGids which the user given by 'personGid' is authorized to see."
+		},
+		
+		{
+			"name": "Create Projects as User",
+			"verb": "post",
+			"uri": "/model/projects?user={personGid}",
+			"sample": "",
+			"desc": "Attempts to create a new project, owned by the user given by 'personGid'"
+		},
+		
+		{
+			"name": "Modify Projects as User",
+			"verb": "put",
+			"uri": "/model/projects/{projectGid}?user={personGid}",
+			"sample": "",
+			"desc": "Attempts to update the data for the project given by 'projectGid' acting as the user given by 'personGid'"
+		},
+		
+		{
+			"name": "Delete Project as User",
+			"verb": "delete",
+			"uri": "/model/projects/{projectGid}?user={personGid}",
+			"sample": "",
+			"desc": "Attempts to delete the project given by 'projectGid' acting as the user given by 'personGid'"
+		}
+	]
+]
