@@ -127,10 +127,16 @@ a
 	margin: 0;
 }
 
+.object_structure_entry:nth-child(odd)
+{
+	background-color: #FFF;
+	border: 0;
+	margin: 0;
+}
+
 .object_structure_key
 {
 	width: 12em;
-	display: inline-block;
 	border: 0px;
 	margin: 0px;
 	padding-left: 0.5em;
@@ -139,17 +145,31 @@ a
 .object_structure_value
 {
 	font-weight: bold;
-	display: inline-block;
 	border: 0px;
 	margin: 0px;
 	padding-right: 0.5em;
 }
 
+.object_response_2
+{
+	color: #FFF;
+	background-color: #4e9a06;
+	text-align: center;
+}
 
+.object_response_4
+{
+	color: #FFF;
+	background-color: #c4a000;
+	text-align: center;
+}
 
-
-
-
+.object_response_5
+{
+	color: #FFF;
+	background-color: #a40000;
+	text-align: center;
+}
 
 
 

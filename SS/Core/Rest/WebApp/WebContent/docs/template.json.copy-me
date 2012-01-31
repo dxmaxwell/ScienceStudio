@@ -11,54 +11,81 @@
 		"": ""
 	},
 	[
+	
 		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges:		
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
 		},
+		
+		
 		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
 		},
+		
+		
 		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"responses":
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
 		},
+		
+		
 		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
 		}
+		
 	]
 ]

@@ -1,61 +1,52 @@
 [
 	"Project-Person",
 	"",
-	{
-		"admin": "'true' | 'false'",
-		"add": "'true' | 'false'",
-		"edit": "'true' | 'false'",
-		"remove": "'true' | 'false'"
-	},
+	{},
 	[
 		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
+			"name": 		"Something Something Something...",
+			"verb": 		"get",
+			"uri": 			"/ssrest/model/project/persons?user={GID}",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":	
+			[
+				{
+					"code": "200 OK",
+					"data":
+					{
+						"admin": "'true' | 'false'",
+						"add": "'true' | 'false'",
+						"edit": "'true' | 'false'",
+						"remove": "'true' | 'false'"
+					}
+				}
+			]
 		},
+		
 		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
-		},
-		{
-			"name": 	"",
-			"verb": 	"",
-			"uri": 		"",
-			"sample": 	"",
-			"desc": 	""
+			"name": 		"Something Something Something...",
+			"verb": 		"get",
+			"uri": 			"/ssrest/model/project/persons/{GID}?user={GID}",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":		
+			[
+				{
+					"code": "200 OK",
+					"data": 
+					{
+						"admin": "'true' | 'false'",
+						"add": "'true' | 'false'",
+						"edit": "'true' | 'false'",
+						"remove": "'true' | 'false'"
+					}
+				}
+			]
 		}
+		
+		
+		
+		
 	]
 ]
