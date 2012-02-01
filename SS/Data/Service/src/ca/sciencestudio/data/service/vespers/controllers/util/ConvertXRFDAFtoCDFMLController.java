@@ -349,7 +349,34 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 	}
 	
 	
-	
+	public FacilityAuthzDAO getFacilityAuthzDAO() {
+		return facilityAuthzDAO;
+	}
+	public void setFacilityAuthzDAO(FacilityAuthzDAO facilityAuthzDAO) {
+		this.facilityAuthzDAO = facilityAuthzDAO;
+	}
+
+	public InstrumentAuthzDAO getInstrumentAuthzDAO() {
+		return instrumentAuthzDAO;
+	}
+	public void setInstrumentAuthzDAO(InstrumentAuthzDAO instrumentAuthzDAO) {
+		this.instrumentAuthzDAO = instrumentAuthzDAO;
+	}
+
+	public LaboratoryAuthzDAO getLaboratoryAuthzDAO() {
+		return laboratoryAuthzDAO;
+	}
+	public void setLaboratoryAuthzDAO(LaboratoryAuthzDAO laboratoryAuthzDAO) {
+		this.laboratoryAuthzDAO = laboratoryAuthzDAO;
+	}
+
+	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
+		return techniqueAuthzDAO;
+	}
+	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
+		this.techniqueAuthzDAO = techniqueAuthzDAO;
+	}
+
 	public ConverterFactory getConverterFactory() {
 		return converterFactory;
 	}
