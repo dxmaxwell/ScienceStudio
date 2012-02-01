@@ -98,6 +98,7 @@
 		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
 		<property name="optionsExact">
 			<list>
+				<value>SVM1607-2-B21-01:mm</value>
 				<value>SVM1607-2-B21-03:mm</value>
 				<value>TS1607-2-B21-01:V:user:mm</value>
 				<value>TS1607-2-B21-03:V:user:mm</value>
@@ -120,6 +121,7 @@
 		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
 		<property name="optionsExact">
 			<list>
+				<value>SVM1607-2-B21-01:mm:fbk</value>
 				<value>SVM1607-2-B21-03:mm:fbk</value>
 				<value>TS1607-2-B21-01:V:user:mm:fbk</value>
 				<value>TS1607-2-B21-03:V:user:mm:fbk</value>
