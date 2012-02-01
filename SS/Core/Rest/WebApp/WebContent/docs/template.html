@@ -8,8 +8,7 @@
 <body>
 
 <div class='logo'>
-	<img src='logo.png' alt="Science Studio"/>
-	<H1>REST API Documentation</H1>
+	<img src='logo.png' alt="Science Studio: REST Data Service"/>
 </div>
 
 <div class='page'>
@@ -52,7 +51,7 @@
 				<div class='object_desc'><%= desc %></div>
 				%end
 				
-				%if object.size > 0
+				%if mapdata? object
 				<div class='object_structure'>
 					
 					<table class='object_structure_inner'>
@@ -81,6 +80,11 @@
 					%desc = method["desc"]				|| ""
 					%exchanges = method["exchanges"]	|| []
 					
+					%if name == "" || verb == "" || uri == ""
+						%$stderr.puts "Incomplete method not shown in #{title}"
+						%next
+					%end
+					
 					<li class='object_method'>
 						<div class='object_method_outline'>
 							<span class='object_method_verb object_method_verb_<%= verb.downcase %>'><%= verb %></span>
@@ -98,17 +102,20 @@
 									%object = exchange["data"]
 									
 									
-									
+									%if code != "" || mapdata?(object)
 									<table class='object_structure_inner'>
 										%response_class = ""
 										%response_class = "object_response_2" if code.start_with? "2"
 										%response_class = "object_response_4" if code.start_with? "4"
 										%response_class = "object_response_5" if code.start_with? "5"
 										
+										%if code != ""
 										<tr>
 											<td colspan='2' class='object_structure_value <%=response_class%>'><%=code%></td>
 										</tr>
-										%if object.length > 0
+										%end
+										
+										%if mapdata? object
 										%pairs = object.to_a.sort{|a, b| a[0] <=> b[0] }
 										%pairs.each{|pair|
 											%k, v = pair
@@ -119,6 +126,7 @@
 										%}
 										%end
 									</table>
+									%end
 									
 								%}
 							%end

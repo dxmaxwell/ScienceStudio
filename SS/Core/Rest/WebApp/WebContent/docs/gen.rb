@@ -22,6 +22,15 @@ def getObjectDocs
 
 end
 
+def mapdata? map
+	
+	map.each_pair{|k, v|
+		return true if k != "" && v != ""
+	}
+	return false
+	
+end
+
 
 
 template = `cat template.html`.gsub(/^\s*\%/, '%')
