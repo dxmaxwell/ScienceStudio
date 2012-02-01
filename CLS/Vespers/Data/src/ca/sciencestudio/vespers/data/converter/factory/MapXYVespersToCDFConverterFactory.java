@@ -20,7 +20,7 @@ import ca.sciencestudio.vespers.data.converter.MapXYVespersToCDFConverter;
  * @author maxweld
  *
  */
-public class MapXYVespersToCDFConverterFactory extends MapXYVespersConverterFactory {
+public class MapXYVespersToCDFConverterFactory extends AbstractMapXYVespersConverterFactory {
 
 	private static final String CDF_DATA_FILE_NAME_REGEX = String.format("(.*)(%s)", Pattern.quote(FILE_NAME_SUFFIX_CDF));
 	

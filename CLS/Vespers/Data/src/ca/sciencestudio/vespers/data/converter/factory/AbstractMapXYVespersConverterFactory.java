@@ -26,7 +26,7 @@ import ca.sciencestudio.util.Parameters;
  * @author maxweld
  *
  */
-public abstract class MapXYVespersConverterFactory extends AbstractMapVespersConverterFactory implements StdScanParams {
+public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVespersConverterFactory implements StdScanParams {
 
 	// Parameters for the sample position. //
 	private DAFEventElementOptions posXSetpointOptions;
