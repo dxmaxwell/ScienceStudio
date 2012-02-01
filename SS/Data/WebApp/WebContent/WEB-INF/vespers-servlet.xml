@@ -53,6 +53,10 @@
 	
 	<bean id="convertXRFDAFtoCDFMLController"
 		class="ca.sciencestudio.data.service.vespers.controllers.util.ConvertXRFDAFtoCDFMLController">
+		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
+		<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
+		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
+		<property name="instrumentAuthzDAO" ref="instrumentAuthzDAO"/>
 		<property name="converterFactory" ref="delegatingConverterFactory"/>
 	</bean>
 	

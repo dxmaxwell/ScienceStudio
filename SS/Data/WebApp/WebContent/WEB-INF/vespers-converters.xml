@@ -13,14 +13,14 @@
 	<bean id="delegatingConverterFactory" class="ca.sciencestudio.data.converter.factory.DelegatingConverterFactory">
 		<property name="converterFactories">
 			<list>
-				<ref bean="mapXYVespersConverterFactory"/>
+				<ref bean="mapXYVespersToCDFConverterFactory"/>
 				<ref bean="cdfToCDFMLConverterFactory"/>
 			</list>
 		</property>
 	</bean>
 
-	<bean id="mapXYVespersConverterFactory"
-		class="ca.sciencestudio.vespers.data.converter.factory.MapXYVespersConverterFactory">
+	<bean id="mapXYVespersToCDFConverterFactory"
+		class="ca.sciencestudio.vespers.data.converter.factory.MapXYVespersToCDFConverterFactory">
 		<property name="customRecordParsers">
 			<list><ref bean="vespersBackgroundRecordParser"/></list>
 		</property>
@@ -127,7 +127,7 @@
 		</property>
 	</bean>
 	
-	<!-- Beam Current (election and x-ray) -->
+	<!-- Beam Current (electron and x-ray) -->
 	
 	<bean id="srCurrentOptions"
 		class="ca.sciencestudio.data.daf.DAFEventElementOptions">
