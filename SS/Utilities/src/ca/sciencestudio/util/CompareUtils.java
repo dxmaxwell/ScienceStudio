@@ -765,6 +765,14 @@ public abstract class CompareUtils {
 		return ((left==right) || ((Math.abs(left-right)/(Math.abs(left)+Math.abs(right)))<=Math.abs(epsilon)));
 	}
 	
+	public static boolean equalSignum(float left, float right) {
+		return Math.signum(left) == Math.signum(right);
+	}
+	
+	public static boolean equalSignum(double left, double right) {
+		return Math.signum(left) == Math.signum(right);
+	}
+	
 	public static boolean agree(float left, float right, float uncertainty) {
 		return (Math.abs(left - right) <= Math.abs(2.0 * uncertainty));
 	}
