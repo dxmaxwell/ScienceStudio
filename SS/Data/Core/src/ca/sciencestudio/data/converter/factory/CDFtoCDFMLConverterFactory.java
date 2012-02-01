@@ -110,7 +110,7 @@ public class CDFtoCDFMLConverterFactory extends AbstractScanConverterFactory imp
 		if(cdfDataFile instanceof File) {
 			cdfDataFileNameMatcher = CDF_DATA_FILE_NAME_PATTERN.matcher(((File)cdfDataFile).getName());
 			if(!cdfDataFileNameMatcher.matches()) {
-				throw new ConverterFactoryException("The required CDF data file does not have a '" + FILE_NAME_SUFFIX_CDF + "' extention.");
+				throw new ConverterFactoryException("The required CDF data file does not have a '" + FILE_NAME_SUFFIX_CDF + "' extension.");
 			}
 		}
 		else {
@@ -129,7 +129,7 @@ public class CDFtoCDFMLConverterFactory extends AbstractScanConverterFactory imp
 		if(cdfmlDataFile instanceof File) {	
 			cdfmlDataFileNameMatcher = CDFML_DATA_FILE_NAME_PATTERN.matcher(((File)cdfmlDataFile).getName());
 			if(!cdfmlDataFileNameMatcher.matches()) {
-				throw new ConverterFactoryException("The required CDFML data file does not have a '" + FILE_NAME_SUFFIX_CDFML + "' extention.");
+				throw new ConverterFactoryException("The required CDFML data file does not have a '" + FILE_NAME_SUFFIX_CDFML + "' extension.");
 			}
 		}
 		else {
