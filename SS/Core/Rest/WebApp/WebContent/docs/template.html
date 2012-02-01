@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Science Studio REST API Documentation</title>
+	<link rel=StyleSheet href="doc.css" type="text/css" media=screen>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head>
+<body>
+
+<div class='logo'>
+	<img src='logo.png' alt="Science Studio: REST Data Service"/>
+</div>
+
+<div class='page'>
+
+	%data = getObjectDocs
+
+	<table class='page-table'><tr><td class='toc'>
+	
+	<%# TOC %>
+	<div class='toc_header'><H2 class='toc_title'>Index</H2></div>
+	<div class='toc-body'>
+		
+	%data.each{|obj|
+		<a href='#anchor<%= obj[0] %>'><%= obj[0] %></a><br />
+	%}
+		
+	</div>
+	
+	</td><td>
+
+	<div class='objects'>
+	
+	%data.each{|obj|
+	
+		%title 		= obj[0]
+		%desc 		= obj[1]
+		%object 	= obj[2]
+		%methods 	= obj[3]
+	
+	
+		<div id='anchor<%= title %>' class='object'>
+			<div class='object_header'>
+				<H2 class='object_title'><%= title %></H2>
+			</div>
+		
+
+			<div class='object_body'>
+
+				%if desc.strip.length > 0
+				<div class='object_desc'><%= desc %></div>
+				%end
+				
+				%if mapdata? object
+				<div class='object_structure'>
+					
+					<table class='object_structure_inner'>
+						%pairs = object.to_a.sort{|a, b| a[0] <=> b[0] }
+						%pairs.each{|pair|
+							%k, v = pair
+							<tr class='object_structure_entry'>
+								<td class='object_structure_key'><%= k %></td>
+								<td class='object_structure_value'><%= v %></td>
+							</tr>
+						%}
+					</table>
+					
+				</div>
+				%end
+
+
+				<ul class='object_methods'>
+
+				%methods.each{|method|
+
+					%name = method["name"]				|| ""
+					%verb = method["verb"]				|| ""
+					%uri = method["uri"]				|| ""
+					%sample = method["sample"]			|| ""
+					%desc = method["desc"]				|| ""
+					%exchanges = method["exchanges"]	|| []
+					
+					%if name == "" || verb == "" || uri == ""
+						%$stderr.puts "Incomplete method not shown in #{title}"
+						%next
+					%end
+					
+					<li class='object_method'>
+						<div class='object_method_outline'>
+							<span class='object_method_verb object_method_verb_<%= verb.downcase %>'><%= verb %></span>
+							<span class='object_method_title'><%=name %></span>
+							<span class='object_method_uri'><%= CGI::escapeHTML uri %></span>
+						</div>
+									
+						%if !(sample == "" && desc == "" && exchanges == [])
+						<div class='object_method_desc'>
+							
+							%if exchanges != []
+								%exchanges.each{|exchange|
+									
+									%code = exchange["code"]
+									%object = exchange["data"]
+									
+									
+									%if code != "" || mapdata?(object)
+									<table class='object_structure_inner'>
+										%response_class = ""
+										%response_class = "object_response_2" if code.start_with? "2"
+										%response_class = "object_response_4" if code.start_with? "4"
+										%response_class = "object_response_5" if code.start_with? "5"
+										
+										%if code != ""
+										<tr>
+											<td colspan='2' class='object_structure_value <%=response_class%>'><%=code%></td>
+										</tr>
+										%end
+										
+										%if mapdata? object
+										%pairs = object.to_a.sort{|a, b| a[0] <=> b[0] }
+										%pairs.each{|pair|
+											%k, v = pair
+											<tr class='object_structure_entry'>
+												<td class='object_structure_key'><%= k %></td>
+												<td class='object_structure_value'><%= v %></td>
+											</tr>
+										%}
+										%end
+									</table>
+									%end
+									
+								%}
+							%end
+							
+							%if sample.strip != ""
+							Example Use <span class='object_method_sample'><%= sample %></span>
+							%end
+
+							<%= desc %>
+						
+						</div>
+						%end
+					
+					</li>
+				
+				%}
+				
+				</ul>
+				
+			</div>
+		</div>
+		
+	%}
+	
+	</div>
+
+	</td></tr></table>
+
+</div>
+</body>
+
+</html>

@@ -1,0 +1,91 @@
+[
+	"Experiment",
+	"",
+	{
+		"": "",
+		"": "",
+		"": "",
+		"": "",
+		"": "",
+		"": "",
+		"": ""
+	},
+	[
+	
+		{
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":		
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
+		},
+		
+		
+		{
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
+		},
+		
+		
+		{
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
+		},
+		
+		
+		{
+			"name": 		"",
+			"verb": 		"",
+			"uri": 			"",
+			"sample": 		"",
+			"desc": 		"",
+			"exchanges":
+			[
+				{
+					"code": "",
+					"data": 
+					{
+					
+					}
+				}
+			]
+		}
+		
+	]
+]
