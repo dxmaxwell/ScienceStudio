@@ -21,38 +21,18 @@ import ca.sciencestudio.util.Parameters;
  *
  */
 public abstract class AbstractMapVespersConverterFactory extends AbstractVespersConverterFactory implements StdScanParams {
-
-	public static final String REQUEST_KEY_DAF_DATA_FILE = AbstractMapVespersConverterFactory.class.getName() + ".dafDataFile";
-	public static final String REQUEST_KEY_DAF_SPECTRA_FILE = AbstractMapVespersConverterFactory.class.getName() + ".dafSpectraFile";
-	public static final String REQUEST_KEY_CDF_DATA_FILE = AbstractMapVespersConverterFactory.class.getName() + ".cdfDataFile";
 	
 	private static final String SUPPORTED_TECHNIQUE_NAME = "XRF";
-	private static final String SUPPORTED_FROM_FORMAT = "DAF";
-	private static final String SUPPORTED_TO_FORMAT = "CDF";
 	
-	private static final String DAF_DATA_FILE_NAME_EXTENTION = ".dat";
-	private static final String DAF_SPECTRA_FILE_NAME_EXTENTION = "_spectra.dat";
-	private static final String CDF_DATA_FILE_NAME_EXTENTION = ".cdf";
-	
-	private static final String DAF_DATA_FILE_NAME_REGEX = String.format("(.*)(%s)", Pattern.quote(DAF_DATA_FILE_NAME_EXTENTION));
-	private static final String DAF_SPECTRA_FILE_NAME_REGEX = String.format("(.*)(%s)", Pattern.quote(DAF_SPECTRA_FILE_NAME_EXTENTION));
-	private static final String CDF_DATA_FILE_NAME_REGEX = String.format("(.*)(%s)", Pattern.quote(CDF_DATA_FILE_NAME_EXTENTION));
+	private static final String DAF_DATA_FILE_NAME_REGEX = String.format("(.*)(%s)", Pattern.quote(FILE_NAME_SUFFIX_DAF_DATA));
+	private static final String DAF_SPECTRA_FILE_NAME_REGEX = String.format("(.*)(%s)", Pattern.quote(FILE_NAME_SUFFIX_DAF_SPEC));
 	
 	private static final Pattern DAF_DATA_FILE_NAME_PATTERN = Pattern.compile(DAF_DATA_FILE_NAME_REGEX, Pattern.CASE_INSENSITIVE);
 	private static final Pattern DAF_SPECTRA_FILE_NAME_PATTERN = Pattern.compile(DAF_SPECTRA_FILE_NAME_REGEX, Pattern.CASE_INSENSITIVE);
-	private static final Pattern CDF_DATA_FILE_NAME_PATTERN = Pattern.compile(CDF_DATA_FILE_NAME_REGEX, Pattern.CASE_INSENSITIVE);
 	
 	@Override
 	@SuppressWarnings("deprecation")
 	protected ConverterMap validateRequest(ConverterMap request) throws ConverterFactoryException {
-		
-		if(!SUPPORTED_FROM_FORMAT.equals(request.getFromFormat())) {
-			throw new ConverterFactoryException("Convert FROM format, " + request.getFromFormat() + ", not supported.");
-		}
-		
-		if(!SUPPORTED_TO_FORMAT.equals(request.getToFormat())) {
-			throw new ConverterFactoryException("Convert TO format, " + request.getToFormat() + ", not supported.");
-		}
 		
 		request = super.validateRequest(request);
 		
@@ -91,7 +71,7 @@ public abstract class AbstractMapVespersConverterFactory extends AbstractVespers
 		if(dafDataFile instanceof File) {
 			dafDataFileNameMatcher = DAF_DATA_FILE_NAME_PATTERN.matcher(((File)dafDataFile).getName());
 			if(!dafDataFileNameMatcher.matches()) {
-				throw new ConverterFactoryException("The required DAF data file does not have a '" + DAF_DATA_FILE_NAME_EXTENTION + "' extention.");
+				throw new ConverterFactoryException("The required DAF data file does not have a '" + FILE_NAME_SUFFIX_DAF_DATA + "' extension.");
 			}
 		}
 		else {
@@ -99,41 +79,22 @@ public abstract class AbstractMapVespersConverterFactory extends AbstractVespers
 		}
 		
 		// DAF Spectra File //
-		Object dafSpectraFile = request.get(REQUEST_KEY_DAF_SPECTRA_FILE);
+		Object dafSpectraFile = request.get(REQUEST_KEY_DAF_SPEC_FILE);
 		if(!(dafSpectraFile instanceof File)) {
-			String dafSpectraFileName = dafDataFileNameMatcher.group(1) + DAF_SPECTRA_FILE_NAME_EXTENTION;
+			String dafSpectraFileName = dafDataFileNameMatcher.group(1) + FILE_NAME_SUFFIX_DAF_SPEC;
 			dafSpectraFile = new File(scanDataUrl, dafSpectraFileName);
-			request.put(REQUEST_KEY_DAF_SPECTRA_FILE, dafSpectraFile);
+			request.put(REQUEST_KEY_DAF_SPEC_FILE, dafSpectraFile);
 		}
 		
 		Matcher dafSpectraFileNameMatcher;
 		if(dafSpectraFile instanceof File) {
 			dafSpectraFileNameMatcher = DAF_SPECTRA_FILE_NAME_PATTERN.matcher(((File)dafSpectraFile).getName());
 			if(!dafSpectraFileNameMatcher.matches()) {
-				throw new ConverterFactoryException("The required DAF spectra file does not have a '" + DAF_SPECTRA_FILE_NAME_EXTENTION + "' extention.");
+				throw new ConverterFactoryException("The required DAF spectra file does not have a '" + FILE_NAME_SUFFIX_DAF_SPEC + "' extension.");
 			}
 		}
 		else {
 			throw new ConverterFactoryException("The required DAF spectra file not found in converter request.");
-		}
-		
-		// CDF Data File //
-		Object cdfDataFile = request.get(REQUEST_KEY_CDF_DATA_FILE);
-		if(!(cdfDataFile instanceof File)) {
-			String cdfDataFileName = dafDataFileNameMatcher.group(1) + CDF_DATA_FILE_NAME_EXTENTION;
-			cdfDataFile = new File(scanDataUrl, cdfDataFileName);
-			request.put(REQUEST_KEY_CDF_DATA_FILE, cdfDataFile);
-		}
-		
-		Matcher cdfDataFileNameMatcher;
-		if(cdfDataFile instanceof File) {
-			cdfDataFileNameMatcher = CDF_DATA_FILE_NAME_PATTERN.matcher(((File)cdfDataFile).getName());
-			if(!cdfDataFileNameMatcher.matches()) {
-				throw new ConverterFactoryException("The required CDF data file does not have a '" + CDF_DATA_FILE_NAME_EXTENTION + "' extention.");
-			}
-		}
-		else {
-			throw new ConverterFactoryException("The required CDF data file not found in converter request.");
 		}
 		
 		return request;

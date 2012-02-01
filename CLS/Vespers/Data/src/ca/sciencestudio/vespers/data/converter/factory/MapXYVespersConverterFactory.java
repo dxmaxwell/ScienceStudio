@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Collection;
 
 import ca.sciencestudio.data.standard.StdScanParams;
-import ca.sciencestudio.data.converter.Converter;
 import ca.sciencestudio.data.converter.ConverterMap;
 import ca.sciencestudio.data.daf.DAFDataParser;
 import ca.sciencestudio.data.daf.DAFEvent;
@@ -27,7 +26,7 @@ import ca.sciencestudio.util.Parameters;
  * @author maxweld
  *
  */
-public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFactory implements StdScanParams {
+public abstract class MapXYVespersConverterFactory extends AbstractMapVespersConverterFactory implements StdScanParams {
 
 	// Parameters for the sample position. //
 	private DAFEventElementOptions posXSetpointOptions;
@@ -54,7 +53,7 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 	private DAFEventElementOptions sedElapsedRealTimeOptions;
 	private DAFEventElementOptions sedElpasedLiveTimeOptions;
 	
-	private int sedDefaultNChannels = MapXYVespersConverter.DEFAULT_SED_NCHANNELS;
+	private int sedDefaultNChannels = AbstractMapXYVespersConverter.DEFAULT_SED_NCHANNELS;
 	
 	// Parameters for the Four Element Detector. //
 	private DAFEventElementOptions fedNChannelsOptions;
@@ -71,27 +70,21 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 	private List<DAFEventElementOptions> fedElapsedRealTimeOptions;
 	private List<DAFEventElementOptions> fedElpasedLiveTimeOptions;
 	
-	private int fedDefaultNChannels = MapXYVespersConverter.DEFAULT_FED_NCHANNELS;
+	private int fedDefaultNChannels = AbstractMapXYVespersConverter.DEFAULT_FED_NCHANNELS;
 	
 	private Collection<DAFRecordParser> customRecordParsers;
 	
-	private long cdfSpectrumCompressionLevel = MapXYVespersConverter.DEFAULT_CDF_SPECTRUM_COMPRESSION_LEVEL;
-	
-	public Converter getConverter(ConverterMap request) throws ConverterFactoryException {
-		
-		request = validateRequest(request);
+	protected void prepareConverter(AbstractMapXYVespersConverter converter, ConverterMap request) throws ConverterFactoryException {
 		
 		File dafDataFile = (File)request.get(REQUEST_KEY_DAF_DATA_FILE);
 		if(!dafDataFile.exists()) {
 			throw new ConverterFactoryException("The required DAF data file not found here: " + dafDataFile);
 		}
 		
-		File dafSpectraFile = (File)request.get(REQUEST_KEY_DAF_SPECTRA_FILE);
-		if(!dafSpectraFile.exists()) {			
+		File dafSpectraFile = (File)request.get(REQUEST_KEY_DAF_SPEC_FILE);
+		if(!dafSpectraFile.exists()) {
 			throw new ConverterFactoryException("The required DAF spectra file not found here: " + dafSpectraFile);
 		}
-		
-		File cdfDataFile = (File)request.get(REQUEST_KEY_CDF_DATA_FILE);
 		
 		DAFDataParser dafDataParser;
 		try {
@@ -121,11 +114,6 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 			throw new ConverterFactoryException("No event found that contains the MapXY position coordinates.");
 		}
 		
-		String toFormat = request.getToFormat();
-		String fromForamt = request.getFromFormat();
-		boolean forceUpdate = request.isForceUpdate();
-		
-		MapXYVespersConverter converter = new MapXYVespersConverter(fromForamt, toFormat, forceUpdate);
 		converter.setCustomRecordParsers(customRecordParsers);
 		converter.setScanName((String)request.get(REQUEST_KEY_SAMPLE_NAME));
 		converter.setScanEndDate((Date)request.get(REQUEST_KEY_SCAN_END_DATE));
@@ -140,7 +128,6 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 		converter.setFacilityName((String)request.get(REQUEST_KEY_FACILITY_NAME));
 		converter.setLaboratoryName((String)request.get(REQUEST_KEY_LABORATORY_NAME));
 		
-		converter.setCdfDataFile(cdfDataFile);
 		converter.setDafDataFile(dafDataFile);
 		converter.setDafSpectraFile(dafSpectraFile);
 		converter.setDataEventId(eventsHelper.getDataEventId());
@@ -150,22 +137,20 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 		converter.setPosXFeedbackIdx(posXFeedbackOptions.getElementIndex(dataEvent));
 		converter.setPosYFeedbackIdx(posYFeedbackOptions.getElementIndex(dataEvent));
 		
-		converter.setCdfSpectrumCompressionLevel(cdfSpectrumCompressionLevel);
-		
 		prepareBeamCurrent(converter, eventsHelper);
 		
 		if(prepareSingleElementDetector(converter, eventsHelper)) {
-			return converter;
+			return;
 		}
 		
 		if(prepareFourElementDetector(converter, eventsHelper)) {
-			return converter;
+			return;
 		}
 			
 		throw new ConverterFactoryException("No MultiChannel Analyzer spectrum found in DAF data file.");
 	}
 	
-	protected void prepareBeamCurrent(MapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected void prepareBeamCurrent(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
 		
 		DAFEvent dataEvent = eventsHelper.getDataEvent();
 		int[] mcsCurrentIdx = new int[mcsCurrentOptions.size()];
@@ -178,7 +163,7 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 		converter.setSrCurrentIdx(srCurrentIdx);
 	}
 	
-	protected boolean prepareSingleElementDetector(MapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected boolean prepareSingleElementDetector(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
 		
 		DAFEvent dataEvent = eventsHelper.getDataEvent();
 		DAFEvent bkgdEvent = eventsHelper.getBkgdEvent();
@@ -244,7 +229,7 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 	}
 	
 	
-	protected boolean prepareFourElementDetector(MapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected boolean prepareFourElementDetector(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
 		
 		int nElements = 4;
 		DAFEvent dataEvent = eventsHelper.getDataEvent();
@@ -351,13 +336,6 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 		}
 		public void setBkgdEventId(int bkgdEventId) {
 			this.bkgdEventId = bkgdEventId;
-		}
-	}
-	
-	protected static class MapXYVespersConverter extends AbstractMapXYVespersConverter {
-
-		public MapXYVespersConverter(String fromFormat, String toFormat, boolean forceUpdate) {
-			super(fromFormat, toFormat, forceUpdate);
 		}
 	}
 
@@ -487,9 +465,5 @@ public class MapXYVespersConverterFactory extends AbstractMapVespersConverterFac
 
 	public void setCustomRecordParsers(Collection<DAFRecordParser> customRecordParsers) {
 		this.customRecordParsers = customRecordParsers;
-	}
-
-	public void setCdfSpectrumCompressionLevel(long cdfSpectrumCompressionLevel) {
-		this.cdfSpectrumCompressionLevel = cdfSpectrumCompressionLevel;
 	}
 }

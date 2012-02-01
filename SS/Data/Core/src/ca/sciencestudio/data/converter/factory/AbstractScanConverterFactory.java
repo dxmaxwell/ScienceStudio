@@ -25,7 +25,7 @@ public abstract class AbstractScanConverterFactory extends AbstractConverterFact
 	private static final String DEFAULT_SCAN_NAME = "Not Available";
 	private static final String DEFAULT_SCAN_DATA_URL = "file://";
 	private static final Date DEFAULT_SCAN_START_DATE = new Date(0L);
-	private static final Date DEFAULT_SCAN_END_DATE = new Date(10000L);
+	private static final Date DEFAULT_SCAN_END_DATE = new Date(0L);
 	private static final Parameters DEFAULT_SCAN_PARAMS = new Parameters();
 	
 	@SuppressWarnings("unchecked")
