@@ -15,10 +15,10 @@
 					"code": "200 OK",
 					"data":
 					{
-						"admin": "'true' | 'false'",
-						"add": "'true' | 'false'",
-						"edit": "'true' | 'false'",
-						"remove": "'true' | 'false'"
+						"admin": "[BOOLEAN]",
+						"add": "[BOOLEAN]",
+						"edit": "[BOOLEAN]",
+						"remove": "[BOOLEAN]"
 					}
 				}
 			]
@@ -36,10 +36,10 @@
 					"code": "200 OK",
 					"data": 
 					{
-						"admin": "'true' | 'false'",
-						"add": "'true' | 'false'",
-						"edit": "'true' | 'false'",
-						"remove": "'true' | 'false'"
+						"admin": "[BOOLEAN]",
+						"add": "[BOOLEAN]",
+						"edit": "[BOOLEAN]",
+						"remove": "[BOOLEAN]"
 					}
 				}
 			]

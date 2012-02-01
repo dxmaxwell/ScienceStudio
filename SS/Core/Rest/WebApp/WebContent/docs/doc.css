@@ -21,10 +21,19 @@ a
 	margin: auto;
 }
 
-.page-table
+.page_table
 {
 	width: 100%;
 }
+
+
+
+
+
+
+
+
+/* TABLE OF CONTENTS STYLES */
 
 .toc
 {
@@ -49,13 +58,21 @@ a
 	display: inline-block;
 }
 
-.toc-body
+.toc_body
 {
 	border-left: 4px solid #999;
 	padding: 1em;
 	border-bottom-left-radius: 0.5em;
 	font-size: 80%;
 }
+
+
+
+
+
+
+
+/* OBJECT STYLES */
 
 .objects
 {
@@ -83,10 +100,6 @@ a
 	display: inline-block;
 }
 
-
-
-
-
 .object_body
 {
 	background-color: #FFF;
@@ -101,41 +114,50 @@ a
 	margin-left: 1em;
 }
 
-.object_structure
+
+
+
+
+
+
+
+/* DATA STYLES */
+
+.data
 {
 	border-left: 4px solid #999;
-	padding: 1em;
+	padding: 0.5em;
 	padding-left: 3em;
 	margin-left: 1em;
 
 }
 
-.object_structure_inner
+.data_inner
 {
 	font-family: monospace;
 	border: 0;
-	margin: 0;
+	margin: 0.5em;
 	padding: 0;
 	border-spacing: 0;
 	box-shadow: 0em 0.2em 0.7em #777;
 	
 }
 
-.object_structure_entry:nth-child(even)
+.data_entry:nth-child(even)
 {
 	background-color: #EEE;
 	border: 0;
 	margin: 0;
 }
 
-.object_structure_entry:nth-child(odd)
+.data_entry:nth-child(odd)
 {
 	background-color: #FFF;
 	border: 0;
 	margin: 0;
 }
 
-.object_structure_key
+.data_key
 {
 	width: 12em;
 	border: 0px;
@@ -143,7 +165,7 @@ a
 	padding-left: 0.5em;
 }
 
-.object_structure_value
+.data_value
 {
 	font-weight: bold;
 	border: 0px;
@@ -151,21 +173,21 @@ a
 	padding-right: 0.5em;
 }
 
-.object_response_2
+.data_response_2
 {
 	color: #FFF;
 	background-color: #4e9a06;
 	text-align: center;
 }
 
-.object_response_4
+.data_response_4
 {
 	color: #FFF;
 	background-color: #c4a000;
 	text-align: center;
 }
 
-.object_response_5
+.data_response_5
 {
 	color: #FFF;
 	background-color: #a40000;
@@ -174,7 +196,17 @@ a
 
 
 
-.object_methods
+
+
+
+
+
+
+
+/* METHOD STYLES */
+
+
+.methods
 {
 	border-left: 4px solid #999;
 	border-bottom-left-radius: 0.5em;
@@ -187,23 +219,24 @@ a
 	margin-right: 1em;
 }
 
-.object_method
+.method
 {
 	margin-bottom: 0.5em;
 }
 
-
-
-
-.object_method_outline
+.method_outline
 {
 	background-color: #DBDBDB;
 	border-radius: 0.5em;
 	position: relative;
 }
 
+.method_outline_nonempty
+{
+	border-bottom-right-radius: 0em;
+}
 
-.object_method_verb
+.method_verb
 {
 	text-transform: uppercase;
 	display: inline-block;
@@ -215,40 +248,41 @@ a
 	
 	background-color: #777;
 	color: #FFF;
+	
 }
 
-.object_method_verb_get
+.method_verb_get
 {
 	background-color: #4e9a06;
 	color: #FFF;
 }
 
-.object_method_verb_put
+.method_verb_put
 {
 	background-color: #c4a000;
 	color: #FFF;
 }
 
-.object_method_verb_post
+.method_verb_post
 {
 	background-color: #204a87;
 	color: #FFF;
 }
 
-.object_method_verb_delete
+.method_verb_delete
 {
 	background-color: #a40000;
 	color: #FFF;
 }
 
-.object_method_title
+.method_title
 {
 	font-weight: bold;
 	padding: 0.5em;
 }
 
 
-.object_method_uri
+.method_uri
 {
 	font-family: monospace;
 	margin-left: 1em;
@@ -256,16 +290,16 @@ a
 }
 
 
-.object_method_desc
+.method_desc
 {
 	padding: 0.5em;
-	padding-left: 6.5em;
+	margin-left: 6em;
 	background: #EEE;
 	border-bottom-left-radius: 0.5em;
 	border-bottom-right-radius: 0.5em;
 }
 
-.object_method_sample
+.method_sample
 {
 	display: block;
 	font-family: monospace;

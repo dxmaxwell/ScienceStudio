@@ -15,11 +15,11 @@
 
 	%data = getObjectDocs
 
-	<table class='page-table'><tr><td class='toc'>
+	<table class='page_table'><tr><td class='toc'>
 	
 	<%# TOC %>
 	<div class='toc_header'><H2 class='toc_title'>Index</H2></div>
-	<div class='toc-body'>
+	<div class='toc_body'>
 		
 	%data.each{|obj|
 		<a href='#anchor<%= obj[0] %>'><%= obj[0] %></a><br />
@@ -29,6 +29,7 @@
 	
 	</td><td>
 
+	<%# OBJECTS %>
 	<div class='objects'>
 	
 	%data.each{|obj|
@@ -51,16 +52,17 @@
 				<div class='object_desc'><%= desc %></div>
 				%end
 				
+				<%# DATA %>
 				%if mapdata? object
-				<div class='object_structure'>
+				<div class='data'>
 					
-					<table class='object_structure_inner'>
+					<table class='data_inner'>
 						%pairs = object.to_a.sort{|a, b| a[0] <=> b[0] }
 						%pairs.each{|pair|
 							%k, v = pair
-							<tr class='object_structure_entry'>
-								<td class='object_structure_key'><%= k %></td>
-								<td class='object_structure_value'><%= v %></td>
+							<tr class='data_entry'>
+								<td class='data_key'><%= k %></td>
+								<td class='data_value'><%= v %></td>
 							</tr>
 						%}
 					</table>
@@ -69,7 +71,8 @@
 				%end
 
 
-				<ul class='object_methods'>
+				<%# METHODS %>
+				<ul class='methods'>
 
 				%methods.each{|method|
 
@@ -85,15 +88,17 @@
 						%next
 					%end
 					
-					<li class='object_method'>
-						<div class='object_method_outline'>
-							<span class='object_method_verb object_method_verb_<%= verb.downcase %>'><%= verb %></span>
-							<span class='object_method_title'><%=name %></span>
-							<span class='object_method_uri'><%= CGI::escapeHTML uri %></span>
+					%empty = (sample == "" && desc == "" && exchanges == [])
+					
+					<li class='method'>
+						<div class='method_outline <%= 'method_outline_nonempty' if !empty %>'>
+							<span class='method_verb method_verb_<%= verb.downcase %>'><%= verb %></span>
+							<span class='method_title'><%=name %></span>
+							<span class='method_uri'><%= CGI::escapeHTML uri %></span>
 						</div>
 									
-						%if !(sample == "" && desc == "" && exchanges == [])
-						<div class='object_method_desc'>
+						%if !empty
+						<div class='method_desc'>
 							
 							%if exchanges != []
 								%exchanges.each{|exchange|
@@ -102,16 +107,17 @@
 									%object = exchange["data"]
 									
 									
+									<%# DATA %>
 									%if code != "" || mapdata?(object)
-									<table class='object_structure_inner'>
+									<table class='data_inner'>
 										%response_class = ""
-										%response_class = "object_response_2" if code.start_with? "2"
-										%response_class = "object_response_4" if code.start_with? "4"
-										%response_class = "object_response_5" if code.start_with? "5"
+										%response_class = "data_response_2" if code.start_with? "2"
+										%response_class = "data_response_4" if code.start_with? "4"
+										%response_class = "data_response_5" if code.start_with? "5"
 										
 										%if code != ""
 										<tr>
-											<td colspan='2' class='object_structure_value <%=response_class%>'><%=code%></td>
+											<td colspan='2' class='data_key data_value <%=response_class%>'><%=code%></td>
 										</tr>
 										%end
 										
@@ -119,9 +125,9 @@
 										%pairs = object.to_a.sort{|a, b| a[0] <=> b[0] }
 										%pairs.each{|pair|
 											%k, v = pair
-											<tr class='object_structure_entry'>
-												<td class='object_structure_key'><%= k %></td>
-												<td class='object_structure_value'><%= v %></td>
+											<tr class='data_entry'>
+												<td class='data_key'><%= k %></td>
+												<td class='data_value'><%= v %></td>
 											</tr>
 										%}
 										%end
@@ -132,7 +138,7 @@
 							%end
 							
 							%if sample.strip != ""
-							Example Use <span class='object_method_sample'><%= sample %></span>
+							Example Use <span class='method_sample'><%= sample %></span>
 							%end
 
 							<%= desc %>
