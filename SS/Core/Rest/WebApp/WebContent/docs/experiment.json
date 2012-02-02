@@ -13,78 +13,48 @@
 	[
 	
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
-			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"name": 		"Get list of experiments for a person",
+			"verb": 		"GET",
+			"uri": 			"/model/experiments?user={personGid}&session={sessionGid}",
+			"sample": 		"/model/experiments?user=CLS1U&session=CLS8S",
+			"desc": 		""
+			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get details of a specific experiment",
+			"verb": 		"GET",
+			"uri": 			"/model/experiments/{experimentGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Add experiment",
+			"verb": 		"POST",
+			"uri": 			"/model/experiments?user={personGid} ",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Modify experiment",
+			"verb": 		"PUT",
+			"uri": 			"/model/experiments/{experimentGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+		},
+		
+		
+		{
+			"name": 		"Delete an experiment",
+			"verb": 		"DELETE",
+			"uri": 			"/model/experiments/{experimentGid}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		}
 		
 	]

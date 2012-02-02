@@ -13,78 +13,55 @@
 	[
 	
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get list of labs",
+			"verb": 		"GET",
+			"uri": 			"/model/laboratories",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get details of a specific lab",
+			"verb": 		"GET",
+			"uri": 			"/model/laboratories/{laboratoryGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""			
+		},
+		{
+			"name": 		"Get labs inside a facility",
+			"verb": 		"GET",
+			"uri": 			"/model/laboratories?facility={facilityGid}",
+			"sample": 		"",
+			"desc": 		""			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Add experiment",
+			"verb": 		"POST",
+			"uri": 			"/model/laboratories?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Modify experiment",
+			"verb": 		"PUT",
+			"uri": 			"/model/laboratories/{laboratoryGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+		},
+		
+		
+		{
+			"name": 		"Delete an experiment",
+			"verb": 		"DELETE",
+			"uri": 			"/model/laboratories/{laboratoryGid}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		}
 		
 	]

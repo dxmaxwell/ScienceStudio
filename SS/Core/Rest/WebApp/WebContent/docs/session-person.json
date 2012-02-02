@@ -14,77 +14,53 @@
 	
 		{
 			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"verb": 		"GET",
+			"uri": 			"/model/session/persons?user={personGid}&session={sessionGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+			
 		},
 		
 		
 		{
 			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"verb": 		"GET",
+			"uri": 			"/model/session/persons/{sessionPersonGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""			
+		},
+		{
+			"name": 		"Get sessions of a project",
+			"verb": 		"GET",
+			"uri": 			"/model/sessions?user={personGid}&project={projectGid}",
+			"sample": 		"",
+			"desc": 		""			
+		},
+		
+		{
+			"name": 		"",
+			"verb": 		"POST",
+			"uri": 			"/model/session/persons?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		},
 		
 		
 		{
 			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"verb": 		"PUT",
+			"uri": 			"/model/session/persons/{sessionPersonGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		},
 		
 		
 		{
 			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"verb": 		"DELETE",
+			"uri": 			"/model/session/persons/{sessionPersonGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		}
 		
 	]

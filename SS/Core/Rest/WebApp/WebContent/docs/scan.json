@@ -13,78 +13,61 @@
 	[
 	
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get scans of an experiment",
+			"verb": 		"GET",
+			"uri": 			"/model/scans?user={personGid}&experiment={experimentGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get a scan details",
+			"verb": 		"GET",
+			"uri": 			"/model/scans/{scanGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""			
+		},
+		{
+			"name": 		"Get all files of a scan",
+			"verb": 		"GET",
+			"uri": 			"/model/scans/{scanGid}/file/list/{pathToDir}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""			
+		},
+		
+		{
+			"name": 		"Get s scan file",
+			"verb": 		"GET",
+			"uri": 			"/model/scans/{scanGid}/file/data/{pathToFile}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""			
+		},
+		{
+			"name": 		"Add a scan",
+			"verb": 		"POST",
+			"uri": 			"/model/scans?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Modify a scan",
+			"verb": 		"PUT",
+			"uri": 			"/model/scans/{scanGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Delete a scan",
+			"verb": 		"DELETE",
+			"uri": 			"/model/scans/{scanGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		}
 		
 	]

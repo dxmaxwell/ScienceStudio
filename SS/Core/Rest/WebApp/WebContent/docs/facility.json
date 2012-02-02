@@ -13,79 +13,57 @@
 	[
 	
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get details of a specific facility",
+			"verb": 		"GET",
+			"uri": 			"/authz/facilities/{facilityNameOrGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+			
+		},
+		
+		
+		{
+			"name": 		"List all facilities",
+			"verb": 		"GET",
+			"uri": 			"/model/facilities",
+			"sample": 		"",
+			"desc": 		""			
 		},
 		
 		
 		{
 			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"verb": 		"GET",
+			"uri": 			"model/facilities/{facilityNameOrGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+		},
+		
+		{
+			"name": 		"Add a facility",
+			"verb": 		"POST",
+			"uri": 			"/model/facilities?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
+		},
+
+		{
+			"name": 		"Modify a facility",
+			"verb": 		"PUT",
+			"uri": 			"/model/facilities/{facilityGid}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Delete a facility",
+			"verb": 		"DELETE",
+			"uri": 			"/model/facilities/{facilityGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
-		},
-		
-		
-		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
-			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		}
+		
 		
 	]
 ]

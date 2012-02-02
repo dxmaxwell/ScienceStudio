@@ -13,79 +13,57 @@
 	[
 	
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get details of a specific instrument",
+			"verb": 		"GET",
+			"uri": 			"/model/instruments/{instrumentGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"List all instruments",
+			"verb": 		"GET",
+			"uri": 			"/model/instruments",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"List instruments in a facility",
+			"verb": 		"GET",
+			"uri": 			"/model/instruments?laboratory={laboratoryGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+		},
+		
+		{
+			"name": 		"Add an instrument",
+			"verb": 		"POST",
+			"uri": 			"/model/instruments?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
+		},
+
+		{
+			"name": 		"Modify an instrument",
+			"verb": 		"PUT",
+			"uri": 			"/model/instruments/{instrumentGid}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Delete a instrument",
+			"verb": 		"DELETE",
+			"uri": 			"/model/instruments/{instrumentGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		}
+
 		
 	]
 ]

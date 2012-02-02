@@ -13,78 +13,75 @@
 	[
 	
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"check authorization of a user to access a session",
+			"verb": 		"GET",
+			"uri": 			"/authz/sessions/{sessionGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"list all sessions",
+			"verb": 		"GET",
+			"uri": 			"/model/sessions?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""			
+		},
+		{
+			"name": 		"Get sessions of a project",
+			"verb": 		"GET",
+			"uri": 			"/model/sessions?user={personGid}&project={projectGid}",
+			"sample": 		"",
+			"desc": 		""			
+		},
+		
+		{
+			"name": 		"Get a session details",
+			"verb": 		"GET",
+			"uri": 			"/model/scans/{scanGid}/file/data/{pathToFile}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""			
+		},
+		{
+			"name": 		"Get sessions of a scan",
+			"verb": 		"GET",
+			"uri": 			"/model/sessions/{scanGid}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""			
+		},
+		{
+			"name": 		"Get sessions of an experiment",
+			"verb": 		"GET",
+			"uri": 			"/model/sessions/{experimentGid}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""			
+		},
+		{
+			"name": 		"Add a session",
+			"verb": 		"POST",
+			"uri": 			"/model/sessions?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Modify a session",
+			"verb": 		"PUT",
+			"uri": 			"/model/sessions/{sessionGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Delete a session",
+			"verb": 		"DELETE",
+			"uri": 			"/model/sessions/{sessionGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		}
 		
 	]

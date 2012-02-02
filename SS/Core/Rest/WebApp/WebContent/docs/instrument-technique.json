@@ -13,79 +13,56 @@
 	[
 	
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get list of techniques",
+			"verb": 		"GET",
+			"uri": 			"/model/instrument/techniques",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":		
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Get details of a specific technique",
+			"verb": 		"GET",
+			"uri": 			"/model/instrument/techniques/{instrumentTechniqueGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""			
+		},
+		{
+			"name": 		"Get techniques inside a lab",
+			"verb": 		"GET",
+			"uri": 			"/model/instrument/techniques?laboratory={laboratoryGid}",
+			"sample": 		"",
+			"desc": 		""			
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Add experiment",
+			"verb": 		"POST",
+			"uri": 			"/model/instrument/techniques?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
 		},
 		
 		
 		{
-			"name": 		"",
-			"verb": 		"",
-			"uri": 			"",
+			"name": 		"Modify experiment",
+			"verb": 		"PUT",
+			"uri": 			"/model/instrument/techniques/{instrumentTechniqueGid}?user={personGid}",
 			"sample": 		"",
-			"desc": 		"",
-			"exchanges":
-			[
-				{
-					"code": "",
-					"data": 
-					{
-					
-					}
-				}
-			]
+			"desc": 		""
+		},
+		
+		
+		{
+			"name": 		"Delete an experiment",
+			"verb": 		"DELETE",
+			"uri": 			"/model/instrument/techniques/{instrumentTechniqueGid}?user={personGid}",
+			"sample": 		"",
+			"desc": 		""
 		}
-		
+				
 	]
 ]
