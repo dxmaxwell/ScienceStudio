@@ -251,8 +251,8 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 								stepX = (stepX + delta) / 2.0;
 							}
 							else if(equalSignum(stepX, delta)) {
-								if(log.isInfoEnabled()) {
-									log.info("Data point X-position step: " + delta + ", expecting: " + stepX + " at index: " + dataRecordIndex);
+								if(log.isDebugEnabled()) {
+									log.debug("Data point X-position step: " + delta + ", expecting: " + stepX + " at index: " + dataRecordIndex + ", will ignore.");
 								}
 							}
 							else {
@@ -285,8 +285,8 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 								stepY = (stepY + delta) / 2.0;
 							}
 							else if(equalSignum(stepY, delta)) {
-								if(log.isInfoEnabled()) {
-									log.info("Data point Y-position step: " + delta + ", expecting: " + stepY + " at index: " + dataRecordIndex);
+								if(log.isDebugEnabled()) {
+									log.debug("Data point Y-position step: " + delta + ", expecting: " + stepY + " at index: " + dataRecordIndex + ", will ignore.");
 								}
 							}
 							else {
