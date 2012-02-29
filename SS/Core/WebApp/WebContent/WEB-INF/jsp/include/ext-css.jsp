@@ -6,5 +6,5 @@
 		includeExtCss jsp page.
 --%>
 <%@ page trimDirectiveWhitespaces="true" %>
-<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.3/resources/css/ext-all.css"/>
-<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.3/resources/css/xtheme-gray.css"/>
+<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.4/resources/css/ext-all.css"/>
+<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.4/resources/css/xtheme-gray.css"/>

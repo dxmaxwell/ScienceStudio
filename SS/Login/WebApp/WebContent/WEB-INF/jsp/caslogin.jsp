@@ -10,7 +10,7 @@
 <html>
 <head>
 	<title>Science Studio :: Login</title>
-	<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.3/resources/css/ext-all-notheme.css"/>
+	<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.4/resources/css/ext-all-notheme.css"/>
 	<!-- Scripts are included at the bottom of the page to improve page loading speed. -->
 </head>
 <body>
@@ -82,12 +82,12 @@
 			</td>
 		</tr>
 	</table>
-	<script type="text/javascript" src="/ssstatic/js/ext-3.3/adapter/ext/ext-base.js"></script>
-	<script type="text/javascript" src="/ssstatic/js/ext-3.3/pkgs/ext-core.js"></script>
+	<script type="text/javascript" src="/ssstatic/js/ext-3.4/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="/ssstatic/js/ext-3.4/pkgs/ext-core.js"></script>
 	<script type="text/javascript">
 		Ext.onReady(function() {
 			var compatElement = Ext.get('COMPAT_WARNING');
-			if(compatElement && !Ext.isGecko3) {
+			if(compatElement && !Ext.isGecko) {
 				compatElement.removeClass('x-hidden');
 			}
 		});	

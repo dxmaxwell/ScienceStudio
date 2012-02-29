@@ -6,11 +6,13 @@
 		Include Ext JS framework.
 --%>
 <%@ page trimDirectiveWhitespaces="true" %>
-<script type="text/javascript" src="/ssstatic/js/ext-3.3/adapter/ext/ext-base.js"></script>
-<script type="text/javascript" src="/ssstatic/js/ext-3.3/ext-all.js"></script>
+<script type="text/javascript" src="/ssstatic/js/ext-3.4/adapter/ext/ext-base.js"></script>
+<script type="text/javascript" src="/ssstatic/js/ext-3.4/ext-all.js"></script>
+<!-- <script type="text/javascript" src="/ssstatic/js/ext-3.4/adapter/ext/ext-base-debug.js"></script> -->
+<!-- <script type="text/javascript" src="/ssstatic/js/ext-3.4/ext-all-debug.js"></script> -->
 
 <script type="text/javascript">
-	Ext.BLANK_IMAGE_URL = '/ssstatic/js/ext-3.3/resources/images/default/s.gif';
+	Ext.BLANK_IMAGE_URL = '/ssstatic/js/ext-3.4/resources/images/default/s.gif';
 	
 	Date.patterns = {
 	    ISO8601Full:"Y-m-d H:i:s.uO",

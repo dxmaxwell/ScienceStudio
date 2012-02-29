@@ -9,7 +9,7 @@
 <html>
 	<head>
 		<title>Science Studio :: Logout</title>
-		<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.3/resources/css/ext-all-notheme.css"/>
+		<link rel="stylesheet" type="text/css" href="/ssstatic/js/ext-3.4/resources/css/ext-all-notheme.css"/>
 		<style type="text/css">
 			p {
 				margin:30px 0px;
