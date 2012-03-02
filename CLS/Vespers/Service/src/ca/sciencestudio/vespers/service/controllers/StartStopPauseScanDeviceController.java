@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,9 +56,7 @@ public class StartStopPauseScanDeviceController extends AbstractBeamlineAuthzCon
 
 	private StateMap scanDeviceProxy;
 
-//	@Autowired
 //	private StateMap ccdCollectionProxy;
-	@Autowired
 	private StateMap ccdFileProxy;
 	private String templateScan;
 	private String filePath;
@@ -124,7 +121,6 @@ public class StartStopPauseScanDeviceController extends AbstractBeamlineAuthzCon
 //					ccdCollectionProxy.put(VALUE_KEY_TRIGGERMODE, new Integer(scanTriggerMode));  // daq cfg handles this
 				}
 				ccdFileProxy.putAll(fileValues);
-				
 			}
 			
 			values.put(VALUE_KEY_SCAN_ID, gid.getId());
@@ -158,16 +154,31 @@ public class StartStopPauseScanDeviceController extends AbstractBeamlineAuthzCon
 		this.scanAuthzDAO = scanAuthzDAO;
 	}
 
+	public StateMap getCcdFileProxy() {
+		return ccdFileProxy;
+	}
+	public void setCcdFileProxy(StateMap ccdFileProxy) {
+		this.ccdFileProxy = ccdFileProxy;
+	}
+
+	public String getTemplateScan() {
+		return templateScan;
+	}
 	public void setTemplateScan(String templateScan) {
 		this.templateScan = templateScan;
 	}
 
+	public String getFilePath() {
+		return filePath;
+	}
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
 	
+//	public void getScanTriggerMode() {
+//		return scanTriggerMode;
+//	}
 //	public void setScanTriggerMode(String scanTriggerMode) {
 //		this.scanTriggerMode = scanTriggerMode;
 //	}
-	
 }
