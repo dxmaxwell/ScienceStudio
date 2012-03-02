@@ -8,8 +8,6 @@
  */
 package ca.sciencestudio.vespers.bcm.device.model;
 
-
-
 import java.util.Timer;
 import java.util.TimerTask;
 import java.io.IOException;
@@ -39,8 +37,8 @@ import ca.sciencestudio.vespers.bcm.daq.AbstractScanDevice.ScanDeviceState;
  */
 public class SampleCamera extends DeviceComposite<DeviceComponent> implements DeviceEventListener {
 
-	protected static final long PUBLISH_VALUE_TASK_DELAY_MILLISECONDS = 1000L;
-	protected static final String SAMPLE_CAMERA_IMAGE_FORMAT = "png";
+	protected static final long DEFAULT_PUBLISH_VALUE_TASK_DELAY = 1000L;
+	protected static final String DEFAULT_SAMPLE_CAMERA_IMAGE_FORMAT = "png";
 	protected static final double DEFAULT_SAMPLE_CAMERA_IMAGE_SCALE = 0.4;
 	
 	protected static final String COMPONENT_KEY_DATA = "data";
@@ -62,7 +60,9 @@ public class SampleCamera extends DeviceComposite<DeviceComponent> implements De
 	private SimpleStageHV sampleStage;
 	private AbstractScanDevice scanDevice;
 	
+	private long delay = DEFAULT_PUBLISH_VALUE_TASK_DELAY;
 	private double scale = DEFAULT_SAMPLE_CAMERA_IMAGE_SCALE;
+	private String format = DEFAULT_SAMPLE_CAMERA_IMAGE_FORMAT;
 	
 	public SampleCamera(String id, Map<String,DeviceComponent> components, SimpleStageHV sampleStage, AbstractScanDevice scanDevice) {
 		super(id, components);
@@ -132,14 +132,6 @@ public class SampleCamera extends DeviceComposite<DeviceComponent> implements De
 		DeviceComponent deviceComponent = components.get(COMPONENT_KEY_HEIGHT);
 		Object value = deviceComponent.getValue();
 		return getHeight(value);
-	}
-	
-	public double getScale() {
-		return scale;
-	}
-	
-	public void setScale(double scale) {
-		this.scale = scale;
 	}
 	
 	public double getPositionH() {
@@ -241,9 +233,9 @@ public class SampleCamera extends DeviceComposite<DeviceComponent> implements De
 		ByteArrayOutputStream image = new ByteArrayOutputStream(nBytes);
 		
 		try {
-			ImageIO.write(bufferedImage, SAMPLE_CAMERA_IMAGE_FORMAT, image);
+			ImageIO.write(bufferedImage, format, image);
 		} catch (IOException e) {
-			log.warn("Cannot convert 3 Byte RGB raw image. Failed to write image in " + SAMPLE_CAMERA_IMAGE_FORMAT + " format.", e);
+			log.warn("Cannot convert 3 Byte RGB raw image. Failed to write image in " + format + " format.", e);
 			return new byte[0];
 		}
 		
@@ -313,7 +305,7 @@ public class SampleCamera extends DeviceComposite<DeviceComponent> implements De
 										
 									publishValueTask.cancel();
 									publishValueTask = new PublishValueTask();
-									publishValueTimer.schedule(publishValueTask, 1000L);
+									publishValueTimer.schedule(publishValueTask, delay);
 								}
 							}
 							catch(ClassCastException e) {
@@ -348,5 +340,26 @@ public class SampleCamera extends DeviceComposite<DeviceComponent> implements De
 		public void run() {
 			publishValue();
 		}
+	}
+
+	public long getDelay() {
+		return delay;
+	}
+	public void setDelay(long delay) {
+		this.delay = delay;
+	}
+
+	public double getScale() {
+		return scale;
+	}
+	public void setScale(double scale) {
+		this.scale = scale;
+	}
+	
+	public String getFormat() {
+		return format;
+	}
+	public void setFormat(String format) {
+		this.format = format;
 	}
 }

@@ -2,21 +2,17 @@
  *  - see license.txt for details.
  *  
  *  Description:
- *		StringDevice class.
+ *		ObjectDevice class.
  */
 package ca.sciencestudio.device.control.component.impl;
 
 /**
  * @author maxweld
- * 
+ *
  */
-public class StringDevice extends GenericDevice<String> {
+public class ObjectDevice extends GenericDevice<Object> {
 
-	public StringDevice(String id) {
-		this(id, id);
-	}
-
-	public StringDevice(String id, String value) {
+	public ObjectDevice(String id, Object value) {
 		super(id, value);
 	}
 }
