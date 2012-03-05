@@ -7,7 +7,6 @@
  */
 package ca.sciencestudio.vespers.service.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -34,10 +33,8 @@ public class UpdateBeamlineSessionController extends AbstractBeamlineAuthzContro
 	private static final String VALUE_KEY_TECHNIQUE = "technique";
 	private static final String VALUE_KEY_TECHNIQUE_CHANGE = "techniqueChanged";
 	
-	private ExperimentAuthzDAO experimentAuthzDAO; 
-	@Autowired
 	private TechniqueAuthzDAO techniqueAuthzDAO;
-	@Autowired
+	private ExperimentAuthzDAO experimentAuthzDAO;
 	private InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO;
 	
 	@ResponseBody
@@ -65,10 +62,24 @@ public class UpdateBeamlineSessionController extends AbstractBeamlineAuthzContro
 		return new FormResponseMap(true);
 	}
 
+	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
+		return techniqueAuthzDAO;
+	}
+	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
+		this.techniqueAuthzDAO = techniqueAuthzDAO;
+	}
+
 	public ExperimentAuthzDAO getExperimentAuthzDAO() {
 		return experimentAuthzDAO;
 	}
 	public void setExperimentAuthzDAO(ExperimentAuthzDAO experimentAuthzDAO) {
 		this.experimentAuthzDAO = experimentAuthzDAO;
+	}
+
+	public InstrumentTechniqueAuthzDAO getInstrumentTechniqueAuthzDAO() {
+		return instrumentTechniqueAuthzDAO;
+	}
+	public void setInstrumentTechniqueAuthzDAO(InstrumentTechniqueAuthzDAO instrumentTechniqueAuthzDAO) {
+		this.instrumentTechniqueAuthzDAO = instrumentTechniqueAuthzDAO;
 	}
 }

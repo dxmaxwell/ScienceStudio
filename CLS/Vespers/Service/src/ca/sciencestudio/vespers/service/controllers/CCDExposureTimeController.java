@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.log.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,7 +32,6 @@ public class CCDExposureTimeController extends AbstractBeamlineAuthzController {
 	private static final String PARAM_ET = "exposureTime";
 	private static final String VALUE_KEY_EXPOSURETIME = "exposureTime";
 
-	@Autowired
 	private StateMap ccdCollectionProxy;
 
 	@ResponseBody
@@ -54,7 +52,9 @@ public class CCDExposureTimeController extends AbstractBeamlineAuthzController {
 
 		response.setStatus(HttpStatus.BAD_REQUEST_400);
 		return new FormResponseMap(false, "Exposure time parameter wrong.");
-
 	}
 
+	public void setCcdCollectionProxy(StateMap ccdCollectionProxy) {
+		this.ccdCollectionProxy = ccdCollectionProxy;
+	}
 }

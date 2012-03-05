@@ -193,7 +193,9 @@
     <bean id="updateBeamlineSessionController"
     	class="ca.sciencestudio.vespers.service.controllers.UpdateBeamlineSessionController">
     	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
     	<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+    	<property name="instrumentTechniqueAuthzDAO" ref="instrumentTechniqueAuthzDAO"/>
     	<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
     </bean>
 
@@ -249,33 +251,47 @@
 
 	<!-- CCD controllers -->
 
-	<bean id="CCDSetupController" class="ca.sciencestudio.vespers.service.controllers.CCDSetupController">
+	<bean id="CCDSetupController"
+		class="ca.sciencestudio.vespers.service.controllers.CCDSetupController">
+		<property name="ccdSetupProxy" ref="ccdSetupProxy"/>
 	</bean>
 
-	<bean id="updateCCDExposureTimeController" class="ca.sciencestudio.vespers.service.controllers.CCDExposureTimeController">
+	<bean id="updateCCDExposureTimeController"
+		class="ca.sciencestudio.vespers.service.controllers.CCDExposureTimeController">
+		<property name="ccdCollectionProxy" ref="ccdCollectionProxy"/>
 	</bean>
 
-	<bean id="ccdFocusController" class="ca.sciencestudio.vespers.service.controllers.CCDFocusController">
-		<property name="filePath" value="${ccd.focusFilePath}"></property>
-		<property name="templateFocus" value="${ccd.focusTemplate}"></property>
+	<bean id="ccdFocusController"
+		class="ca.sciencestudio.vespers.service.controllers.CCDFocusController">
+		<property name="filePath" value="${ccd.focusFilePath}"/>
+		<property name="templateFocus" value="${ccd.focusTemplate}"/>
+		<property name="ccdCollectionProxy" ref="ccdCollectionProxy"/>
+		<property name="ccdFileProxy" ref="ccdFileProxy"/>
 	</bean>
 
-	<bean id="ccdFocusImage" class="ca.sciencestudio.vespers.service.controllers.CCDFocusImageController" init-method="init" destroy-method="destroy">
-		<property name="imageServiceURL" value="${ccd.focusImageService}"></property>
+	<bean id="ccdFocusImage"
+		class="ca.sciencestudio.vespers.service.controllers.CCDFocusImageController" init-method="init" destroy-method="destroy">
+		<property name="imageServiceURL" value="${ccd.focusImageService}"/>
 	</bean>
 
-	<bean id="ccdImage" class="ca.sciencestudio.vespers.service.controllers.CCDImageController" init-method="init" destroy-method="destroy">
-		<property name="imageServiceURL" value="${ccd.imageService}"></property>
-		<property name="fileTemplate" value="${ccd.scanTemplate}"></property>
+	<bean id="ccdImage"
+		class="ca.sciencestudio.vespers.service.controllers.CCDImageController" init-method="init" destroy-method="destroy">
+		<property name="imageServiceURL" value="${ccd.imageService}"/>
+		<property name="fileTemplate" value="${ccd.scanTemplate}"/>
 	</bean>
 
-	<bean id="ccdMode" class="ca.sciencestudio.vespers.service.controllers.CCDModeController">
-		<property name="templateScan" value="${ccd.scanTemplate}"></property>
+	<bean id="ccdMode"
+		class="ca.sciencestudio.vespers.service.controllers.CCDModeController">
+		<property name="templateScan" value="${ccd.scanTemplate}"/>
 		<property name="focusTriggerMode" value="${ccd.focusTriggerMode}"/>
 		<property name="scanTriggerMode" value="${ccd.scanTriggerMode}"/>
+		<property name="ccdCollectionProxy" ref="ccdCollectionProxy"/>
+		<property name="ccdFileProxy" ref="ccdFileProxy"/>
 	</bean>
 
-	<bean id="ccdFile" class="ca.sciencestudio.vespers.service.controllers.CCDFileController">
+	<bean id="ccdFile"
+		class="ca.sciencestudio.vespers.service.controllers.CCDFileController">
+		<property name="ccdCollectionProxy" ref="ccdCollectionProxy"/>
 	</bean>
 
 	<bean id="annotationMapping"

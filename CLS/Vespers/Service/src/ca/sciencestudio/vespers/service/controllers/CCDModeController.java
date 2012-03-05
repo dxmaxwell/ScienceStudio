@@ -15,7 +15,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,9 +39,8 @@ public class CCDModeController extends AbstractBeamlineAuthzController {
 
 	private static final String VALUE_KEY_MODE = "xrdMode";
 
-	@Autowired
 	private StateMap ccdCollectionProxy;
-	@Autowired
+
 	private StateMap ccdFileProxy;
 
 	private String templateScan;
@@ -103,4 +101,11 @@ public class CCDModeController extends AbstractBeamlineAuthzController {
 		this.scanTriggerMode = scanTriggerMode;
 	}
 
+	public void setCcdCollectionProxy(StateMap ccdCollectionProxy) {
+		this.ccdCollectionProxy = ccdCollectionProxy;
+	}
+
+	public void setCcdFileProxy(StateMap ccdFileProxy) {
+		this.ccdFileProxy = ccdFileProxy;
+	}
 }

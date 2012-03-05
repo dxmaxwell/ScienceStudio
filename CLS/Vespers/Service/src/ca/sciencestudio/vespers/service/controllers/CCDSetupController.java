@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.log.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -47,7 +46,6 @@ public class CCDSetupController extends AbstractBeamlineAuthzController {
 	private static final String VALUE_KEY_sizeX = "regionSizeX";
 	private static final String VALUE_KEY_sizeY = "regionSizeY";
 
-	@Autowired
 	private StateMap ccdSetupProxy;
 
 	@ResponseBody
@@ -119,4 +117,7 @@ public class CCDSetupController extends AbstractBeamlineAuthzController {
 		return new FormResponseMap(false, "Exposure time parameter wrong.");
 	}
 
+	public void setCcdSetupProxy(StateMap ccdSetupProxy) {
+		this.ccdSetupProxy = ccdSetupProxy;
+	}
 }

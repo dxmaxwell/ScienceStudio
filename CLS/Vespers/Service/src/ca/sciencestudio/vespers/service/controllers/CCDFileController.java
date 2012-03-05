@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.log.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,7 +44,6 @@ public class CCDFileController extends AbstractBeamlineAuthzController {
 
 	private static final String MODE_SCAN = "scan";
 	
-	@Autowired
 	private StateMap ccdCollectionProxy;
 
 	@ResponseBody
@@ -85,4 +83,7 @@ public class CCDFileController extends AbstractBeamlineAuthzController {
 		return new FormResponseMap(false, "Parameter wrong.");
 	}
 
+	public void setCcdCollectionProxy(StateMap ccdCollectionProxy) {
+		this.ccdCollectionProxy = ccdCollectionProxy;
+	}
 }
