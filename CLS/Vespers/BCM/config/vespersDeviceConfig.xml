@@ -780,46 +780,31 @@
 	<!-- SampleCamera (PVs) -->
 
 	<bean id="CCD1607-004_data"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		class="ca.sciencestudio.vespers.bcm.device.model.GstreamerData">
 		<constructor-arg value="CCD1607-004:data"/>
-		<constructor-arg ref="sampleCameraDataCAJContext"/>
-		<constructor-arg value="false"/>
+		<property name="gstreamerCommand" value="gst-launch v4lsrc num-buffers=1 ! videoscale ! ffmpegcolorspace ! video/x-raw-rgb,height=${HEIGHT},width=${WIDTH},red_mask=255,green_mask=65280,blue_mask=16711680 ! filesink location=${LOCATION}"/>
+		<property name="height" ref="CCD1607-004_height"/>
+		<property name="width" ref="CCD1607-004_width"/>
+		<property name="bpp" ref="CCD1607-004_bpp"/>
 	</bean>
 
 	<bean id="CCD1607-004_bpp"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		class="ca.sciencestudio.device.control.component.impl.DoubleArrayDevice">
 		<constructor-arg value="CCD1607-004:bpp"/>
-		<constructor-arg ref="sampleCameraCAJContext"/>
+		<constructor-arg value="3"/>
 	</bean>
 
 	<bean id="CCD1607-004_width"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		class="ca.sciencestudio.device.control.component.impl.DoubleArrayDevice">
 		<constructor-arg value="CCD1607-004:width"/>
-		<constructor-arg ref="sampleCameraCAJContext"/>
+		<constructor-arg value="640"/>
 	</bean>
 
 	<bean id="CCD1607-004_height"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
+		class="ca.sciencestudio.device.control.component.impl.DoubleArrayDevice">
 		<constructor-arg value="CCD1607-004:height"/>
-		<constructor-arg ref="sampleCameraCAJContext"/>
+		<constructor-arg value="480"/>
 	</bean>
-
-	<!--<bean id="CCD1607-004_set_width"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
-		<constructor-arg value="CDD1607-004:set_width"/>
-		<constructor-arg ref="sampleCameraCAJContext"/>
-	</bean>-->
-
-	<!--<bean id="CCD1607-004_set_height"
-		class="ca.sciencestudio.device.control.component.epics.EpicsDevice">
-		<constructor-arg value="CDD1607-004:set_height"/>
-		<constructor-arg ref="sampleCameraCAJContext"/>
-	</bean>-->
-
-	<!-- Sample Camera CAJ Contexts -->
-
-	<bean id="sampleCameraCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
-	<bean id="sampleCameraDataCAJContext" class="com.cosylab.epics.caj.CAJContext"/>
 
 	<!-- SampleStageHV -->
 
