@@ -238,8 +238,9 @@
 
 	<bean id="axisPTZCameraController"
 		class="ca.sciencestudio.vespers.service.controllers.AxisPTZCameraController">
-		<property name="cameraNotAvailableImageUrl" value="/img/camera_not_available.jpg"/>
+		<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
 		<property name="beamlineSessionProxy" ref="beamlineSessionProxy"/>
+		<property name="cameraNotAvailableImageUrl" value="/img/camera_not_available.jpg"/>
 		<property name="axisHttpPTZCameras">
 			<list>
 				<ref bean="camera101"/>
