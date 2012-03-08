@@ -10,14 +10,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<!---  ===================================================================
+	<!---  ===================================================================
   	-  DAOs
   	-  =================================================================== -->
-	
-	<!--<bean id="accountBasicDAO"
-		class="ca.sciencestudio.model.person.dao.ibatis.IbatisAccountBasicDAO">
-		<property name="sqlMapClientTemplate" ref="sqlMapClientTemplate"/>
-	</bean>-->
 	
 	<bean id="loginSessionDAO"
 		class="ca.sciencestudio.login.model.dao.ibatis.IbatisLoginSessionDAO">
