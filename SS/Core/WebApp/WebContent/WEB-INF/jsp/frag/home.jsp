@@ -246,27 +246,10 @@ Ext.onReady(function() {
 				autoEl: {
 					tag: 'a',
 					target: '_BLANK',
-					href: '/ssvespers/admin/main.html',
-					html: 'VESPERS'
+					href: '/ssvespers/simadmin/main.html',
+					html: 'SIMVESPERS'
 				}
 			}
-	<%-- Vespers Simulation --%>
-	<%--	,{
-				xtype: 'box',
-				autoEl: {
-					tag:'span',
-					html:'&nbsp;&nbsp;'
-				}
-			},{
-				xtype: 'box',
-				autoEl: {
-					tag: 'a',
-					target: '_BLANK',
-					href: '/ssvespers/simadmin/main.html',
-					html: '(Simulated)'
-				}
-			}				--%>
-	<%-- ================== --%>
 	</sec:authorize>
 		]
 	});

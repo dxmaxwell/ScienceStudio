@@ -14,7 +14,7 @@
 
 	<sec:http>
 		<sec:http-basic/>
-		<sec:intercept-url pattern="/**" access="ROLE_USER" requires-channel="https"/>
+		<sec:intercept-url pattern="/**" access="ROLE_USER" requires-channel="any"/>
 		<!--<sec:port-mappings><sec:port-mapping http="8080" https="8443"/></sec:port-mappings>-->
 	</sec:http>
 	

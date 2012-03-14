@@ -11,14 +11,14 @@
 -- Facility
 -- =========================================================================================
 insert into facility (name, long_name, description, phone_number, email_address, location, authc_url, home_url)
-	values ('CLS', 'Canadian Light Source', '', '(306) 657-3500', '', 'Saskatoon, Saskatchewan, Canada', 'https://cas.lightsource.ca/cas', 'http://sciencestudio.lightsource.ca/ss');
+	values ('FLTY', 'Light Source Facility', '', '(555) 555-5555', '', 'City, Province, Country', 'https://cas.server.com/cas', 'http://localhost:8080/ss');
 
 
 -- =========================================================================================
 -- Laboratory
 -- =========================================================================================
 insert into laboratory (facility_id, name, long_name, description, phone_number, email_address, view_url)
-	values (1, 'VESPERS', 'VESPERS', '(306) 657-3620', '', '', '/ssvespers/beamline/main.html');
+	values (1, 'SIMVESPERS', 'SIMVESPERS', '(555) 555-5555', '', '', 'http://localhost:8080/ssvespers/simbeamline/main.html');
 
 	
 -- =========================================================================================

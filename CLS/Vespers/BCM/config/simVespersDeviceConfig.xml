@@ -75,7 +75,8 @@
     	<constructor-arg value="scanDevice" />
     	<property name="resourceManager">
 	    	<bean id="resourceManager" class="ca.sciencestudio.util.io.ResourceManager">
-				<property name="baseResource" value="file:///path/to/scan/data/"/>
+				<!-- Directory must exist on application startup. -->
+				<property name="baseResource" value="file:///tmp/"/>
 			</bean>
     	</property>
     	<property name="destFileName" value="scanData%03d.dat"/>
