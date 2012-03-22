@@ -58,7 +58,7 @@ Ext.onReady(function() {
 			autoEl:{
 				tag: "a",
 				href:"#sessions${project.gid}",
-				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('.html?proejct=${project.gid}'));",
+				onclick: "return loadModelViewTab(ModelPathUtils.getModelSessionPath('.html?project=${project.gid}'));",
 				html:"Sessions"
 			}
 		},{
