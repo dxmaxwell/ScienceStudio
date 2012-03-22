@@ -9,8 +9,8 @@
 
 
 var scanFilePanel = new Ext.ss.data.ScanFilePanel({
-	fileListUrl: genericServletPath + '/scan/' + scanGid + '/file/list.json',
-	downloadUrl: genericServletPath + '/scan/' + scanGid + '/file/download',
+	fileListUrl: fileListPath,
+	downloadUrl: downloadPath,
 	style: {
 		'margin':'20px'
 	},

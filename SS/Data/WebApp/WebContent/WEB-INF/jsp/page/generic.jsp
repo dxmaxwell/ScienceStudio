@@ -20,7 +20,8 @@
 		<script type="text/javascript">
 			var scanGid = '${scan.gid}';
 			var scanFormData = <hmc:write source="${scan}"/>;
-			var genericServletPath = '<c:url value="/generic"/>';
+			var fileListPath = '<c:url value="/generic/scan/${scan.gid}/file/list.json"/>';
+			var downloadPath = '<c:url value="/generic/scan/${scan.gid}/file/download"/>';
 		</script>
 		
 		<script type="text/javascript" src="<c:url value="/js/Ext.ss.data.ScanFilePanel.js"/>"></script>
