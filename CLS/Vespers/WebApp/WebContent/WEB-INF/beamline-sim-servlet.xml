@@ -134,7 +134,9 @@
     <bean id="updateBeamlineSessionController"
     	class="ca.sciencestudio.vespers.service.controllers.UpdateBeamlineSessionController">
     	<property name="sessionAuthzDAO" ref="sessionAuthzDAO"/>
+    	<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
     	<property name="experimentAuthzDAO" ref="experimentAuthzDAO"/>
+    	<property name="instrumentTechniqueAuthzDAO" ref="instrumentTechniqueAuthzDAO"/>
     	<property name="beamlineSessionProxy" ref="simBeamlineSessionProxy"/>
     </bean>
 
