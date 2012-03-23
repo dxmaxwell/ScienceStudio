@@ -59,13 +59,13 @@ var heartbeatLoadSuccess = function(response, options) {
 			var beamlineSession = heartbeatData.beamlineSession;
 				if(beamlineSession && beamlineSession.technique && beamlineSession.techniqueChanged === 'Yes') {
 					if (beamlineSession.technique === 'XRF') {
-						if (fourElementDetectorPanel.disabled) {
+						if (fourElementDetectorPanel && fourElementDetectorPanel.disabled) {
 							fourElementDetectorPanel.enable();
 							for(var idx in xrfTasksToStart) {
 								Ext.TaskMgr.start(xrfTasksToStart[idx]);
 							}
 						}
-						if (!xrdPanel.disabled) {
+						if (xrdPanel && !xrdPanel.disabled) {
 							xrdPanel.disable();
 							for(var idx in xrdTasksToStart) {
 								Ext.TaskMgr.stop(xrdTasksToStart[idx]);
@@ -73,13 +73,13 @@ var heartbeatLoadSuccess = function(response, options) {
 						}	
 						
 					} else if (beamlineSession.technique === ('XRD')) {
-						if (xrdPanel.disabled) {
+						if (xrdPanel && xrdPanel.disabled) {
 							xrdPanel.enable();
 							for(var idx in xrdTasksToStart) {
 								Ext.TaskMgr.start(xrdTasksToStart[idx]);
 							}
 						}
-						if (!fourElementDetectorPanel.disabled) {
+						if (fourElementDetectorPanel && !fourElementDetectorPanel.disabled) {
 							fourElementDetectorPanel.disable();
 							for(var idx in xrfTasksToStart) {
 								Ext.TaskMgr.stop(xrfTasksToStart[idx]);
@@ -87,13 +87,13 @@ var heartbeatLoadSuccess = function(response, options) {
 						}
 							
 					} else if (beamlineSession.technique.indexOf('XRF') != -1 && beamlineSession.technique.indexOf('XRD') != -1) {
-						if (fourElementDetectorPanel.disabled) {
+						if (fourElementDetectorPanel && fourElementDetectorPanel.disabled) {
 							fourElementDetectorPanel.enable();
 							for(var idx in xrfTasksToStart) {
 								Ext.TaskMgr.start(xrfTasksToStart[idx]);
 							}
 						}
-						if (xrdPanel.disabled) {
+						if (xrdPanel && xrdPanel.disabled) {
 							xrdPanel.enable();
 							for(var idx in xrdTasksToStart) {
 								Ext.TaskMgr.start(xrdTasksToStart[idx]);

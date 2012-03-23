@@ -26,6 +26,9 @@
 		<script type="text/javascript" src="<c:url value="/js/beamline/sampleImage.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/js/beamline/vortexDetector.js"/>"></script>
 		
+		<!-- These variables need to be defined in order to be compatible with real beamline. -->
+		<script type="text/javascript">var fourElementDetectorPanel; var xrdPanel;</script>
+		
 		<script type="text/javascript" src="<c:url value="/js/beamline/viewport-north.js"/>"></script>
 		<script type="text/javascript" src="<c:url value="/js/beamline/viewport-center-sim.js"/>"></script>
 		
