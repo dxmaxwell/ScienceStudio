@@ -81,7 +81,7 @@
     	</property>
     	<property name="destFileName" value="scanData%03d.dat"/>
     	<property name="destFileVersion" value="20090917A"/>
-    	<property name="executableFile" value="/path/to/acquisitionCL"/>
+    	<property name="executableFile" value="/path/to/simulation/acquisitionCL"/>
     	<property name="configurationFile" value="/path/to/vespers/scan.cfg"/>
     	<property name="scanCountEvent" value="output"/>
     	<property name="scanNameX" value="axis1"/>

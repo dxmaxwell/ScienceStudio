@@ -1,0 +1,203 @@
+#!/usr/bin/python
+
+import os, sys, time, getopt, threading, Queue
+
+dirname = None
+fileTemplate = None
+sequenceNumber = 0
+
+interactive = False
+
+scan = None
+config = {}
+
+def print_flush(arg):
+	sys.stdout.write(arg)
+	sys.stdout.write('\n')
+	sys.stdout.flush()
+
+def xcommands():
+
+	empty_command = ""
+
+	q = Queue.Queue()
+
+	def stdin_readline():
+		while True:
+			q.put(sys.stdin.readline())
+
+	t = threading.Thread(target=stdin_readline)
+	t.setDaemon(True)
+	t.start()
+	
+	while True:
+		try:
+			yield q.get_nowait()
+		except:
+			yield empty_command
+
+
+def xacquire():
+
+	def clock():
+		clock = 0
+		while True:
+			clock += 1
+			yield clock
+
+	tick = clock()
+
+	print_flush("Mode: Startup")
+	
+	if os.path.isdir(dirname):
+		filename = fileTemplate % (sequenceNumber)
+		try:
+			datafile = open(os.path.join(dirname, filename), 'a')
+			datafile.write("# Simulation data file. The simulation could be improved by using an\n");
+			datafile.write("# actual data file as a template to generate a realistic data file here.\n");
+			datafile.close()
+		except:
+			# Ignore any file IO exceptions for this simulation #
+			pass
+
+	yield tick.next()
+
+	print_flush("Mode: Standby")
+	yield tick.next()
+
+	print_flush("Mode: Runup")
+	for x in xrange(0, 100, 20):
+		print_flush("Progress: " + str(float(x)/100))
+		yield tick.next()
+
+	# Compute Number of Scan Points #
+	n = 1
+	for props in config.itervalues():
+		n *= int(round(abs(props[1] - props[0]) / props[2]) + 1)
+
+	print_flush("Mode: Run")
+	for x in xrange(1, n + 1):
+		print_flush("Event output: Standby, count " + str(x))
+		print_flush("Progress: " + str(float(x)/n))
+		yield tick.next()
+
+	print_flush("Mode: Standby")
+	yield tick.next()
+
+
+
+def xacquire_shutdown():
+	print_flush("Mode: Shutdown")
+	print_flush("Mode: Off")
+
+
+
+paused = False
+started = False
+
+acquire = None
+commands = xcommands();
+
+(opts, args) = getopt.gnu_getopt(sys.argv[1:], "m:M:f:d:u:n:s:e:p:i")
+
+for opt, optarg in opts:
+
+	if opt == '-f':
+		fileTemplate = optarg
+		continue
+
+	if opt == '-d':
+		dirname = optarg
+		continue
+
+	if opt == '-u':
+		sequenceNumber = int(optarg)
+		continue
+
+	if opt == '-m':
+		continue
+
+	if opt == '-M':
+		continue
+
+	if opt == '-i':
+		interactive = True
+		continue
+
+	if opt == '-n':
+		scan = optarg;
+		config[scan] = [0, 0, 0]
+		continue
+
+	if opt == '-s' and scan:
+			config[scan][0] = float(optarg)
+			continue
+	
+	if opt == '-e' and scan:
+			config[scan][1] = float(optarg)
+			continue
+	
+	if opt == '-p' and scan:
+			config[scan][2] = float(optarg)
+			continue
+
+	print "Unhandled option:", opt		
+
+
+if not interactive:
+	started = True
+
+while True:
+
+	cmd = commands.next().strip().lower()
+
+	if cmd == "start":
+		print_flush("Cmd: start")
+		started = True
+		continue
+
+	if cmd == "pause":
+		print_flush("Cmd: pause")
+		if started and not paused:
+			paused = True
+		continue
+
+	if cmd == "resume":
+		print_flush("Cmd: resume")
+		if started and paused:
+			paused = False
+		continue
+
+	if cmd == "stop":
+		print_flush("Cmd: stop")
+		if started:
+			acquire = None			
+			started = False
+			paused = False
+			xacquire_shutdown()
+		continue
+
+	if cmd == "quit":
+		print_flush("Cmd: quit")
+		if started:
+			acquire = None	
+			started = False
+			paused = False
+			xacquire_shutdown()
+		break
+
+	if started and not paused:
+		if acquire == None:
+			acquire = xacquire()
+
+		try:
+			acquire.next()
+		except:
+			acquire = None			
+			started = False
+			xacquire_shutdown()
+
+
+	time.sleep(0.5)
+
+#End
