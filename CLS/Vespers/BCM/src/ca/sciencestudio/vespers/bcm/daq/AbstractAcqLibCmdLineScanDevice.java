@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import ca.sciencestudio.device.control.event.DeviceEvent;
 import ca.sciencestudio.device.control.event.DeviceEventType;
+import ca.sciencestudio.util.process.ProcessUtils;
 
 /**
  * @author maxweld
@@ -61,6 +62,7 @@ public abstract class AbstractAcqLibCmdLineScanDevice extends AbstractScanDevice
 	public static final Pattern PATTERN_SCAN_ERROR = Pattern.compile("^Error: (.*)$");
 	
 	public static final long SEND_SCAN_CMD_SLEEP_TIME = 100;
+	public static final long SEND_SCAN_QUIT_SLEEP_TIME = 2000;
 	
 	public static final String DEFAULT_EXECUTABLE_FILE = "acquisitionCL";
 	
@@ -323,9 +325,11 @@ public abstract class AbstractAcqLibCmdLineScanDevice extends AbstractScanDevice
 			ps.println(ScanCmd.QUIT.name());
 			ps.flush();
 			try {
-				Thread.sleep(SEND_SCAN_CMD_SLEEP_TIME);
+				ProcessUtils.waitFor(process, SEND_SCAN_QUIT_SLEEP_TIME);
 			}
-			catch (InterruptedException e) {
+			catch (IllegalThreadStateException e) {
+				log.warn("Scan process did not exit normally after Quit command.");
+				process.destroy();
 				return;
 			}
 		}
