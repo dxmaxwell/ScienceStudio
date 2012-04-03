@@ -2,7 +2,7 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     MapXYVespersConverterFactory class.
+ *     MapXYVespersFromDAFConverterFactory class.
  *     
  */
 package ca.sciencestudio.vespers.data.converter.factory;
@@ -13,21 +13,25 @@ import java.util.List;
 import java.util.Collection;
 
 import ca.sciencestudio.data.standard.StdScanParams;
+import ca.sciencestudio.data.converter.Converter;
 import ca.sciencestudio.data.converter.ConverterMap;
 import ca.sciencestudio.data.daf.DAFDataParser;
 import ca.sciencestudio.data.daf.DAFEvent;
 import ca.sciencestudio.data.daf.DAFEventElementOptions;
 import ca.sciencestudio.data.daf.DAFRecordParser;
+import ca.sciencestudio.data.support.ConverterException;
 import ca.sciencestudio.data.support.ConverterFactoryException;
-import ca.sciencestudio.vespers.data.converter.AbstractMapXYVespersConverter;
+import ca.sciencestudio.vespers.data.converter.MapXYVespersFromDAFConverter;
 import ca.sciencestudio.util.Parameters;
 
 /**
  * @author maxweld
  *
  */
-public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVespersConverterFactory implements StdScanParams {
+public class MapXYVespersFromDAFConverterFactory extends AbstractMapXYVespersConverterFactory implements StdScanParams {
 
+	private static final String SUPPORTED_FROM_FORMAT = "DAF";
+	
 	// Parameters for the sample position. //
 	private DAFEventElementOptions posXSetpointOptions;
 	private DAFEventElementOptions posYSetpointOptions;
@@ -53,7 +57,7 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 	private DAFEventElementOptions sedElapsedRealTimeOptions;
 	private DAFEventElementOptions sedElpasedLiveTimeOptions;
 	
-	private int sedDefaultNChannels = AbstractMapXYVespersConverter.DEFAULT_SED_NCHANNELS;
+	private int sedDefaultNChannels = MapXYVespersFromDAFConverter.DEFAULT_SED_NCHANNELS;
 	
 	// Parameters for the Four Element Detector. //
 	private DAFEventElementOptions fedNChannelsOptions;
@@ -70,18 +74,25 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 	private List<DAFEventElementOptions> fedElapsedRealTimeOptions;
 	private List<DAFEventElementOptions> fedElpasedLiveTimeOptions;
 	
-	private int fedDefaultNChannels = AbstractMapXYVespersConverter.DEFAULT_FED_NCHANNELS;
+	private int fedDefaultNChannels = MapXYVespersFromDAFConverter.DEFAULT_FED_NCHANNELS;
 	
 	private Collection<DAFRecordParser> customRecordParsers;
 	
-	protected void prepareConverter(AbstractMapXYVespersConverter converter, ConverterMap request) throws ConverterFactoryException {
+	@Override
+	public Converter getConverter(ConverterMap request) throws ConverterFactoryException {
 		
-		File dafDataFile = (File)request.get(REQUEST_KEY_DAF_DATA_FILE);
+		request = validateRequest(request);
+		
+		boolean forceUpdate = request.isForceUpdate();
+		String fromFormat = request.getFromFormat();
+		String toFormat = request.getToFormat();
+		
+		File dafDataFile = (File)request.get(REQUEST_KEY_DATA_FILE);
 		if(!dafDataFile.exists()) {
 			throw new ConverterFactoryException("The required DAF data file not found here: " + dafDataFile);
 		}
 		
-		File dafSpectraFile = (File)request.get(REQUEST_KEY_DAF_SPEC_FILE);
+		File dafSpectraFile = (File)request.get(REQUEST_KEY_SPECTRA_FILE);
 		if(!dafSpectraFile.exists()) {
 			throw new ConverterFactoryException("The required DAF spectra file not found here: " + dafSpectraFile);
 		}
@@ -114,6 +125,14 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 			throw new ConverterFactoryException("No event found that contains the MapXY position coordinates.");
 		}
 		
+		MapXYVespersFromDAFConverter converter;
+		try {
+			converter = new MapXYVespersFromDAFConverter(fromFormat, toFormat, forceUpdate);
+		}
+		catch(ConverterException e) {
+			throw new ConverterFactoryException(e);
+		}
+		
 		converter.setCustomRecordParsers(customRecordParsers);
 		converter.setScanName((String)request.get(REQUEST_KEY_SAMPLE_NAME));
 		converter.setScanEndDate((Date)request.get(REQUEST_KEY_SCAN_END_DATE));
@@ -140,17 +159,19 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 		prepareBeamCurrent(converter, eventsHelper);
 		
 		if(prepareSingleElementDetector(converter, eventsHelper)) {
-			return;
+			prepareAdapter(converter, request);
+			return converter;
 		}
 		
 		if(prepareFourElementDetector(converter, eventsHelper)) {
-			return;
+			prepareAdapter(converter, request);
+			return converter;
 		}
-			
-		throw new ConverterFactoryException("No MultiChannel Analyzer spectrum found in DAF data file.");
+		
+		throw new ConverterFactoryException("MultiChannel Analyzer spectrum not found in DAF data file.");
 	}
 	
-	protected void prepareBeamCurrent(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected void prepareBeamCurrent(MapXYVespersFromDAFConverter converter, MapXYDAFEventsHelper eventsHelper) {
 		
 		DAFEvent dataEvent = eventsHelper.getDataEvent();
 		int[] mcsCurrentIdx = new int[mcsCurrentOptions.size()];
@@ -163,7 +184,7 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 		converter.setSrCurrentIdx(srCurrentIdx);
 	}
 	
-	protected boolean prepareSingleElementDetector(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected boolean prepareSingleElementDetector(MapXYVespersFromDAFConverter converter, MapXYDAFEventsHelper eventsHelper) {
 		
 		DAFEvent dataEvent = eventsHelper.getDataEvent();
 		DAFEvent bkgdEvent = eventsHelper.getBkgdEvent();
@@ -228,8 +249,7 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 		return true;
 	}
 	
-	
-	protected boolean prepareFourElementDetector(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected boolean prepareFourElementDetector(MapXYVespersFromDAFConverter converter, MapXYDAFEventsHelper eventsHelper) {
 		
 		int nElements = 4;
 		DAFEvent dataEvent = eventsHelper.getDataEvent();
@@ -303,7 +323,24 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 		converter.setFedDefaultNChannels(fedDefaultNChannels);
 		return true;
 	}
+	
+	@Override
+	protected ConverterMap validateRequest(ConverterMap request) throws ConverterFactoryException {
 		
+		if(!SUPPORTED_FROM_FORMAT.equals(request.getFromFormat())) {
+			throw new ConverterFactoryException("Convert FROM format, " + request.getFromFormat() + ", not supported.");
+		}
+		
+		if(!adapterSupports(request)) {
+			throw new ConverterFactoryException("Convert TO format, " + request.getToFormat() + ", not supported.");
+		}
+		
+		// Need to call this first to get DAF data file. //
+		request = super.validateRequest(request);
+		
+		return request;
+	}
+	
 	protected static class MapXYDAFEventsHelper {
 		
 		private int dataEventId = -1;
@@ -339,6 +376,7 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 		}
 	}
 
+	
 	public void setPosXSetpointOptions(DAFEventElementOptions posXSetpointOptions) {
 		this.posXSetpointOptions = posXSetpointOptions;
 	}
@@ -462,7 +500,7 @@ public abstract class AbstractMapXYVespersConverterFactory extends AbstractMapVe
 	public void setFedDefaultNChannels(int fedDefaultNChannels) {
 		this.fedDefaultNChannels = fedDefaultNChannels;
 	}
-
+	
 	public void setCustomRecordParsers(Collection<DAFRecordParser> customRecordParsers) {
 		this.customRecordParsers = customRecordParsers;
 	}

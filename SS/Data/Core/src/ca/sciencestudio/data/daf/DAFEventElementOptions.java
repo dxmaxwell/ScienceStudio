@@ -7,42 +7,24 @@
  */
 package ca.sciencestudio.data.daf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import ca.sciencestudio.data.util.ElementOptions;
 
 
 /**
  * @author maxweld
  *
  */
-public class DAFEventElementOptions {
+public class DAFEventElementOptions extends ElementOptions {
 
 	public static enum MatchType {
 		NAME, DESCRIPTION
 	}
 	
 	private MatchType matchType = MatchType.NAME;
-	private Set<Pattern> options = new LinkedHashSet<Pattern>();
-	
-	public void setOptionsExact(Collection<String> optionsExact) {
-		List<String> optionsRegex = new ArrayList<String>();
-		for(String optionExact : optionsExact) {
-			optionsRegex.add(Pattern.quote(optionExact));
-		}
-		setOptionsRegex(optionsRegex);
-	}
-	
-	public void setOptionsRegex(Collection<String> optionsRegex) {
-		options.clear();
-		for(String optionRegex : optionsRegex) {
-			options.add(Pattern.compile(optionRegex));
-		}
-	}
 	
 	public void setMatchType(MatchType matchType) {
 		this.matchType = matchType;
@@ -59,7 +41,7 @@ public class DAFEventElementOptions {
 			
 			element = elements.get(idx);
 			
-			for(Pattern option : options) {
+			for(Pattern option : getOptions()) {
 				switch (matchType) {					
 					case NAME:
 					default:

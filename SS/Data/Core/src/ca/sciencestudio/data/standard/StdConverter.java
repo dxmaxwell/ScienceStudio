@@ -7,7 +7,6 @@
  */
 package ca.sciencestudio.data.standard;
 
-
 /**
  * @author maxweld
  *
@@ -43,9 +42,11 @@ public interface StdConverter {
 	public static final String REQUEST_KEY_INSTRUMENT = StdConverter.class.getName() + ".instrument";
 	public static final String REQUEST_KEY_LABORATORY = StdConverter.class.getName() + ".laboratory";
 	
-	public static final String REQUEST_KEY_DAF_DATA_FILE = StdConverter.class.getName() + ".dafDataFile";
-	public static final String REQUEST_KEY_DAF_SPEC_FILE = StdConverter.class.getName() + ".dafSpecFile";
+	public static final String REQUEST_KEY_DATA_FILE = StdConverter.class.getName() + ".dataFile";
+	public static final String REQUEST_KEY_SPECTRA_FILE = StdConverter.class.getName() + ".spectraFile";
 	public static final String REQUEST_KEY_CDF_DATA_FILE = StdConverter.class.getName() + ".cdfDataFile";
+	@Deprecated public static final String REQUEST_KEY_DAF_DATA_FILE = StdConverter.class.getName() + ".dataFile";
+	@Deprecated public static final String REQUEST_KEY_DAF_SPEC_FILE = StdConverter.class.getName() + ".spectraFile";
 
 	public static final String FILE_NAME_SUFFIX_CDF = ".cdf";
 	public static final String FILE_NAME_SUFFIX_CDFML = ".cdfml";

@@ -2,13 +2,14 @@
  *   - see license.txt for details.
  *
  *  Description:
- *     AbstractMapXYVespersConverter class.
+ *     MapXYVespersFromDAFConverter class.
  *     
  */
 package ca.sciencestudio.vespers.data.converter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Collection;
 
@@ -24,7 +25,6 @@ import ca.sciencestudio.data.daf.DAFRecordParser;
 import ca.sciencestudio.data.daf.DAFSpectrumParser;
 import ca.sciencestudio.data.daf.DAFSpectrumRecord;
 import ca.sciencestudio.data.standard.StdCategories;
-import ca.sciencestudio.data.standard.StdUnits;
 import ca.sciencestudio.data.support.ConverterException;
 import ca.sciencestudio.data.support.DataFormatException;
 import ca.sciencestudio.data.support.RecordFormatException;
@@ -33,11 +33,11 @@ import ca.sciencestudio.data.support.RecordFormatException;
  * @author maxweld
  * 
  */
-public abstract class AbstractMapXYVespersConverter extends AbstractVespersConverter implements StdCategories {
-
+public class MapXYVespersFromDAFConverter extends AbstractMapXYVespersConverter implements StdCategories {
+	
 	public static final int DEFAULT_SED_NCHANNELS = 2048;
 	public static final int DEFAULT_FED_NCHANNELS = 2048;
-
+	
 	private static final double MAXIMUM_STEP_ERROR = 0.001;
 	
 	//private static final String FOUR_ELEMENT_DETECTOR_UID = "FED";
@@ -117,7 +117,7 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 	
 	protected Log log = LogFactory.getLog(getClass());
 
-	public AbstractMapXYVespersConverter(String fromFormat, String toFormat, boolean forceUpdate) {
+	public MapXYVespersFromDAFConverter(String fromFormat, String toFormat, boolean forceUpdate) throws ConverterException {
 		super(fromFormat, toFormat, forceUpdate);
 	}
 
@@ -128,10 +128,10 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 		}
 
 		try {
-			dafDataParser = new DAFDataParser(dafDataFile, customRecordParsers);
+			dafDataParser = new DAFDataParser(getDafDataFile(), customRecordParsers);
 		}
 		catch(Exception e) {
-			throw new ConverterException("Exception while creating data parser for file: " + dafDataFile, e);
+			throw new ConverterException("Exception while creating data parser for file: " + getDafDataFile(), e);
 		}
 
 		if(dataEventId >= 0) {
@@ -150,18 +150,49 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 
 		if(hasSingleElementDetector() || hasFourElementDetector()) {
 			try {
-				dafSpectraParser = new DAFSpectrumParser(dafSpectraFile);
+				dafSpectraParser = new DAFSpectrumParser(getDafSpectraFile());
 			}
 			catch(Exception e) {
-				throw new ConverterException("Exception while creating spectra parser for file: " + dafSpectraFile, e);
+				throw new ConverterException("Exception while creating spectra parser for file: " + getDafSpectraFile(), e);
 			}
 		}
 
 		try {
-			if(openDestination(dafDataParser, dafSpectraParser)) {
+			if(getAdapter().openDestination()) {
 				return getResponse();
 			}
-
+			
+			Date epoch = new Date(0L);
+			Date startTime = epoch;
+			if((getScanStartDate() != null) && (getScanStartDate().after(epoch))) {
+				startTime = getScanStartDate();
+			}
+			else if((dafDataParser.getStartTime() != null) && (dafDataParser.getStartTime().after(epoch))) {
+				startTime = dafDataParser.getStartTime();
+			}
+			else if((getDafDataFile() != null) && (getDafDataFile().lastModified() > epoch.getTime())) {
+				startTime = new Date(getDafDataFile().lastModified());
+			}
+			getAdapter().recScanStartTime(startTime);
+			
+			Date endTime = startTime;
+			if((getScanEndDate() != null) && (getScanEndDate().after(startTime))) {
+				endTime = getScanEndDate();
+			}
+			getAdapter().recScanEndTime(endTime);
+			
+			if(hasSSModel10()) {
+				getAdapter().recProjectName(getProjectName());
+				getAdapter().recSessionName(getSessionName());
+				getAdapter().recFacilityName(getFacilityName());
+				getAdapter().recLaboratoryName(getLaboratoryName());
+				getAdapter().recExperimentName(getExperimentName());
+				getAdapter().recInstrumentName(getInstrumentName());
+				getAdapter().recTechniqueName(getTechniqueName());
+				getAdapter().recScanName(getScanName());
+				getAdapter().recSampleName(getSampleName());
+			}
+			
 			for (DAFRecord record : dafDataParser) {
 				if (record.getEvent().getId() == dataEventId) {
 					dataRecordIndex++;
@@ -178,56 +209,204 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 
 			padMissingPoints();
 			
-			closeDestination();
+			getAdapter().closeDestination();
 		}
 		catch(ConverterException e) {
-			deleteDestination();
+			getAdapter().deleteDestination();
 			throw e;
 		}
 		
 		return getResponse();
 	}
-
-	protected abstract boolean openDestination(DAFDataParser dafDataParser, DAFSpectrumParser dafSpectraParser) throws ConverterException;
-	protected abstract void closeDestination() throws ConverterException;
-	protected abstract void deleteDestination() throws ConverterException;
 	
 	private void processDataRecord(DAFRecord record) throws ConverterException {
 		
-		if(sedNChannels < 0) {
-			sedNChannels = sedDefaultNChannels;
+		if(dataRecordIndex == 0) {
+			
+			List<DAFElement> dataEventElements = record.getEvent().getElements();
+			
+			String name, desc;
+			
+			if(hasPositionXY()) {
+				getAdapter().initSizeX("SizeX", "Number of Points in X");
+				getAdapter().initStepX("StepX", "Step Size in X");
+				getAdapter().initStartX("StartX", "Start Position in X");
+				getAdapter().initEndX("EndX", "End Position in X");
+				
+				getAdapter().initSizeY("SizeY", "Number of Points in Y");
+				getAdapter().initStepY("StepY", "Step Size in Y");
+				getAdapter().initStartY("StartY", "Start Position in Y");
+				getAdapter().initEndY("EndY", "End Position in Y");
+				
+				getAdapter().initPointX("PointX", "Computed Point Index in X");
+				getAdapter().initPointY("PointY", "Computed Point Index in Y");
+				
+				if(getPosXFeedbackIdx() >= 0) {
+					name = dataEventElements.get(getPosXFeedbackIdx()).getName();
+					desc = dataEventElements.get(getPosXFeedbackIdx()).getDescription();
+				}
+				else {
+					name = dataEventElements.get(getPosXSetpointIdx()).getName();
+					desc = dataEventElements.get(getPosXSetpointIdx()).getDescription();
+				}
+				getAdapter().initPositionX(name, desc);
+
+				if(getPosYFeedbackIdx() >= 0) {
+					name = dataEventElements.get(getPosYFeedbackIdx()).getName();
+					desc = dataEventElements.get(getPosYFeedbackIdx()).getDescription();
+				}
+				else {
+					name = dataEventElements.get(getPosYSetpointIdx()).getName();
+					desc = dataEventElements.get(getPosYSetpointIdx()).getDescription();
+				}
+				getAdapter().initPositionY(name, desc);
+			}
+			
+			if(hasBeamCurrent()) {
+				if(getSrCurrentIdx() >= 0) {
+					name = dataEventElements.get(getSrCurrentIdx()).getName();
+					desc = dataEventElements.get(getSrCurrentIdx()).getDescription();
+					getAdapter().initSrCurrent(name, desc);
+				}
+				
+				for(int i=0; i<getMcsCurrentIdx().length; i++) {
+					if(getMcsCurrentIdx()[i] >= 0) {
+						name = dataEventElements.get(getMcsCurrentIdx()[i]).getName();
+						desc = dataEventElements.get(getMcsCurrentIdx()[i]).getDescription();
+						getAdapter().initMcsCurrent(i, name, desc);
+					}
+				}
+			}
+
+			if(hasSingleElementDetector()) {
+						
+				if(getSedFastCountIdx() >= 0) {
+					name = dataEventElements.get(getSedFastCountIdx()).getName();
+					desc = dataEventElements.get(getSedFastCountIdx()).getDescription();
+					getAdapter().initSedFastCount(name, desc);
+				}
+
+				if(getSedSlowCountIdx() >= 0) {
+					name = dataEventElements.get(getSedSlowCountIdx()).getName();
+					desc = dataEventElements.get(getSedSlowCountIdx()).getDescription();
+					getAdapter().initSedSlowCount(name, desc);
+				}
+				
+				if(getSedDeadTimePctIdx() >= 0) {
+					name = dataEventElements.get(getSedDeadTimePctIdx()).getName();
+					desc = dataEventElements.get(getSedDeadTimePctIdx()).getDescription();
+					getAdapter().initSedDeadTimePct(name, desc);
+				}
+				
+				if(getSedElapsedRealTimeIdx() >= 0) {
+					name = dataEventElements.get(getSedElapsedRealTimeIdx()).getName();
+					desc = dataEventElements.get(getSedElapsedRealTimeIdx()).getDescription();
+					getAdapter().initSedElapsedRealTime(name, desc);
+				}
+				
+				if(getSedElpasedLiveTimeIdx() >= 0) {
+					name = dataEventElements.get(getSedElpasedLiveTimeIdx()).getName();
+					desc = dataEventElements.get(getSedElpasedLiveTimeIdx()).getDescription();
+					getAdapter().initSedElapsedLiveTime(name, desc);
+				}
+			
+				if(sedNChannels < 0) {
+					sedNChannels = getSedDefaultNChannels();
+				}
+				
+				name = dataEventElements.get(getSedSpectrumIdx()).getName();
+				desc = dataEventElements.get(getSedSpectrumIdx()).getDescription();
+				getAdapter().initSedSpectrum(sedNChannels, name, desc);
+				
+			}
+			else if(hasFourElementDetector()) {
+					
+				if(allGreaterThanOrEqual(getFedFastCountIdx(), 0)) {
+					for(int i=0; i<getFedFastCountIdx().length; i++) {
+						name = dataEventElements.get(getFedFastCountIdx()[i]).getName();
+						desc = dataEventElements.get(getFedFastCountIdx()[i]).getDescription();
+						getAdapter().initFedFastCount(i, name, desc);
+					}
+				}
+			
+				if(allGreaterThanOrEqual(getFedSlowCountIdx(), 0)) {
+					for(int i=0; i<getFedSlowCountIdx().length; i++) {
+						name = dataEventElements.get(getFedSlowCountIdx()[i]).getName();
+						desc = dataEventElements.get(getFedSlowCountIdx()[i]).getDescription();
+						getAdapter().initFedSlowCount(i, name, desc);
+					}
+				}
+				
+				if(allGreaterThanOrEqual(getFedDeadTimePctIdx(), 0)) {
+					for(int i=0; i<getFedDeadTimePctIdx().length; i++) {
+						name = dataEventElements.get(getFedDeadTimePctIdx()[i]).getName();
+						desc = dataEventElements.get(getFedDeadTimePctIdx()[i]).getDescription();
+						getAdapter().initFedDeadTimePct(i, name, desc);
+					}
+				}
+					
+				if(allGreaterThanOrEqual(getFedElapsedRealTimeIdx(), 0)) {
+					for(int i=0; i<getFedElapsedRealTimeIdx().length; i++) {
+						name = dataEventElements.get(getFedElapsedRealTimeIdx()[i]).getName();
+						desc = dataEventElements.get(getFedElapsedRealTimeIdx()[i]).getDescription();
+						getAdapter().initFedElapsedRealTime(i, name, desc);
+					}
+				}
+				
+				if(allGreaterThanOrEqual(getFedElpasedLiveTimeIdx(), 0)) {
+					for(int i=0; i<getFedElpasedLiveTimeIdx().length; i++) {
+						name = dataEventElements.get(getFedElpasedLiveTimeIdx()[i]).getName();
+						desc = dataEventElements.get(getFedElpasedLiveTimeIdx()[i]).getDescription();
+						getAdapter().initFedElapsedLiveTime(i, name, desc);
+					}
+				}
+							
+				if(fedNChannels < 0) {
+					fedNChannels = getFedDefaultNChannels();
+				}
+			
+				if(getFedSumSpectrumIdx() >= 0) {
+					name = dataEventElements.get(getFedSumSpectrumIdx()).getName();
+					desc = dataEventElements.get(getFedSumSpectrumIdx()).getDescription();
+					getAdapter().initFedSumSpectrum(fedNChannels, name, desc);
+				}
+			
+				if(allGreaterThanOrEqual(getFedSpectrumIdx(), 0)) {
+					for(int i=0; i<getFedSpectrumIdx().length; i++) {
+						name = dataEventElements.get(getFedSpectrumIdx()[i]).getName();
+						desc = dataEventElements.get(getFedSpectrumIdx()[i]).getDescription();
+						getAdapter().initFedSpectrum(i, fedNChannels, name, desc);
+					}
+				}
+			}
 		}
 		
-		if(fedNChannels < 0) {
-			fedNChannels = fedDefaultNChannels;
-		}
-		
-		openDataRecord(dataRecordIndex, record, sedNChannels, fedNChannels);
+		getAdapter().openDataRecord(dataRecordIndex);
 		
 		try {
 			if(dataRecordIndex == 0) {
-				prevX = record.getDouble(posXSetpointIdx);
-				prevY = record.getDouble(posYSetpointIdx);
+				prevX = record.getDouble(getPosXSetpointIdx());
+				prevY = record.getDouble(getPosYSetpointIdx());
 				nextX = prevX;
 				nextY = prevY;
 				endX = prevX;
-				recEndX(endX);
+				getAdapter().recEndX(endX);
 				endY = prevY;
-				recEndY(endY);
+				getAdapter().recEndY(endY);
 				startX = prevX;
-				recStartX(startX);
+				getAdapter().recStartX(startX);
 				startY = prevY;
-				recStartY(startY);
+				getAdapter().recStartY(startY);
 				sizeX = 1;
-				recSizeX(sizeX);
+				getAdapter().recSizeX(sizeX);
 				sizeY = 1;
-				recSizeY(sizeY);
+				getAdapter().recSizeY(sizeY);
 			}
 			else {
 				prevX = nextX;
 				prevY = nextY;
-				nextX = record.getDouble(posXSetpointIdx);
-				nextY = record.getDouble(posYSetpointIdx);
+				nextX = record.getDouble(getPosXSetpointIdx());
+				nextY = record.getDouble(getPosYSetpointIdx());
 		
 				if(nextX != prevX) {
 					if(nextX == startX) {
@@ -237,9 +416,9 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 						pointX++;
 						if(pointX == sizeX) {
 							endX = nextX;
-							recEndX(endX);
+							getAdapter().recEndX(endX);
 							sizeX += 1;
-							recSizeX(sizeX);
+							getAdapter().recSizeX(sizeX);
 						}
 						
 						if(stepX == 0.0) {
@@ -259,7 +438,7 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 								throw new ConverterException("Data point X-position step error: " + delta + ", expecting: " + stepX + " at index: " + dataRecordIndex);
 							}
 						}
-						recStepX(stepX);
+						getAdapter().recStepX(stepX);
 					}
 				}
 		
@@ -271,9 +450,9 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 						pointY++;
 						if(pointY == sizeY) {
 							endY = nextY;
-							recEndY(endY);
+							getAdapter().recEndY(endY);
 							sizeY += 1;
-							recSizeY(sizeY);
+							getAdapter().recSizeY(sizeY);
 						}
 						
 						if(stepY == 0.0) {
@@ -293,7 +472,7 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 								throw new ConverterException("Data point Y-position step error: " + delta + ", expecting: " + stepY + " at index: " + dataRecordIndex);
 							}
 						}
-						recStepY(stepY);
+						getAdapter().recStepY(stepY);
 					}
 				}
 			}
@@ -304,37 +483,37 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 		
 		// MapXY11 Category //
 
-		recPointX(pointX);
-		recPointY(pointY);
+		getAdapter().recPointX(pointX);
+		getAdapter().recPointY(pointY);
 		
 		try {
-			posX = record.getDouble(posXFeedbackIdx);
+			posX = record.getDouble(getPosXFeedbackIdx());
 		}
 		catch (RecordFormatException e) {
 			posX = nextX; // Fall-back to setpointX //
 		}
-		recPositionX(posX);
+		getAdapter().recPositionX(posX);
 
 		try {
-			posY = record.getDouble(posYFeedbackIdx);
+			posY = record.getDouble(getPosYFeedbackIdx());
 		}
 		catch (RecordFormatException e) {
 			posY = nextY; // Fall-back to setpointY //
 		}
-		recPositionY(posY);
+		getAdapter().recPositionY(posY);
 
 		
 		// BeamI11 Category //
 		
 		if(hasBeamCurrent()) {
 			try {
-				if(srCurrentIdx >= 0) {
-					recSRCurrent(record.getDouble(srCurrentIdx));
+				if(getSrCurrentIdx() >= 0) {
+					getAdapter().recSrCurrent(record.getDouble(getSrCurrentIdx()));
 				}
 
-				for(int i=0; i<mcsCurrentIdx.length; i++) {
-					if(mcsCurrentIdx[i] >= 0) {
-						recMCSCurrent(i, record.getDouble(mcsCurrentIdx[i]));
+				for(int i=0; i<getMcsCurrentIdx().length; i++) {
+					if(getMcsCurrentIdx()[i] >= 0) {
+						getAdapter().recMcsCurrent(i, record.getDouble(getMcsCurrentIdx()[i]));
 					}
 				}
 			}
@@ -347,29 +526,29 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 		
 		if(hasSingleElementDetector()) {
 			try {
-				if(sedFastCountIdx >= 0) {
-					recSedFastCount(record.getLong(sedFastCountIdx));
+				if(getSedFastCountIdx() >= 0) {
+					getAdapter().recSedFastCount(record.getLong(getSedFastCountIdx()));
 				}
 				
-				if(sedSlowCountIdx >= 0) {
-					recSedSlowCount(record.getLong(sedSlowCountIdx));
+				if(getSedSlowCountIdx() >= 0) {
+					getAdapter().recSedSlowCount(record.getLong(getSedSlowCountIdx()));
 				}
 				
-				if(sedDeadTimePctIdx >= 0) {
-					recSedDeadTimePct(record.getDouble(sedDeadTimePctIdx));
+				if(getSedDeadTimePctIdx() >= 0) {
+					getAdapter().recSedDeadTimePct(record.getDouble(getSedDeadTimePctIdx()));
 				}
 			
-				if(sedElapsedRealTimeIdx >= 0) {
-					recSedElapsedRealTime(record.getDouble(sedElapsedRealTimeIdx));
+				if(getSedElapsedRealTimeIdx() >= 0) {
+					getAdapter().recSedElapsedRealTime(record.getDouble(getSedElapsedRealTimeIdx()));
 				}
 			
-				if(sedElpasedLiveTimeIdx >= 0) {
-					recSedElapsedLiveTime(record.getDouble(sedElpasedLiveTimeIdx));
+				if(getSedElpasedLiveTimeIdx() >= 0) {
+					getAdapter().recSedElapsedLiveTime(record.getDouble(getSedElpasedLiveTimeIdx()));
 				}
 				
-				long sedSpectrumOffset = record.getLong(sedSpectrumIdx);
+				long sedSpectrumOffset = record.getLong(getSedSpectrumIdx());
 				DAFSpectrumRecord specRecord = dafSpectraParser.parseRecord(sedSpectrumOffset, sedNChannels);
-				recSedSpectrum(specRecord.getLongArray());
+				getAdapter().recSedSpectrum(specRecord.getLongArray());
 			}
 			catch(IOException e) {
 				throw new ConverterException("Input error while parsing record from spectra data file.", e);
@@ -385,31 +564,31 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 			try {
 				if(allGreaterThanOrEqual(fedFastCountIdx, 0)) {
 					for(int i=0; i<fedFastCountIdx.length; i++) {
-						recFedFastCount(i, record.getLong(fedFastCountIdx[i]));
+						getAdapter().recFedFastCount(i, record.getLong(fedFastCountIdx[i]));
 					}
 				}
 				
 				if(allGreaterThanOrEqual(fedSlowCountIdx, 0)) {
 					for(int i=0; i<fedSlowCountIdx.length; i++) {
-						recFedSlowCount(i, record.getLong(fedSlowCountIdx[i]));
+						getAdapter().recFedSlowCount(i, record.getLong(fedSlowCountIdx[i]));
 					}
 				}
 			
 				if(allGreaterThanOrEqual(fedDeadTimePctIdx, 0)) {
 					for(int i=0; i<fedDeadTimePctIdx.length; i++) {
-						recFedDeadTimePct(i, record.getDouble(fedDeadTimePctIdx[i]));
+						getAdapter().recFedDeadTimePct(i, record.getDouble(fedDeadTimePctIdx[i]));
 					}
 				}
 				
 				if(allGreaterThanOrEqual(fedElapsedRealTimeIdx, 0)) {
 					for(int i=0; i<fedElapsedRealTimeIdx.length; i++) {
-						recFedElapsedRealTime(i, record.getDouble(fedElapsedRealTimeIdx[i]));
+						getAdapter().recFedElapsedRealTime(i, record.getDouble(fedElapsedRealTimeIdx[i]));
 					}
 				}
 			
 				if(allGreaterThanOrEqual(fedElpasedLiveTimeIdx, 0)) {
 					for(int i=0; i<fedElpasedLiveTimeIdx.length; i++) {
-						recFedElapsedLiveTime(i, record.getDouble(fedElpasedLiveTimeIdx[i]));
+						getAdapter().recFedElapsedLiveTime(i, record.getDouble(fedElpasedLiveTimeIdx[i]));
 					}
 				}
 			
@@ -419,14 +598,14 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 				if(fedSumSpectrumIdx >= 0) {
 					fedSpecOffset = record.getLong(fedSumSpectrumIdx);
 					fedSpecRecord = dafSpectraParser.parseRecord(fedSpecOffset, fedNChannels);
-					recFedSumSpectrum(fedSpecRecord.getLongArray());
+					getAdapter().recFedSumSpectrum(fedSpecRecord.getLongArray());
 				}
 				
 				if(allGreaterThanOrEqual(fedSpectrumIdx, 0)) {
 					for(int i=0; i<fedSpectrumIdx.length; i++) {
 						fedSpecOffset = record.getLong(fedSpectrumIdx[i]);
 						fedSpecRecord = dafSpectraParser.parseRecord(fedSpecOffset, fedNChannels);
-						recFedSpectrum(i, fedSpecRecord.getLongArray());
+						getAdapter().recFedSpectrum(i, fedSpecRecord.getLongArray());
 					}
 				}
 			}
@@ -441,61 +620,16 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 			}
 		}
 	
-		closeDataRecord(dataRecordIndex);
+		getAdapter().closeDataRecord(dataRecordIndex);
 	}
-	
-	protected abstract void openDataRecord(int dataRecordIndex, DAFRecord record, int sedNChannels, int fedNChannels) throws ConverterException;
-	protected abstract void closeDataRecord(int dataRecordIndex) throws ConverterException;
-	
-	// Dimensions X //
-	
-	protected abstract void recSizeX(int sizeX) throws ConverterException;
-	protected abstract void recStartX(double startX) throws ConverterException;
-	protected abstract void recEndX(double endX) throws ConverterException;
-	protected abstract void recStepX(double stepX) throws ConverterException;
-	protected abstract void recPointX(int pointX) throws ConverterException;
-	protected abstract void recPositionX(double positionX) throws ConverterException;
-	
-	// Dimensions Y //
-
-	protected abstract void recSizeY(int sizeY) throws ConverterException;
-	protected abstract void recStartY(double startY) throws ConverterException;
-	protected abstract void recEndY(double endY) throws ConverterException;
-	protected abstract void recStepY(double stepY) throws ConverterException;
-	protected abstract void recPointY(int pointY) throws ConverterException;
-	protected abstract void recPositionY(double positionY) throws ConverterException;
-	
-	// Beam Current //
-	
-	protected abstract void recSRCurrent(double srCurrent) throws ConverterException;
-	protected abstract void recMCSCurrent(int index, double mcsCurrent) throws ConverterException;
-	
-	// SED Detector //
-	
-	protected abstract void recSedFastCount(long sedFastCount) throws ConverterException;
-	protected abstract void recSedSlowCount(long sedSlowCount) throws ConverterException;
-	protected abstract void recSedDeadTimePct(double sedDeadTimePct) throws ConverterException;
-	protected abstract void recSedElapsedRealTime(double sedElapsedRealTime) throws ConverterException;
-	protected abstract void recSedElapsedLiveTime(double sedElapsedLiveTime) throws ConverterException;
-	protected abstract void recSedSpectrum(long sedSpectrum[]) throws ConverterException;
-	
-	// FED Detector //
-	
-	protected abstract void recFedFastCount(int index, long fedFastCount) throws ConverterException;
-	protected abstract void recFedSlowCount(int index, long fedSlowCount) throws ConverterException;
-	protected abstract void recFedDeadTimePct(int index, double fedDeadTimePct) throws ConverterException;
-	protected abstract void recFedElapsedRealTime(int index, double fedElapsedRealTime) throws ConverterException;
-	protected abstract void recFedElapsedLiveTime(int index, double fedElapsedLiveTime) throws ConverterException;
-	protected abstract void recFedSpectrum(int index, long fedSpectrum[]) throws ConverterException;
-	protected abstract void recFedSumSpectrum(long fedSpectrum[]) throws ConverterException;
 	
 	private void processBkgdRecord(DAFRecord record) throws ConverterException {
 
 		if(bkgdRecordIndex == 0) {
 			
-			openBkgdRecord(bkgdRecordIndex);
-			
 			List<DAFElement> bkgdEventElements = record.getEvent().getElements();
+			
+			String name, desc;
 			
 			if(hasSingleElementDetector()) {
 				
@@ -504,16 +638,16 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 						sedNChannels = record.getInt(sedNChannelsIdx);
 					}
 					catch (RecordFormatException e) {
-						sedNChannels = sedDefaultNChannels;
+						sedNChannels = getSedDefaultNChannels();
 					}
 				}
 				
 				if(sedMaxEnergyIdx >= 0) {
 					try {
-						String units = StdUnits.EVOLT;
-						String name = bkgdEventElements.get(sedMaxEnergyIdx).getName();
-						String description = bkgdEventElements.get(sedMaxEnergyIdx).getDescription();
-						recSedMaxEnergy(record.getDouble(sedMaxEnergyIdx) * 1000 /* Convert keV to eV */, units, name, description);
+						name = bkgdEventElements.get(sedMaxEnergyIdx).getName();
+						desc = bkgdEventElements.get(sedMaxEnergyIdx).getDescription();
+						getAdapter().initSedMaxEnergy(name, desc);
+						getAdapter().recSedMaxEnergy(record.getDouble(sedMaxEnergyIdx) * 1000 /* Convert keV to eV */);
 					}
 					catch (RecordFormatException e) {
 						// nothing to do //
@@ -522,10 +656,10 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 				
 				if(sedEnergyGapTimeIdx >= 0) {
 					try {
-						String units = StdUnits.MICRO_SECOND;
-						String name = bkgdEventElements.get(sedEnergyGapTimeIdx).getName();
-						String description = bkgdEventElements.get(sedEnergyGapTimeIdx).getDescription();
-						recSedEnergyGapTime(record.getDouble(sedEnergyGapTimeIdx), units, name, description);
+						name = bkgdEventElements.get(sedEnergyGapTimeIdx).getName();
+						desc = bkgdEventElements.get(sedEnergyGapTimeIdx).getDescription();
+						getAdapter().initSedEnergyGapTime(name, desc);
+						getAdapter().recSedEnergyGapTime(record.getDouble(sedEnergyGapTimeIdx));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
@@ -534,10 +668,10 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 				
 				if(sedEnergyPeakingTimeIdx >= 0) {
 					try {
-						String units = StdUnits.MICRO_SECOND;
-						String name = bkgdEventElements.get(sedEnergyPeakingTimeIdx).getName();
-						String description = bkgdEventElements.get(sedEnergyPeakingTimeIdx).getDescription();
-						recSedEnergyPeakingTime(record.getDouble(sedEnergyPeakingTimeIdx), units, name, description);
+						name = bkgdEventElements.get(sedEnergyPeakingTimeIdx).getName();
+						desc = bkgdEventElements.get(sedEnergyPeakingTimeIdx).getDescription();
+						getAdapter().initSedEnergyPeakingTime(name, desc);
+						getAdapter().recSedEnergyPeakingTime(record.getDouble(sedEnergyPeakingTimeIdx));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
@@ -546,10 +680,10 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 				
 				if(sedPresetRealTimeIdx >= 0) {
 					try {
-						String units = StdUnits.SECOND;
-						String name = bkgdEventElements.get(sedPresetRealTimeIdx).getName();
-						String description = bkgdEventElements.get(sedPresetRealTimeIdx).getDescription();
-						recSedPresetReadTime(record.getDouble(sedPresetRealTimeIdx), units, name, description);
+						name = bkgdEventElements.get(sedPresetRealTimeIdx).getName();
+						desc = bkgdEventElements.get(sedPresetRealTimeIdx).getDescription();
+						getAdapter().initSedPresetRealTime(name, desc);
+						getAdapter().recSedPresetRealTime(record.getDouble(sedPresetRealTimeIdx));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
@@ -563,16 +697,16 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 						fedNChannels = record.getInt(fedNChannelsIdx);
 					}
 					catch (RecordFormatException e) {
-						fedNChannels = fedDefaultNChannels;
+						fedNChannels = getFedDefaultNChannels();
 					}
 				}
-							
+				
 				if(fedMaxEnergyIdx >= 0) {
 					try {
-						String units = StdUnits.EVOLT;
-						String name = bkgdEventElements.get(fedMaxEnergyIdx).getName();
-						String description = bkgdEventElements.get(fedMaxEnergyIdx).getDescription();
-						recFedMaxEnergy(record.getDouble(fedMaxEnergyIdx) * 1000 /* Convert keV to eV */, units, name, description);
+						name = bkgdEventElements.get(fedMaxEnergyIdx).getName();
+						desc = bkgdEventElements.get(fedMaxEnergyIdx).getDescription();
+						getAdapter().initFedMaxEnergy(name, desc);
+						getAdapter().recFedMaxEnergy(record.getDouble(fedMaxEnergyIdx) * 1000 /* Convert keV to eV */);
 					}
 					catch (RecordFormatException e) {
 						// nothing to do //
@@ -581,10 +715,10 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 				
 				if(fedEnergyGapTimeIdx >= 0) {
 					try {
-						String units = StdUnits.MICRO_SECOND;
-						String name = bkgdEventElements.get(fedEnergyGapTimeIdx).getName();
-						String description = bkgdEventElements.get(fedEnergyGapTimeIdx).getDescription();
-						recFedEnergyGapTime(record.getDouble(fedEnergyGapTimeIdx), units, name, description);
+						name = bkgdEventElements.get(fedEnergyGapTimeIdx).getName();
+						desc = bkgdEventElements.get(fedEnergyGapTimeIdx).getDescription();
+						getAdapter().initFedEnergyGapTime(name, desc);
+						getAdapter().recFedEnergyGapTime(record.getDouble(fedEnergyGapTimeIdx));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
@@ -593,10 +727,10 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 				
 				if(fedEnergyPeakingTimeIdx >= 0) {
 					try {
-						String units = StdUnits.MICRO_SECOND;
-						String name = bkgdEventElements.get(fedEnergyPeakingTimeIdx).getName();
-						String description = bkgdEventElements.get(fedEnergyPeakingTimeIdx).getDescription();
-						recFedEnergyPeakingTime(record.getDouble(fedEnergyPeakingTimeIdx), units, name, description);
+						name = bkgdEventElements.get(fedEnergyPeakingTimeIdx).getName();
+						desc = bkgdEventElements.get(fedEnergyPeakingTimeIdx).getDescription();
+						getAdapter().initFedEnergyPeakingTime(name, desc);
+						getAdapter().recFedEnergyPeakingTime(record.getDouble(fedEnergyPeakingTimeIdx));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
@@ -605,37 +739,18 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 				
 				if(fedPresetRealTimeIdx >= 0) {
 					try {
-						String units = StdUnits.SECOND;
-						String name = bkgdEventElements.get(fedPresetRealTimeIdx).getName();
-						String description = bkgdEventElements.get(fedPresetRealTimeIdx).getDescription();
-						recFedPresetRealTime(record.getDouble(fedPresetRealTimeIdx), units, name, description);
+						name = bkgdEventElements.get(fedPresetRealTimeIdx).getName();
+						desc = bkgdEventElements.get(fedPresetRealTimeIdx).getDescription();
+						getAdapter().initFedPresetRealTime(name, desc);
+						getAdapter().recFedPresetRealTime(record.getDouble(fedPresetRealTimeIdx));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
 					}
 				}
 			}
-			
-			closeBkgdRecord(bkgdRecordIndex);
 		}
 	}
-
-	protected abstract void openBkgdRecord(int bkgdRecordIndex);
-	protected abstract void closeBkgdRecord(int bkgdRecordIndex);
-	
-	// SED Detector //
-	
-	protected abstract void recSedMaxEnergy(double sedMaxEnergy, String units, String name, String description) throws ConverterException;
-	protected abstract void recSedEnergyGapTime(double sedEnergyGapTime, String units, String name, String description) throws ConverterException;
-	protected abstract void recSedEnergyPeakingTime(double sedEnergyPeakingTime, String units, String name, String description) throws ConverterException;
-	protected abstract void recSedPresetReadTime(double sedPresetRealTime, String units, String name, String description) throws ConverterException;
-	
-	// FED Detector //
-	
-	protected abstract void recFedMaxEnergy(double fedMaxEnergy, String units, String name, String description) throws ConverterException;
-	protected abstract void recFedEnergyGapTime(double fedEnergyGapTime, String units, String name, String description) throws ConverterException;
-	protected abstract void recFedEnergyPeakingTime(double fedEnergyPeakingTime, String units, String name, String description) throws ConverterException;
-	protected abstract void recFedPresetRealTime(double fedPresetRealTime, String units, String name, String description) throws ConverterException;
 
 	private void padMissingPoints() throws ConverterException {
 		
@@ -646,25 +761,22 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 		if(padX > 1) {
 			for(int i = 1; i < padX; i++) {
 				index = dataRecordIndex + i;
-				openPadRecord(index);
-				recPointX(pointX + i);
-				recPositionX(posX + (i * stepX));
-				closePadRecord(index);
+				getAdapter().openDataRecord(index);
+				getAdapter().recPointX(pointX + i);
+				getAdapter().recPositionX(posX + (i * stepX));
+				getAdapter().closeDataRecord(index);
 			}
 		}
 		else if(padY > 1) {
 			for(int i = 1; i < padY; i++) {
 				index = dataRecordIndex + i;
-				openPadRecord(index);
-				recPointY(pointY + i);
-				recPositionY(posY + (i * stepY));
-				closePadRecord(index);
+				getAdapter().openDataRecord(index);
+				getAdapter().recPointY(pointY + i);
+				getAdapter().recPositionY(posY + (i * stepY));
+				getAdapter().closeDataRecord(index);
 			}
 		}
 	}
-
-	protected abstract void openPadRecord(int dataRecordIndex) throws ConverterException;
-	protected abstract void closePadRecord(int dataRecordIndex) throws ConverterException;
 	
 	protected boolean hasPositionXY() {
 		return (dafDataFile != null) && (dataEventId >= 0) 
@@ -677,16 +789,14 @@ public abstract class AbstractMapXYVespersConverter extends AbstractVespersConve
 	}
 	
 	protected boolean hasSingleElementDetector() {
-		return (dafDataFile != null) && (dafSpectraFile != null) 
-					&& (dataEventId >= 0) && (sedSpectrumIdx >= 0);
+		return (dataEventId >= 0) && (sedSpectrumIdx >= 0);
 	}
 
 	protected boolean hasFourElementDetector() {
-		return (dafDataFile != null) && (dafSpectraFile != null) 
-					&& (dataEventId >= 0) && ((fedSumSpectrumIdx >= 0) || 
-									allGreaterThanOrEqual(fedSpectrumIdx, 0));
+		return (dataEventId >= 0) && ((fedSumSpectrumIdx >= 0) || 
+					allGreaterThanOrEqual(fedSpectrumIdx, 0));
 	}
-	
+
 	public File getDafDataFile() {
 		return dafDataFile;
 	}
