@@ -208,7 +208,7 @@ public class MapXYVespersFromAMFConverterFactory extends AbstractMapXYVespersCon
 			m = AMF_DATA_FILE_FACILITY_PATTERN.matcher(line);
 			if(m.matches()) {
 				if(DEFAULT_FACILITY_NAME.equals(request.get(REQUEST_KEY_FACILITY_NAME))) {
-					request.put(REQUEST_KEY_FACILITY_NAME, m.group(1));
+					request.put(REQUEST_KEY_LABORATORY_LONG_NAME, m.group(1));
 				}
 				continue;
 			}
@@ -241,7 +241,7 @@ public class MapXYVespersFromAMFConverterFactory extends AbstractMapXYVespersCon
 		
 		MapXYVespersFromAMFConverter converter = new MapXYVespersFromAMFConverter(fromFormat, toFormat, forceUpdate);
 		
-		converter.setScanName((String)request.get(REQUEST_KEY_SAMPLE_NAME));
+		converter.setScanName((String)request.get(REQUEST_KEY_SCAN_NAME));
 		converter.setScanEndDate((Date)request.get(REQUEST_KEY_SCAN_END_DATE));
 		converter.setScanStartDate((Date)request.get(REQUEST_KEY_SCAN_START_DATE));
 		converter.setScanParams((Parameters)request.get(REQUEST_KEY_SCAN_PARAMS));
@@ -251,8 +251,8 @@ public class MapXYVespersFromAMFConverterFactory extends AbstractMapXYVespersCon
 		converter.setExperimentName((String)request.get(REQUEST_KEY_EXPERIMENT_NAME));
 		converter.setTechniqueName((String)request.get(REQUEST_KEY_TECHNIQUE_NAME));
 		converter.setInstrumentName((String)request.get(REQUEST_KEY_INSTRUMENT_NAME));
-		converter.setFacilityName((String)request.get(REQUEST_KEY_FACILITY_NAME));
-		converter.setLaboratoryName((String)request.get(REQUEST_KEY_LABORATORY_NAME));
+		converter.setFacilityName((String)request.get(REQUEST_KEY_FACILITY_LONG_NAME));
+		converter.setLaboratoryName((String)request.get(REQUEST_KEY_LABORATORY_LONG_NAME));
 		
 		converter.setAmfDataFile(amfDataFile);
 		converter.setAmfSpectraFile(amfSpectraFile);

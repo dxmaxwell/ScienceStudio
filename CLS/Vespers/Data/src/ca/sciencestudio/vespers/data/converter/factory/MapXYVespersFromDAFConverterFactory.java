@@ -134,7 +134,7 @@ public class MapXYVespersFromDAFConverterFactory extends AbstractMapXYVespersCon
 		}
 		
 		converter.setCustomRecordParsers(customRecordParsers);
-		converter.setScanName((String)request.get(REQUEST_KEY_SAMPLE_NAME));
+		converter.setScanName((String)request.get(REQUEST_KEY_SCAN_NAME));
 		converter.setScanEndDate((Date)request.get(REQUEST_KEY_SCAN_END_DATE));
 		converter.setScanStartDate((Date)request.get(REQUEST_KEY_SCAN_START_DATE));
 		converter.setScanParams((Parameters)request.get(REQUEST_KEY_SCAN_PARAMS));
@@ -144,8 +144,8 @@ public class MapXYVespersFromDAFConverterFactory extends AbstractMapXYVespersCon
 		converter.setExperimentName((String)request.get(REQUEST_KEY_EXPERIMENT_NAME));
 		converter.setTechniqueName((String)request.get(REQUEST_KEY_TECHNIQUE_NAME));
 		converter.setInstrumentName((String)request.get(REQUEST_KEY_INSTRUMENT_NAME));
-		converter.setFacilityName((String)request.get(REQUEST_KEY_FACILITY_NAME));
-		converter.setLaboratoryName((String)request.get(REQUEST_KEY_LABORATORY_NAME));
+		converter.setFacilityName((String)request.get(REQUEST_KEY_FACILITY_LONG_NAME));
+		converter.setLaboratoryName((String)request.get(REQUEST_KEY_LABORATORY_LONG_NAME));
 		
 		converter.setDafDataFile(dafDataFile);
 		converter.setDafSpectraFile(dafSpectraFile);
