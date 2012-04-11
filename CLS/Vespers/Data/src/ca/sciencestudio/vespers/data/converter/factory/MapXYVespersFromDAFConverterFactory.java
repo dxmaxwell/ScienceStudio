@@ -30,7 +30,7 @@ import ca.sciencestudio.util.Parameters;
  */
 public class MapXYVespersFromDAFConverterFactory extends AbstractMapXYVespersConverterFactory implements StdScanParams {
 
-	private static final String SUPPORTED_FROM_FORMAT = "DAF";
+	private static final String[] SUPPORTED_FROM_FORMATS = { ConverterMap.DEFAULT_FROM_FORMAT, "DAF" };
 	
 	// Parameters for the sample position. //
 	private DAFEventElementOptions posXSetpointOptions;
@@ -327,7 +327,7 @@ public class MapXYVespersFromDAFConverterFactory extends AbstractMapXYVespersCon
 	@Override
 	protected ConverterMap validateRequest(ConverterMap request) throws ConverterFactoryException {
 		
-		if(!SUPPORTED_FROM_FORMAT.equals(request.getFromFormat())) {
+		if(!oneEqual(SUPPORTED_FROM_FORMATS, request.getFromFormat())) {
 			throw new ConverterFactoryException("Convert FROM format, " + request.getFromFormat() + ", not supported.");
 		}
 		

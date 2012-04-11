@@ -39,9 +39,6 @@ public class MapXYVespersFromDAFConverter extends AbstractMapXYVespersConverter 
 	public static final int DEFAULT_FED_NCHANNELS = 2048;
 	
 	private static final double MAXIMUM_STEP_ERROR = 0.001;
-	
-	//private static final String FOUR_ELEMENT_DETECTOR_UID = "FED";
-	//private static final String SINGLE_ELEMENT_DETECTOR_UID = "SED";
 
 	/// Parameters to be configured by a ConverterFactory ///
 	private File dafDataFile = null;
@@ -562,48 +559,48 @@ public class MapXYVespersFromDAFConverter extends AbstractMapXYVespersConverter 
 		}
 		else if(hasFourElementDetector()) {
 			try {
-				if(allGreaterThanOrEqual(fedFastCountIdx, 0)) {
-					for(int i=0; i<fedFastCountIdx.length; i++) {
-						getAdapter().recFedFastCount(i, record.getLong(fedFastCountIdx[i]));
+				if(allGreaterThanOrEqual(getFedFastCountIdx(), 0)) {
+					for(int i=0; i<getFedFastCountIdx().length; i++) {
+						getAdapter().recFedFastCount(i, record.getLong(getFedFastCountIdx()[i]));
 					}
 				}
 				
-				if(allGreaterThanOrEqual(fedSlowCountIdx, 0)) {
-					for(int i=0; i<fedSlowCountIdx.length; i++) {
-						getAdapter().recFedSlowCount(i, record.getLong(fedSlowCountIdx[i]));
+				if(allGreaterThanOrEqual(getFedSlowCountIdx(), 0)) {
+					for(int i=0; i<getFedSlowCountIdx().length; i++) {
+						getAdapter().recFedSlowCount(i, record.getLong(getFedSlowCountIdx()[i]));
 					}
 				}
 			
-				if(allGreaterThanOrEqual(fedDeadTimePctIdx, 0)) {
-					for(int i=0; i<fedDeadTimePctIdx.length; i++) {
-						getAdapter().recFedDeadTimePct(i, record.getDouble(fedDeadTimePctIdx[i]));
+				if(allGreaterThanOrEqual(getFedDeadTimePctIdx(), 0)) {
+					for(int i=0; i<getFedDeadTimePctIdx().length; i++) {
+						getAdapter().recFedDeadTimePct(i, record.getDouble(getFedDeadTimePctIdx()[i]));
 					}
 				}
 				
-				if(allGreaterThanOrEqual(fedElapsedRealTimeIdx, 0)) {
-					for(int i=0; i<fedElapsedRealTimeIdx.length; i++) {
-						getAdapter().recFedElapsedRealTime(i, record.getDouble(fedElapsedRealTimeIdx[i]));
+				if(allGreaterThanOrEqual(getFedElapsedRealTimeIdx(), 0)) {
+					for(int i=0; i<getFedElapsedRealTimeIdx().length; i++) {
+						getAdapter().recFedElapsedRealTime(i, record.getDouble(getFedElapsedRealTimeIdx()[i]));
 					}
 				}
 			
-				if(allGreaterThanOrEqual(fedElpasedLiveTimeIdx, 0)) {
-					for(int i=0; i<fedElpasedLiveTimeIdx.length; i++) {
-						getAdapter().recFedElapsedLiveTime(i, record.getDouble(fedElpasedLiveTimeIdx[i]));
+				if(allGreaterThanOrEqual(getFedElpasedLiveTimeIdx(), 0)) {
+					for(int i=0; i<getFedElpasedLiveTimeIdx().length; i++) {
+						getAdapter().recFedElapsedLiveTime(i, record.getDouble(getFedElpasedLiveTimeIdx()[i]));
 					}
 				}
 			
 				long fedSpecOffset;
 				DAFSpectrumRecord fedSpecRecord;
 			
-				if(fedSumSpectrumIdx >= 0) {
-					fedSpecOffset = record.getLong(fedSumSpectrumIdx);
+				if(getFedSumSpectrumIdx() >= 0) {
+					fedSpecOffset = record.getLong(getFedSumSpectrumIdx());
 					fedSpecRecord = dafSpectraParser.parseRecord(fedSpecOffset, fedNChannels);
 					getAdapter().recFedSumSpectrum(fedSpecRecord.getLongArray());
 				}
 				
-				if(allGreaterThanOrEqual(fedSpectrumIdx, 0)) {
-					for(int i=0; i<fedSpectrumIdx.length; i++) {
-						fedSpecOffset = record.getLong(fedSpectrumIdx[i]);
+				if(allGreaterThanOrEqual(getFedSpectrumIdx(), 0)) {
+					for(int i=0; i<getFedSpectrumIdx().length; i++) {
+						fedSpecOffset = record.getLong(getFedSpectrumIdx()[i]);
 						fedSpecRecord = dafSpectraParser.parseRecord(fedSpecOffset, fedNChannels);
 						getAdapter().recFedSpectrum(i, fedSpecRecord.getLongArray());
 					}
@@ -633,57 +630,57 @@ public class MapXYVespersFromDAFConverter extends AbstractMapXYVespersConverter 
 			
 			if(hasSingleElementDetector()) {
 				
-				if((sedNChannels < 0) && (sedNChannelsIdx >= 0)) {
+				if((sedNChannels < 0) && (getSedNChannelsIdx() >= 0)) {
 					try {
-						sedNChannels = record.getInt(sedNChannelsIdx);
+						sedNChannels = record.getInt(getSedNChannelsIdx());
 					}
 					catch (RecordFormatException e) {
 						sedNChannels = getSedDefaultNChannels();
 					}
 				}
 				
-				if(sedMaxEnergyIdx >= 0) {
+				if(getSedMaxEnergyIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(sedMaxEnergyIdx).getName();
-						desc = bkgdEventElements.get(sedMaxEnergyIdx).getDescription();
+						name = bkgdEventElements.get(getSedMaxEnergyIdx()).getName();
+						desc = bkgdEventElements.get(getSedMaxEnergyIdx()).getDescription();
 						getAdapter().initSedMaxEnergy(name, desc);
-						getAdapter().recSedMaxEnergy(record.getDouble(sedMaxEnergyIdx) * 1000 /* Convert keV to eV */);
+						getAdapter().recSedMaxEnergy(record.getDouble(getSedMaxEnergyIdx()) * 1000 /* Convert keV to eV */);
 					}
 					catch (RecordFormatException e) {
 						// nothing to do //
 					}
 				}
 				
-				if(sedEnergyGapTimeIdx >= 0) {
+				if(getSedEnergyGapTimeIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(sedEnergyGapTimeIdx).getName();
-						desc = bkgdEventElements.get(sedEnergyGapTimeIdx).getDescription();
+						name = bkgdEventElements.get(getSedEnergyGapTimeIdx()).getName();
+						desc = bkgdEventElements.get(getSedEnergyGapTimeIdx()).getDescription();
 						getAdapter().initSedEnergyGapTime(name, desc);
-						getAdapter().recSedEnergyGapTime(record.getDouble(sedEnergyGapTimeIdx));
+						getAdapter().recSedEnergyGapTime(record.getDouble(getSedEnergyGapTimeIdx()));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
 					}
 				}
 				
-				if(sedEnergyPeakingTimeIdx >= 0) {
+				if(getSedEnergyPeakingTimeIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(sedEnergyPeakingTimeIdx).getName();
-						desc = bkgdEventElements.get(sedEnergyPeakingTimeIdx).getDescription();
+						name = bkgdEventElements.get(getSedEnergyPeakingTimeIdx()).getName();
+						desc = bkgdEventElements.get(getSedEnergyPeakingTimeIdx()).getDescription();
 						getAdapter().initSedEnergyPeakingTime(name, desc);
-						getAdapter().recSedEnergyPeakingTime(record.getDouble(sedEnergyPeakingTimeIdx));
+						getAdapter().recSedEnergyPeakingTime(record.getDouble(getSedEnergyPeakingTimeIdx()));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
 					}
 				}
 				
-				if(sedPresetRealTimeIdx >= 0) {
+				if(getSedPresetRealTimeIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(sedPresetRealTimeIdx).getName();
-						desc = bkgdEventElements.get(sedPresetRealTimeIdx).getDescription();
+						name = bkgdEventElements.get(getSedPresetRealTimeIdx()).getName();
+						desc = bkgdEventElements.get(getSedPresetRealTimeIdx()).getDescription();
 						getAdapter().initSedPresetRealTime(name, desc);
-						getAdapter().recSedPresetRealTime(record.getDouble(sedPresetRealTimeIdx));
+						getAdapter().recSedPresetRealTime(record.getDouble(getSedPresetRealTimeIdx()));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
@@ -692,57 +689,57 @@ public class MapXYVespersFromDAFConverter extends AbstractMapXYVespersConverter 
 			}
 			else if(hasFourElementDetector()) {
 				
-				if((fedNChannels < 0) && (fedNChannelsIdx >= 0)) {
+				if((fedNChannels < 0) && (getFedNChannelsIdx() >= 0)) {
 					try {
-						fedNChannels = record.getInt(fedNChannelsIdx);
+						fedNChannels = record.getInt(getFedNChannelsIdx());
 					}
 					catch (RecordFormatException e) {
 						fedNChannels = getFedDefaultNChannels();
 					}
 				}
 				
-				if(fedMaxEnergyIdx >= 0) {
+				if(getFedMaxEnergyIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(fedMaxEnergyIdx).getName();
-						desc = bkgdEventElements.get(fedMaxEnergyIdx).getDescription();
+						name = bkgdEventElements.get(getFedMaxEnergyIdx()).getName();
+						desc = bkgdEventElements.get(getFedMaxEnergyIdx()).getDescription();
 						getAdapter().initFedMaxEnergy(name, desc);
-						getAdapter().recFedMaxEnergy(record.getDouble(fedMaxEnergyIdx) * 1000 /* Convert keV to eV */);
+						getAdapter().recFedMaxEnergy(record.getDouble(getFedMaxEnergyIdx()) * 1000 /* Convert keV to eV */);
 					}
 					catch (RecordFormatException e) {
 						// nothing to do //
 					}
 				}
 				
-				if(fedEnergyGapTimeIdx >= 0) {
+				if(getFedEnergyGapTimeIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(fedEnergyGapTimeIdx).getName();
-						desc = bkgdEventElements.get(fedEnergyGapTimeIdx).getDescription();
+						name = bkgdEventElements.get(getFedEnergyGapTimeIdx()).getName();
+						desc = bkgdEventElements.get(getFedEnergyGapTimeIdx()).getDescription();
 						getAdapter().initFedEnergyGapTime(name, desc);
-						getAdapter().recFedEnergyGapTime(record.getDouble(fedEnergyGapTimeIdx));
+						getAdapter().recFedEnergyGapTime(record.getDouble(getFedEnergyGapTimeIdx()));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
 					}
 				}
 				
-				if(fedEnergyPeakingTimeIdx >= 0) {
+				if(getFedEnergyPeakingTimeIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(fedEnergyPeakingTimeIdx).getName();
-						desc = bkgdEventElements.get(fedEnergyPeakingTimeIdx).getDescription();
+						name = bkgdEventElements.get(getFedEnergyPeakingTimeIdx()).getName();
+						desc = bkgdEventElements.get(getFedEnergyPeakingTimeIdx()).getDescription();
 						getAdapter().initFedEnergyPeakingTime(name, desc);
-						getAdapter().recFedEnergyPeakingTime(record.getDouble(fedEnergyPeakingTimeIdx));
+						getAdapter().recFedEnergyPeakingTime(record.getDouble(getFedEnergyPeakingTimeIdx()));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
 					}
 				}
 				
-				if(fedPresetRealTimeIdx >= 0) {
+				if(getFedPresetRealTimeIdx() >= 0) {
 					try {
-						name = bkgdEventElements.get(fedPresetRealTimeIdx).getName();
-						desc = bkgdEventElements.get(fedPresetRealTimeIdx).getDescription();
+						name = bkgdEventElements.get(getFedPresetRealTimeIdx()).getName();
+						desc = bkgdEventElements.get(getFedPresetRealTimeIdx()).getDescription();
 						getAdapter().initFedPresetRealTime(name, desc);
-						getAdapter().recFedPresetRealTime(record.getDouble(fedPresetRealTimeIdx));
+						getAdapter().recFedPresetRealTime(record.getDouble(getFedPresetRealTimeIdx()));
 					}
 					catch(RecordFormatException e) {
 						// nothing to do //
@@ -789,12 +786,12 @@ public class MapXYVespersFromDAFConverter extends AbstractMapXYVespersConverter 
 	}
 	
 	protected boolean hasSingleElementDetector() {
-		return (dataEventId >= 0) && (sedSpectrumIdx >= 0);
+		return (dafSpectraFile != null) && (dataEventId >= 0) && (sedSpectrumIdx >= 0);
 	}
 
 	protected boolean hasFourElementDetector() {
-		return (dataEventId >= 0) && ((fedSumSpectrumIdx >= 0) || 
-					allGreaterThanOrEqual(fedSpectrumIdx, 0));
+		return (dafSpectraFile != null) && (dataEventId >= 0) &&
+					((fedSumSpectrumIdx >= 0) || allGreaterThanOrEqual(fedSpectrumIdx, 0));
 	}
 
 	public File getDafDataFile() {
