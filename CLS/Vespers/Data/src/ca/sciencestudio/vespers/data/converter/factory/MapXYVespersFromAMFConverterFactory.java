@@ -1,49 +1,64 @@
+/** Copyright (c) Canadian Light Source, Inc. All rights reserved.
+ *   - see license.txt for details.
+ *
+ *  Description:
+ *     MapXYVespersFromAMFConverterFactory class.
+ *     
+ */
 package ca.sciencestudio.vespers.data.converter.factory;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.coyote.http11.filters.BufferedInputFilter;
-
-import com.ibatis.common.io.ReaderInputStream;
-
+import ca.sciencestudio.util.Parameters;
+import ca.sciencestudio.data.util.ElementOptions;
 import ca.sciencestudio.data.converter.Converter;
 import ca.sciencestudio.data.converter.ConverterMap;
-import ca.sciencestudio.data.daf.DAFDataParser;
-import ca.sciencestudio.data.daf.DAFEvent;
 import ca.sciencestudio.data.support.ConverterFactoryException;
-import ca.sciencestudio.data.util.ElementOptions;
-import ca.sciencestudio.util.Parameters;
-import ca.sciencestudio.vespers.data.converter.AbstractMapXYVespersConverter;
-import ca.sciencestudio.vespers.data.converter.MapXYVespersToCDFConverter;
-import ca.sciencestudio.vespers.data.converter.factory.AbstractMapXYVespersConverterFactory.MapXYDAFEventsHelper;
+import ca.sciencestudio.vespers.data.converter.MapXYVespersFromAMFConverter;
 
+/**
+ * @author maxweld
+ * 
+ *
+ */
 public class MapXYVespersFromAMFConverterFactory extends AbstractMapXYVespersConverterFactory {
-
-	private static final Pattern AM_DATA_FILE_BLANKLINE_PATTERN = Pattern.compile("\\s*");
 	
-	private static final Pattern AM_DATA_FILE_HEADER_SCAN_PATTERN = Pattern.compile("\\s*#\\s*Scan:\\s*(.*?)\\s*");
-	private static final Pattern AM_DATA_FILE_HEADER_DATE_PATTERN = Pattern.compile("\\s*#\\s*Date:\\s*(.*?)\\s*");
-	private static final Pattern AM_DATA_FILE_HEADER_SAMPLE_PATTERN = Pattern.compile("\\s*#\\s*Sample:\\s*(.*?)\\s*");
-	private static final Pattern AM_DATA_FILE_HEADER_FACILITY_PATTERN = Pattern.compile("\\s*#\\s*Facility:\\s*(.*?\\s*)");
+	private static final String[] SUPPORTED_FROM_FORMATS = { ConverterMap.DEFAULT_FROM_FORMAT, "AMF" };
 	
-	private static final Pattern AM_DATA_FILE_HEADER_INAUGHT_PATTERN = Pattern.compile("\\s*#\\s*I0:\\s*(.*?)\\s*");
-	private static final Pattern AM_DATA_FILE_HEADER_DETECTOR_PATTERN = Pattern.compile("\\s*#\\s*fff:\\s+(.*?)\\s*");
+	private static final Pattern AMF_DATA_FILE_BLANKLINE_PATTERN = Pattern.compile("\\s*");
 	
-	private static final Pattern AM_DATA_FILE_HEADER_DASHLINE_PATTERN = Pattern.compile("\\s*#\\s*[\\-]+");
-	private static final Pattern AM_DATA_FILE_HEADER_ELEMENTS_PATTERN = Pattern.compile("\\s*#\\s*Scan:\\s+(.*)");
+	private static final Pattern AMF_DATA_FILE_HEADER_PATTERN = Pattern.compile("^\\s*#\\s*(.*?)\\s*$");
 	
-	private static final Pattern AM_DATA_FILE_HEADER_DATA_PATTERN = Pattern.compile("\\s*([^#].*)");
+	private static final Pattern AMF_DATA_FILE_SCAN_PATTERN = Pattern.compile("Scan:\\s*(.*)");
+	private static final Pattern AMF_DATA_FILE_DATE_PATTERN = Pattern.compile("Date:\\s*(\\d{4} \\d{2} \\d{2} \\d{2}:\\d{2}:\\d{2})");
+	private static final Pattern AMF_DATA_FILE_SAMPLE_PATTERN = Pattern.compile("Sample:\\s*(.*)");
+	private static final Pattern AMF_DATA_FILE_FACILITY_PATTERN = Pattern.compile("Facility:\\s*(.*)");
+	
+	private static final Pattern AMF_DATA_FILE_INAUGHT_PATTERN = Pattern.compile("I0:\\s*(\\S+)\\s*-\\s*(.*)");
+	private static final Pattern AMF_DATA_FILE_XRF_DETECTOR_PATTERN = Pattern.compile("Fluorescence Detector:\\s*(.*)");
+	
+	private static final Pattern AMF_DATA_FILE_ELEMLINE_PATTERN = Pattern.compile("[\\-]+");
+	private static final Pattern AMF_DATA_FILE_ELEMENTS_PATTERN = Pattern.compile("((\\S+\\s+)*\\S+)\\s*");
+	
+	private static final DateFormat AMF_DATA_START_DATE_FORMAT = new SimpleDateFormat("yyyy MM dd HH:mm:ss");
+	
+	private static final String AMF_DATA_SPLIT_ELEMENTS_REGEX = "\\s+";
+	
+	private static final String AMF_DATA_SINGLE_ELEMENT_DETECTOR = "Single Element Vortex Detector";
+	private static final String AMF_DATA_FOUR_ELEMENT_DETECTOR = "Four Element Vortex Detector";
 	
 	// Parameters for the sample position. //
 	private ElementOptions posXSetpointOptions;
@@ -57,185 +72,175 @@ public class MapXYVespersFromAMFConverterFactory extends AbstractMapXYVespersCon
 	private List<ElementOptions> mcsCurrentOptions;
 	
 	// Parameters for the Single Element Detector. //
-//	private DAFEventElementOptions sedNChannelsOptions;
-//	private DAFEventElementOptions sedMaxEnergyOptions;
-//	private DAFEventElementOptions sedEnergyGapTimeOptions;
-//	private DAFEventElementOptions sedPresetRealTimeOptions;
-//	private DAFEventElementOptions sedEnergyPeakingTimeOptions;
-//	
-//	private DAFEventElementOptions sedSpectrumOptions;
 	private ElementOptions sedFastCountOptions;
 	private ElementOptions sedSlowCountOptions;
 	private ElementOptions sedDeadTimePctOptions;
 	private ElementOptions sedElapsedRealTimeOptions;
 	private ElementOptions sedElpasedLiveTimeOptions;
 	
-	private int sedDefaultNChannels = 2048; //AbstractMapXYVespersConverter.DEFAULT_SED_NCHANNELS;
+	private int sedDefaultNChannels = MapXYVespersFromAMFConverter.DEFAULT_SED_NCHANNELS;
 	
 	// Parameters for the Four Element Detector. //
-//	private DAFEventElementOptions fedNChannelsOptions;
-//	private DAFEventElementOptions fedMaxEnergyOptions;
-//	private DAFEventElementOptions fedEnergyGapTimeOptions;
-//	private DAFEventElementOptions fedPresetRealTimeOptions;
-//	private DAFEventElementOptions fedEnergyPeakingTimeOptions;
-//	
-//	private DAFEventElementOptions fedSumSpectrumOptions;
-//	private List<DAFEventElementOptions> fedSpectrumOptions;
 	private List<ElementOptions> fedFastCountOptions;
 	private List<ElementOptions> fedSlowCountOptions;
 	private List<ElementOptions> fedDeadTimePctOptions;
 	private List<ElementOptions> fedElapsedRealTimeOptions;
 	private List<ElementOptions> fedElpasedLiveTimeOptions;
 	
-	private int fedDefaultNChannels = 2048; //AbstractMapXYVespersConverter.DEFAULT_FED_NCHANNELS;
+	private int fedDefaultNChannels = MapXYVespersFromAMFConverter.DEFAULT_FED_NCHANNELS;
 	
-
 	@Override
 	public Converter getConverter(ConverterMap request) throws ConverterFactoryException {
 		
-		ConverterMap validRequest = validateRequest(request);
-		boolean forceUpdate = validRequest.isForceUpdate();
-		String fromFormat = validRequest.getFromFormat();
-		String toFormat = validRequest.getToFormat();
+		request = validateRequest(request);
 		
-		//MapXYVespersToCDFConverter converter = new MapXYVespersToCDFConverter(fromFormat, toFormat, forceUpdate);
-		//prepareConverter(converter, validRequest);
-		//return converter;
-	
-	
-	//protected void prepareConverter(AbstractMapXYVespersConverter converter, ConverterMap request) throws ConverterFactoryException {
+		boolean forceUpdate = request.isForceUpdate();
+		String fromFormat = request.getFromFormat();
+		String toFormat = request.getToFormat();
 		
-		File amDataFile = (File)request.get(REQUEST_KEY_DAF_DATA_FILE);
-		if(!amDataFile.exists()) {
-			throw new ConverterFactoryException("The required AM data file not found here: " + amDataFile);
+		
+		File amfDataFile = (File)request.get(REQUEST_KEY_DATA_FILE);
+		if(!amfDataFile.exists()) {
+			throw new ConverterFactoryException("The required AM data file not found here: " + amfDataFile);
 		}
 		
-		File amSpectraFile = (File)request.get(REQUEST_KEY_DAF_SPEC_FILE);
-		if(!amSpectraFile.exists()) {
-			throw new ConverterFactoryException("The required AM spectra file not found here: " + amSpectraFile);
+		File amfSpectraFile = (File)request.get(REQUEST_KEY_SPECTRA_FILE);
+		if(!amfSpectraFile.exists()) {
+			throw new ConverterFactoryException("The required AM spectra file not found here: " + amfSpectraFile);
 		}
-		
-//		DAFDataParser dafDataParser;
-//		try {
-//			dafDataParser = new DAFDataParser(dafDataFile, customRecordParsers);
-//		}
-//		catch(Exception e) {
-//			throw new ConverterFactoryException("Exception while creating data parser for file: " + dafDataFile, e);
-//		}
-		
-		//MapXYDAFEventsHelper eventsHelper = new MapXYDAFEventsHelper(dafDataParser);
 		
 		// Read Data File Header //
 		
-		BufferedReader amDataFileReader;
+		BufferedReader amfDataFileReader;
 		try {
-			amDataFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(amDataFile)));
+			amfDataFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(amfDataFile)));
 		}
 		catch(FileNotFoundException e) {
 			throw new ConverterFactoryException("The required AM data file could not be openned: " + e.getMessage());
 		}
 		
 		Matcher m;
+		
 		boolean scanNext = true;
 		boolean elementsNext = false;
-		String line = amDataFileReader.readLine();
 		
-		while(line != null) {
+		String inaught = null;
+		String xrfDetector = null;
+		
+		String[] elements = null;
+		
+		String line;
+		
+		while(true) {
 			
-			if(AM_DATA_FILE_BLANKLINE_PATTERN.matcher(line).matches()) {
+			try {
+				line = amfDataFileReader.readLine();
+			}
+			catch(IOException e) {
+				break;
+			}
+			
+			if(line == null) {
+				// end of data file found //
+				break;
+			}
+			
+			if(AMF_DATA_FILE_BLANKLINE_PATTERN.matcher(line).matches()) {
 				// ignore lines containing only whitespace //
 				continue;
 			}
 			
+			m = AMF_DATA_FILE_HEADER_PATTERN.matcher(line);
+			if(!m.matches()) {
+				// end of data file header section //
+				break;
+			}
+			
+			line = m.group(1);
+			
 			if(scanNext) {
-				m = AM_DATA_FILE_HEADER_SCAN_PATTERN.matcher(line);
+				m = AMF_DATA_FILE_SCAN_PATTERN.matcher(line);
 				if(m.matches()) {
-					//setScanName
+					if(DEFAULT_SCAN_NAME.equals(request.get(REQUEST_KEY_SCAN_NAME))) {
+						request.put(REQUEST_KEY_SCAN_NAME, m.group(1));
+					}
 					scanNext = false;
 					continue;
 				}
 				
-				//throw! 
+				throw new ConverterFactoryException("Unexpected first line in AM data file.");
 			}
 				
-			
 			if(elementsNext) {
-				m = AM_DATA_FILE_HEADER_ELEMENTS_PATTERN.matcher(line);
+				m = AMF_DATA_FILE_ELEMENTS_PATTERN.matcher(line);
 				if(m.matches()) {
-					
+					elements = m.group(1).split(AMF_DATA_SPLIT_ELEMENTS_REGEX);
 					elementsNext = false;
 					continue;
 				}
 				
-				//throw!
+				throw new ConverterFactoryException("Unexpected line following '# ----' in AM data file.");
 			}
 			
-			m = AM_DATA_FILE_HEADER_DATE_PATTERN.matcher(line);
+			m = AMF_DATA_FILE_DATE_PATTERN.matcher(line);
 			if(m.matches()) {
-			
+				if(DEFAULT_SCAN_START_DATE.equals(request.get(REQUEST_KEY_SCAN_START_DATE))) {
+					try {
+						Date startDate = AMF_DATA_START_DATE_FORMAT.parse(m.group(1));
+						request.put(REQUEST_KEY_SCAN_START_DATE, startDate);
+						request.put(REQUEST_KEY_SCAN_END_DATE, startDate);
+					}
+					catch(ParseException e) {
+						// ignore exception //
+					}
+				}
 				continue;
 			}
 			
-			
-			m = AM_DATA_FILE_HEADER_SAMPLE_PATTERN.matcher(line);
+			m = AMF_DATA_FILE_SAMPLE_PATTERN.matcher(line);
 			if(m.matches()) {
-				
+				if(DEFAULT_SAMPLE_NAME.equals(request.get(REQUEST_KEY_SAMPLE_NAME))) {
+					request.put(REQUEST_KEY_SAMPLE_NAME,  m.group(1));
+				}
 				continue;
 			}
 			
-			m = AM_DATA_FILE_HEADER_FACILITY_PATTERN.matcher(line);
+			m = AMF_DATA_FILE_FACILITY_PATTERN.matcher(line);
 			if(m.matches()) {
-				
+				if(DEFAULT_FACILITY_NAME.equals(request.get(REQUEST_KEY_FACILITY_NAME))) {
+					request.put(REQUEST_KEY_FACILITY_NAME, m.group(1));
+				}
 				continue;
 			}
 			
-			
-			m = AM_DATA_FILE_HEADER_DETECTOR_PATTERN.matcher(line);
+			m = AMF_DATA_FILE_XRF_DETECTOR_PATTERN.matcher(line);
 			if(m.matches()) {
-				
+				xrfDetector = m.group(1);
 				continue;
 			}
 			
-			m = AM_DATA_FILE_HEADER_INAUGHT_PATTERN.matcher(line);
+			m = AMF_DATA_FILE_INAUGHT_PATTERN.matcher(line);
 			if(m.matches()) {
-				
+				inaught = m.group(1);
 				continue;
 			}
 			
-			m = AM_DATA_FILE_HEADER_DASHLINE_PATTERN.matcher(line);
+			m = AMF_DATA_FILE_ELEMLINE_PATTERN.matcher(line);
 			if(m.matches()) {
-				
 				elementsNext = true;
 				continue;
 			}
-		
 		}
 		
+		int posXSetpointIdx = posXSetpointOptions.getElementIndex(elements);
+		int posYSetpointIdx = posYSetpointOptions.getElementIndex(elements);
 		
-	
-		
-		
-		
-		
-		int posXSetpointIdx = -1;
-		int posYSetpointIdx = -1;
-		for(DAFEvent event : eventsHelper.getEvents()) {
-			posXSetpointIdx = posXSetpointOptions.getElementIndex(event);
-			if(posXSetpointIdx >= 0) {
-				posYSetpointIdx = posYSetpointOptions.getElementIndex(event);
-				if(posYSetpointIdx >= 0) {
-					eventsHelper.setDataEventId(event.getId());
-					break;
-				}
-			}
+		if((posXSetpointIdx < 0 || posYSetpointIdx < 0)) {
+			throw new ConverterFactoryException("No element found that contains the MapXY position coordinates.");
 		}
 		
-		DAFEvent dataEvent = eventsHelper.getDataEvent();
-		if(dataEvent == null) {
-			throw new ConverterFactoryException("No event found that contains the MapXY position coordinates.");
-		}
+		MapXYVespersFromAMFConverter converter = new MapXYVespersFromAMFConverter(fromFormat, toFormat, forceUpdate);
 		
-		converter.setCustomRecordParsers(customRecordParsers);
 		converter.setScanName((String)request.get(REQUEST_KEY_SAMPLE_NAME));
 		converter.setScanEndDate((Date)request.get(REQUEST_KEY_SCAN_END_DATE));
 		converter.setScanStartDate((Date)request.get(REQUEST_KEY_SCAN_START_DATE));
@@ -249,95 +254,66 @@ public class MapXYVespersFromAMFConverterFactory extends AbstractMapXYVespersCon
 		converter.setFacilityName((String)request.get(REQUEST_KEY_FACILITY_NAME));
 		converter.setLaboratoryName((String)request.get(REQUEST_KEY_LABORATORY_NAME));
 		
-		converter.setDafDataFile(dafDataFile);
-		converter.setDafSpectraFile(dafSpectraFile);
-		converter.setDataEventId(eventsHelper.getDataEventId());
+		converter.setAmfDataFile(amfDataFile);
+		converter.setAmfSpectraFile(amfSpectraFile);
+		
+		converter.setElements(elements);
 		
 		converter.setPosXSetpointIdx(posXSetpointIdx);
 		converter.setPosYSetpointIdx(posYSetpointIdx);
-		converter.setPosXFeedbackIdx(posXFeedbackOptions.getElementIndex(dataEvent));
-		converter.setPosYFeedbackIdx(posYFeedbackOptions.getElementIndex(dataEvent));
+		converter.setPosXFeedbackIdx(posXFeedbackOptions.getElementIndex(elements));
+		converter.setPosYFeedbackIdx(posYFeedbackOptions.getElementIndex(elements));
 		
-		prepareBeamCurrent(converter, eventsHelper);
+		prepareBeamCurrent(converter, elements, inaught);
 		
-		if(prepareSingleElementDetector(converter, eventsHelper)) {
-			return;
+		if(prepareSingleElementDetector(converter, elements, xrfDetector)) {
+			prepareAdapter(converter, request);
+			return converter;
 		}
 		
-		if(prepareFourElementDetector(converter, eventsHelper)) {
-			return;
+		if(prepareFourElementDetector(converter, elements, xrfDetector)) {
+			prepareAdapter(converter, request);
+			return converter;
 		}
 			
 		throw new ConverterFactoryException("No MultiChannel Analyzer spectrum found in DAF data file.");
 	}
 	
-	protected void prepareBeamCurrent(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected void prepareBeamCurrent(MapXYVespersFromAMFConverter converter, String[] elements, String inaught) {
+		converter.setSrCurrentIdx(srCurrentOptions.getElementIndex(elements));
 		
-		DAFEvent dataEvent = eventsHelper.getDataEvent();
-		int[] mcsCurrentIdx = new int[mcsCurrentOptions.size()];
-		for(int idx=0; idx<mcsCurrentIdx.length; idx++) {
-			mcsCurrentIdx[idx] = mcsCurrentOptions.get(idx).getElementIndex(dataEvent);
-		}
-		int srCurrentIdx = srCurrentOptions.getElementIndex(dataEvent);
-		
-		converter.setMcsCurrentIdx(mcsCurrentIdx);
-		converter.setSrCurrentIdx(srCurrentIdx);
-	}
-	
-	protected boolean prepareSingleElementDetector(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
-		
-		DAFEvent dataEvent = eventsHelper.getDataEvent();
-		DAFEvent bkgdEvent = eventsHelper.getBkgdEvent();
-		int sedSpectrumIdx = sedSpectrumOptions.getElementIndex(dataEvent);
-		int sedFastCountIdx = sedFastCountOptions.getElementIndex(dataEvent);
-		int sedSlowCountIdx = sedSlowCountOptions.getElementIndex(dataEvent);
-		int sedDeadTimePctIdx = sedDeadTimePctOptions.getElementIndex(dataEvent);
-		int sedElapsedRealTimeIdx = sedElapsedRealTimeOptions.getElementIndex(dataEvent);
-		int sedElpasedLiveTimeIdx = sedElpasedLiveTimeOptions.getElementIndex(dataEvent);
-		
-		if(sedSpectrumIdx < 0) {
-			return false;
-		}
-			
-		int sedNChannelsIdx = -1;
-		int sedMaxEnergyIdx = -1;
-		int sedEnergyGapTimeIdx = -1;
-		int sedPresetRealTimeIdx = -1;
-		int sedEnergyPeakingTimeIdx = -1;		
-		if(bkgdEvent == null) {
-			for(DAFEvent event : eventsHelper.getEvents()) {
-				sedNChannelsIdx = sedNChannelsOptions.getElementIndex(event);
-				sedMaxEnergyIdx = sedMaxEnergyOptions.getElementIndex(event);
-				sedEnergyGapTimeIdx = sedEnergyGapTimeOptions.getElementIndex(event);
-				sedPresetRealTimeIdx = sedPresetRealTimeOptions.getElementIndex(event);
-				sedEnergyPeakingTimeIdx = sedEnergyPeakingTimeOptions.getElementIndex(event);
-				if((sedMaxEnergyIdx >= 0) || (sedNChannelsIdx >= 0) || (sedEnergyGapTimeIdx >= 0) ||
-						(sedPresetRealTimeIdx >= 0) || (sedEnergyPeakingTimeIdx >= 0)) {
-					eventsHelper.setBkgdEventId(event.getId());
-					bkgdEvent = event;
-					break;
+		List<Integer> mcsCurrentIdxList = new ArrayList<Integer>();
+		for(ElementOptions elementOption : mcsCurrentOptions) {
+			int idx = elementOption.getElementIndex(elements);
+			if(idx >= 0) {
+				if(elements[idx].equals(inaught)) {
+					mcsCurrentIdxList.add(0, idx);
+				} else {
+					mcsCurrentIdxList.add(idx);
 				}
 			}
 		}
-		else {
-			sedNChannelsIdx = sedNChannelsOptions.getElementIndex(bkgdEvent);
-			sedMaxEnergyIdx = sedMaxEnergyOptions.getElementIndex(bkgdEvent);
-			sedEnergyGapTimeIdx = sedEnergyGapTimeOptions.getElementIndex(bkgdEvent);
-			sedPresetRealTimeIdx = sedPresetRealTimeOptions.getElementIndex(bkgdEvent);
-			sedEnergyPeakingTimeIdx = sedEnergyPeakingTimeOptions.getElementIndex(bkgdEvent);
+
+		int[] mcsCurrentIdx = new int[mcsCurrentIdxList.size()];
+		for(int idx=0; idx<mcsCurrentIdx.length; idx++) {
+			mcsCurrentIdx[idx] = mcsCurrentIdxList.get(idx);
 		}
+		converter.setMcsCurrentIdx(mcsCurrentIdx);
+	}
+	
+	protected boolean prepareSingleElementDetector(MapXYVespersFromAMFConverter converter, String[] elements, String xrfDetector) {
 		
-		if(bkgdEvent != null) {
-			converter.setBkgdEventId(bkgdEvent.getId());
+		if(!AMF_DATA_SINGLE_ELEMENT_DETECTOR.equals(xrfDetector)) {
+			return false;
 		}
+			
+		int sedFastCountIdx = sedFastCountOptions.getElementIndex(elements);
+		int sedSlowCountIdx = sedSlowCountOptions.getElementIndex(elements);
+		int sedDeadTimePctIdx = sedDeadTimePctOptions.getElementIndex(elements);
+		int sedElapsedRealTimeIdx = sedElapsedRealTimeOptions.getElementIndex(elements);
+		int sedElpasedLiveTimeIdx = sedElpasedLiveTimeOptions.getElementIndex(elements);
 		
-		converter.setSedMaxEnergyIdx(sedMaxEnergyIdx);
-		converter.setSedNChannelsIdx(sedNChannelsIdx);
-		converter.setSedEnergyGapTimeIdx(sedEnergyGapTimeIdx);
-		converter.setSedPresetRealTimeIdx(sedPresetRealTimeIdx);
-		converter.setSedEnergyPeakingTimeIdx(sedEnergyPeakingTimeIdx);
-		
-		converter.setSedSpectrumIdx(sedSpectrumIdx);
+		converter.setSingleElement(true);
 		converter.setSedFastCountIdx(sedFastCountIdx);
 		converter.setSedSlowCountIdx(sedSlowCountIdx);
 		converter.setSedDeadTimePctIdx(sedDeadTimePctIdx);
@@ -350,113 +326,120 @@ public class MapXYVespersFromAMFConverterFactory extends AbstractMapXYVespersCon
 	}
 	
 	
-	protected boolean prepareFourElementDetector(AbstractMapXYVespersConverter converter, MapXYDAFEventsHelper eventsHelper) {
+	protected boolean prepareFourElementDetector(MapXYVespersFromAMFConverter converter, String[] elements, String xrfDetector) {
+		
+		if(!AMF_DATA_FOUR_ELEMENT_DETECTOR.equals(xrfDetector)) {
+			return false;
+		}
 		
 		int nElements = 4;
-		DAFEvent dataEvent = eventsHelper.getDataEvent();
-		DAFEvent bkgdEvent = eventsHelper.getBkgdEvent();
-		int[] fedSpectrumIdx = new int[nElements];
-		int[] fedFastCountIdx = new int[nElements];			
+		int[] fedFastCountIdx = new int[nElements];
 		int[] fedSlowCountIdx = new int[nElements];
 		int[] fedDeadTimePctIdx = new int[nElements];
 		int[] fedElapsedRealTimeIdx = new int[nElements];
 		int[] fedElpasedLiveTimeIdx = new int[nElements];
 		for(int idx=0; idx<nElements; idx++) {
-			fedSpectrumIdx[idx] = fedSpectrumOptions.get(idx).getElementIndex(dataEvent);
-			fedFastCountIdx[idx] = fedFastCountOptions.get(idx).getElementIndex(dataEvent);
-			fedSlowCountIdx[idx] = fedSlowCountOptions.get(idx).getElementIndex(dataEvent);
-			fedDeadTimePctIdx[idx] = fedDeadTimePctOptions.get(idx).getElementIndex(dataEvent);
-			fedElapsedRealTimeIdx[idx] = fedElapsedRealTimeOptions.get(idx).getElementIndex(dataEvent);
-			fedElpasedLiveTimeIdx[idx] = fedElpasedLiveTimeOptions.get(idx).getElementIndex(dataEvent);
-		}
-		int fedSumSpectrumIdx = fedSumSpectrumOptions.getElementIndex(dataEvent);
-		
-		if((fedSumSpectrumIdx < 0) && oneLessThan(fedSpectrumIdx, 0)) {
-			return false;
-		}
-			
-		int fedNChannelsIdx = -1; 
-		int fedMaxEnergyIdx = -1;
-		int fedEnergyGapTimeIdx = -1;
-		int fedPresetRealTimeIdx = -1;
-		int fedEnergyPeakingTimeIdx = -1;
-		if(bkgdEvent == null) {
-			for(DAFEvent event : eventsHelper.getEvents()) {
-				fedNChannelsIdx = fedNChannelsOptions.getElementIndex(event);
-				fedMaxEnergyIdx = fedMaxEnergyOptions.getElementIndex(event);
-				fedEnergyGapTimeIdx = fedEnergyGapTimeOptions.getElementIndex(event); 
-				fedPresetRealTimeIdx = fedPresetRealTimeOptions.getElementIndex(event);
-				fedEnergyPeakingTimeIdx = fedEnergyPeakingTimeOptions.getElementIndex(event);
-				if((fedNChannelsIdx >= 0) || (fedMaxEnergyIdx >= 0) || (fedEnergyGapTimeIdx >= 0) ||
-						(fedPresetRealTimeIdx >= 0) || (fedEnergyPeakingTimeIdx >= 0)) {
-					eventsHelper.setBkgdEventId(event.getId());
-					bkgdEvent = event;
-					break;
-				}
-			}
-		}
-		else {
-			fedNChannelsIdx = fedNChannelsOptions.getElementIndex(bkgdEvent);
-			fedMaxEnergyIdx = fedMaxEnergyOptions.getElementIndex(bkgdEvent);
-			fedEnergyGapTimeIdx = fedEnergyGapTimeOptions.getElementIndex(bkgdEvent); 
-			fedPresetRealTimeIdx = fedPresetRealTimeOptions.getElementIndex(bkgdEvent);
-			fedEnergyPeakingTimeIdx = fedEnergyPeakingTimeOptions.getElementIndex(bkgdEvent);
+			fedFastCountIdx[idx] = fedFastCountOptions.get(idx).getElementIndex(elements);
+			fedSlowCountIdx[idx] = fedSlowCountOptions.get(idx).getElementIndex(elements);
+			fedDeadTimePctIdx[idx] = fedDeadTimePctOptions.get(idx).getElementIndex(elements);
+			fedElapsedRealTimeIdx[idx] = fedElapsedRealTimeOptions.get(idx).getElementIndex(elements);
+			fedElpasedLiveTimeIdx[idx] = fedElpasedLiveTimeOptions.get(idx).getElementIndex(elements);
 		}
 		
-		if(bkgdEvent != null) {
-			converter.setBkgdEventId(bkgdEvent.getId());
-		}
-		
-		converter.setFedNChannelsIdx(fedNChannelsIdx);
-		converter.setFedMaxEnergyIdx(fedMaxEnergyIdx);
-		converter.setFedEnergyGapTimeIdx(fedEnergyGapTimeIdx);
-		converter.setFedPresetRealTimeIdx(fedPresetRealTimeIdx);
-		converter.setFedEnergyPeakingTimeIdx(fedEnergyPeakingTimeIdx);
-		
-		converter.setFedSpectrumIdx(fedSpectrumIdx);
+		converter.setFourElement(true);
 		converter.setFedFastCountIdx(fedFastCountIdx);
 		converter.setFedSlowCountIdx(fedSlowCountIdx);
 		converter.setFedDeadTimePctIdx(fedDeadTimePctIdx);
 		converter.setFedElapsedRealTimeIdx(fedElapsedRealTimeIdx);
 		converter.setFedElpasedLiveTimeIdx(fedElpasedLiveTimeIdx);
-		converter.setFedSumSpectrumIdx(fedSumSpectrumIdx);
 		
 		converter.setFedDefaultNChannels(fedDefaultNChannels);
 		return true;
 	}
+	
+	@Override
+	protected ConverterMap validateRequest(ConverterMap request) throws ConverterFactoryException {
 		
-	protected static class MapXYDAFEventsHelper {
-		
-		private int dataEventId = -1;
-		private int bkgdEventId = -1;
-		private DAFDataParser dafDataParser; 
-		
-		public MapXYDAFEventsHelper(DAFDataParser dafDataParser) {
-			this.dafDataParser = dafDataParser;
+		if(!oneEqual(SUPPORTED_FROM_FORMATS, request.getFromFormat())) {
+			throw new ConverterFactoryException("Convert FROM format, " + request.getFromFormat() + ", not supported.");
 		}
+		
+		if(!adapterSupports(request)) {
+			throw new ConverterFactoryException("Convert TO format, " + request.getToFormat() + ", not supported.");
+		}
+		
+		return super.validateRequest(request);
+	}
 
-		public List<DAFEvent> getEvents() {
-			return dafDataParser.getEvents();
-		}
-		
-		public DAFEvent getDataEvent() {
-			return dafDataParser.getEventById(dataEventId);
-		}
-		public int getDataEventId() {
-			return dataEventId;
-		}
-		public void setDataEventId(int dataEventId) {
-			this.dataEventId = dataEventId;
-		}
-		
-		public DAFEvent getBkgdEvent() {
-			return dafDataParser.getEventById(bkgdEventId);
-		}
-		public int getBkgdEventId() {
-			return bkgdEventId;
-		}
-		public void setBkgdEventId(int bkgdEventId) {
-			this.bkgdEventId = bkgdEventId;
-		}
+	public void setPosXSetpointOptions(ElementOptions posXSetpointOptions) {
+		this.posXSetpointOptions = posXSetpointOptions;
+	}
+
+	public void setPosYSetpointOptions(ElementOptions posYSetpointOptions) {
+		this.posYSetpointOptions = posYSetpointOptions;
+	}
+
+	public void setPosXFeedbackOptions(ElementOptions posXFeedbackOptions) {
+		this.posXFeedbackOptions = posXFeedbackOptions;
+	}
+
+	public void setPosYFeedbackOptions(ElementOptions posYFeedbackOptions) {
+		this.posYFeedbackOptions = posYFeedbackOptions;
+	}
+
+	public void setSrCurrentOptions(ElementOptions srCurrentOptions) {
+		this.srCurrentOptions = srCurrentOptions;
+	}
+
+	public void setMcsCurrentOptions(List<ElementOptions> mcsCurrentOptions) {
+		this.mcsCurrentOptions = mcsCurrentOptions;
+	}
+
+	public void setSedFastCountOptions(ElementOptions sedFastCountOptions) {
+		this.sedFastCountOptions = sedFastCountOptions;
+	}
+
+	public void setSedSlowCountOptions(ElementOptions sedSlowCountOptions) {
+		this.sedSlowCountOptions = sedSlowCountOptions;
+	}
+
+	public void setSedDeadTimePctOptions(ElementOptions sedDeadTimePctOptions) {
+		this.sedDeadTimePctOptions = sedDeadTimePctOptions;
+	}
+
+	public void setSedElapsedRealTimeOptions(ElementOptions sedElapsedRealTimeOptions) {
+		this.sedElapsedRealTimeOptions = sedElapsedRealTimeOptions;
+	}
+
+	public void setSedElpasedLiveTimeOptions(ElementOptions sedElpasedLiveTimeOptions) {
+		this.sedElpasedLiveTimeOptions = sedElpasedLiveTimeOptions;
+	}
+
+	public void setSedDefaultNChannels(int sedDefaultNChannels) {
+		this.sedDefaultNChannels = sedDefaultNChannels;
+	}
+
+	public void setFedFastCountOptions(List<ElementOptions> fedFastCountOptions) {
+		this.fedFastCountOptions = fedFastCountOptions;
+	}
+
+	public void setFedSlowCountOptions(List<ElementOptions> fedSlowCountOptions) {
+		this.fedSlowCountOptions = fedSlowCountOptions;
+	}
+
+	public void setFedDeadTimePctOptions(List<ElementOptions> fedDeadTimePctOptions) {
+		this.fedDeadTimePctOptions = fedDeadTimePctOptions;
+	}
+
+	public void setFedElapsedRealTimeOptions(List<ElementOptions> fedElapsedRealTimeOptions) {
+		this.fedElapsedRealTimeOptions = fedElapsedRealTimeOptions;
+	}
+
+	public void setFedElpasedLiveTimeOptions(List<ElementOptions> fedElpasedLiveTimeOptions) {
+		this.fedElpasedLiveTimeOptions = fedElpasedLiveTimeOptions;
+	}
+
+	public void setFedDefaultNChannels(int fedDefaultNChannels) {
+		this.fedDefaultNChannels = fedDefaultNChannels;
 	}
 }

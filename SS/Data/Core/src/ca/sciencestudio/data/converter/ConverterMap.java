@@ -15,6 +15,10 @@ import java.util.Map;
  */
 public interface ConverterMap extends Map<String, Object> {
 	
+	public static final String DEFAULT_TO_FORMAT = "UNKNOWN";
+	public static final String DEFAULT_FROM_FORMAT = "UNKNOWN";
+	public static final boolean DEFAULT_FORCE_UPDATE = false;
+	
 	public String getToFormat();
 	public void setToFormat(String toFormat);
 	

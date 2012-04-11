@@ -22,11 +22,11 @@ import ca.sciencestudio.util.Parameters;
  */
 public abstract class AbstractScanConverterFactory extends AbstractConverterFactory {
 
-	private static final String DEFAULT_SCAN_NAME = "Not Available";
-	private static final String DEFAULT_SCAN_DATA_URL = "file://";
-	private static final Date DEFAULT_SCAN_START_DATE = new Date(0L);
-	private static final Date DEFAULT_SCAN_END_DATE = new Date(0L);
-	private static final Parameters DEFAULT_SCAN_PARAMS = new Parameters();
+	protected static final String DEFAULT_SCAN_NAME = "Unknown";
+	protected static final String DEFAULT_SCAN_DATA_URL = "file://";
+	protected static final Date DEFAULT_SCAN_START_DATE = new Date(0L);
+	protected static final Date DEFAULT_SCAN_END_DATE = new Date(0L);
+	protected static final Parameters DEFAULT_SCAN_PARAMS = new Parameters();
 	
 	@SuppressWarnings("unchecked")
 	protected ConverterMap validateRequest(ConverterMap request) throws ConverterFactoryException {

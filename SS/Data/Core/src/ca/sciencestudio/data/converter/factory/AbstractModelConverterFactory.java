@@ -24,19 +24,19 @@ import ca.sciencestudio.model.session.Session;
  */
 public abstract class AbstractModelConverterFactory extends AbstractScanConverterFactory {
 	
-	private static final String DEFAULT_FACILITY_NAME = "Unknown";
-	private static final String DEFAULT_FACILITY_LONG_NAME = "UNKNOWN";
+	protected static final String DEFAULT_FACILITY_NAME = "Unknown";
+	protected static final String DEFAULT_FACILITY_LONG_NAME = "UNKNOWN";
 	
-	private static final String DEFAULT_LABORATORY_NAME = "Unknown";
-	private static final String DEFAULT_LABORATORY_LONG_NAME = "UNKNOWN";
+	protected static final String DEFAULT_LABORATORY_NAME = "Unknown";
+	protected static final String DEFAULT_LABORATORY_LONG_NAME = "UNKNOWN";
 	
-	private static final String DEFAULT_INSTRUMENT_NAME = "UNKNOWN";
-	private static final String DEFAULT_TECHNIQUE_NAME = "UNKNOWN";
+	protected static final String DEFAULT_INSTRUMENT_NAME = "UNKNOWN";
+	protected static final String DEFAULT_TECHNIQUE_NAME = "UNKNOWN";
 	
-	private static final String DEFAULT_SAMPLE_NAME = "Not Available";
-	private static final String DEFAULT_SESSION_NAME = "Not Available";
-	private static final String DEFAULT_PROJECT_NAME = "Not Available";
-	private static final String DEFAULT_EXPERIMENT_NAME = "Not Available";
+	protected static final String DEFAULT_SAMPLE_NAME = "Not Available";
+	protected static final String DEFAULT_SESSION_NAME = "Not Available";
+	protected static final String DEFAULT_PROJECT_NAME = "Not Available";
+	protected static final String DEFAULT_EXPERIMENT_NAME = "Not Available";
 	
 	
 	protected ConverterMap validateRequest(ConverterMap request) throws ConverterFactoryException {

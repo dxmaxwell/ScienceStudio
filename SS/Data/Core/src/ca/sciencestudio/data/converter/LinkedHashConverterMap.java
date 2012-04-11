@@ -18,9 +18,9 @@ public class LinkedHashConverterMap extends LinkedHashMap<String, Object> implem
 	
 	private static final long serialVersionUID = 1L;
 
-	private String toFormat = "Unknown";
-	private String fromFormat = "Unknown";
-	private boolean forceUpdate = false;
+	private String toFormat = DEFAULT_TO_FORMAT;
+	private String fromFormat = DEFAULT_FROM_FORMAT;
+	private boolean forceUpdate = DEFAULT_FORCE_UPDATE;
 	
 	public LinkedHashConverterMap() {
 		super();
