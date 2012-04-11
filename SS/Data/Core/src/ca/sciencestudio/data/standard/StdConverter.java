@@ -7,12 +7,40 @@
  */
 package ca.sciencestudio.data.standard;
 
+import java.util.Date;
+
+import ca.sciencestudio.util.Parameters;
+
 /**
  * @author maxweld
  *
  */
 public interface StdConverter {
 
+	// Converter Request Default Values //
+	
+	public static final String DEFAULT_FACILITY_NAME = "UNKOWN";
+	public static final String DEFAULT_FACILITY_LONG_NAME = "[Unknown Facility]";
+	
+	public static final String DEFAULT_LABORATORY_NAME = "UNKOWN";
+	public static final String DEFAULT_LABORATORY_LONG_NAME = "[Unknown Laboratory]";
+	
+	public static final String DEFAULT_INSTRUMENT_NAME = "UNKNOWN";
+	public static final String DEFAULT_TECHNIQUE_NAME = "UNKNOWN";
+	
+	public static final String DEFAULT_SAMPLE_NAME = "[Unknown Sample]";
+	public static final String DEFAULT_SESSION_NAME = "[Unknown Session]";
+	public static final String DEFAULT_PROJECT_NAME = "[Unknown Project]";
+	public static final String DEFAULT_EXPERIMENT_NAME = "[Unknown Experiment]";
+	
+	public static final String DEFAULT_SCAN_NAME = "[Unknown Scan]";
+	public static final String DEFAULT_SCAN_DATA_URL = "file://";
+	public static final Date DEFAULT_SCAN_START_DATE = new Date(0L);
+	public static final Date DEFAULT_SCAN_END_DATE = new Date(0L);
+	public static final Parameters DEFAULT_SCAN_PARAMS = new Parameters();
+	
+	// Converter Request Value Keys //
+	
 	public static final String REQUEST_KEY_FACILITY_NAME = StdConverter.class.getName() + ".facilityName";
 	public static final String REQUEST_KEY_FACILITY_LONG_NAME = StdConverter.class.getName() + ".facilityLongName";
 	
