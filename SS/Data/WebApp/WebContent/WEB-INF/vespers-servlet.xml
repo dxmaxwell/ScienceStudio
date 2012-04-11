@@ -53,10 +53,12 @@
 	
 	<bean id="convertXRFDAFtoCDFMLController"
 		class="ca.sciencestudio.data.service.vespers.controllers.util.ConvertXRFDAFtoCDFMLController">
-		<property name="facilityAuthzDAO" ref="facilityAuthzDAO"/>
-		<property name="techniqueAuthzDAO" ref="techniqueAuthzDAO"/>
-		<property name="laboratoryAuthzDAO" ref="laboratoryAuthzDAO"/>
-		<property name="instrumentAuthzDAO" ref="instrumentAuthzDAO"/>
+		<property name="facilityName" value="CLS"/>
+		<property name="facilityLongName" value="Canadian Light Source, Inc."/>
+		<property name="laboratoryName" value="VESPERS"/>
+		<property name="laboratoryLongName" value="VESPERS Beamline"/>
+		<property name="instrumentName" value="Microprobe"/>
+		<property name="techniqueName" value="XRF"/>
 		<property name="converterFactory" ref="delegatingConverterFactory"/>
 	</bean>
 	

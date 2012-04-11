@@ -12,8 +12,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,15 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
-import ca.sciencestudio.model.facility.Facility;
-import ca.sciencestudio.model.facility.Instrument;
-import ca.sciencestudio.model.facility.Laboratory;
-import ca.sciencestudio.model.facility.Technique;
-import ca.sciencestudio.model.facility.dao.FacilityAuthzDAO;
-import ca.sciencestudio.model.facility.dao.InstrumentAuthzDAO;
-import ca.sciencestudio.model.facility.dao.LaboratoryAuthzDAO;
-import ca.sciencestudio.model.facility.dao.TechniqueAuthzDAO;
 
 import ca.sciencestudio.data.converter.ConverterMap;
 import ca.sciencestudio.data.converter.LinkedHashConverterMap;
@@ -54,36 +43,30 @@ import ca.sciencestudio.util.Parameters;
 @Controller
 public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanParams {
 		
-	static private final String MODEL_KEY_PROJECT_NAME = "projectName";
-	static private final String MODEL_KEY_SESSION_NAME = "sessionName";
-	static private final String MODEL_KEY_EXPERIMENT_NAME = "experimentName";
-	static private final String MODEL_KEY_SAMPLE_NAME = "sampleName";
-	static private final String MODEL_KEY_SCAN_NAME = "scanName";
-	static private final String MODEL_KEY_ERROR_MESSAGE = "errorMessage";
+	private static final String MODEL_KEY_PROJECT_NAME = "projectName";
+	private static final String MODEL_KEY_SESSION_NAME = "sessionName";
+	private static final String MODEL_KEY_EXPERIMENT_NAME = "experimentName";
+	private static final String MODEL_KEY_SAMPLE_NAME = "sampleName";
+	private static final String MODEL_KEY_SCAN_NAME = "scanName";
+	private static final String MODEL_KEY_ERROR_MESSAGE = "errorMessage";
 	
-	static private final String DEFAULT_PROJECT_NAME = "Unspecified Project";
-	static private final String DEFAULT_SESSION_NAME = "Unspecified Session";
-	static private final String DEFAULT_EXPERIMENT_NAME = "Unspecified Experiment";
-	static private final String DEFAULT_SAMPLE_NAME = "Unspecified Sample";
-	static private final String DEFAULT_SCAN_NAME = "Unspecified Scan";
+	private static final String TEMP_FILE_NAME_PREFIX = "ssTempFile";
+	private static final String DATA_FILE_NAME_SUFFIX_REGEX = "\\.[\\d\\w]*$";
 	
-	static private final String FILE_NAME_PREFIX_TEMP = "dafDataFile";
-	public static final String FILE_NAME_SUFFIX_REGEX_DAF_DATA = Pattern.quote(FILE_NAME_SUFFIX_DAF_DATA) + "\\Z";
-	
-	private static final String FORMAT_DAF = "DAF";
 	private static final String FORMAT_CDF = "CDF";
 	private static final String FORMAT_CDFML = "CDFML";
 	
-	static private final String FORM_VIEW = "convertXRFDAFtoCDFML";
+	private static final String FORM_VIEW = "convertXRFDAFtoCDFML";
 	
-	private FacilityAuthzDAO facilityAuthzDAO;
+	private String facilityName = DEFAULT_FACILITY_NAME;
+	private String facilityLongName = DEFAULT_FACILITY_LONG_NAME;
 	
-	private InstrumentAuthzDAO instrumentAuthzDAO;
+	private String laboratoryName = DEFAULT_LABORATORY_NAME;
+	private String laboratoryLongName = DEFAULT_LABORATORY_LONG_NAME;
 	
-	private LaboratoryAuthzDAO laboratoryAuthzDAO;
-	
-	private TechniqueAuthzDAO techniqueAuthzDAO;
-	
+	private String instrumentName = DEFAULT_INSTRUMENT_NAME;
+	private String techniqueName = DEFAULT_TECHNIQUE_NAME;
+		
 	private ConverterFactory converterFactory;
 	
 	protected Log log = LogFactory.getLog(getClass());
@@ -139,9 +122,9 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 			return FORM_VIEW;
 		}
 		
-		File dafDataTempFile;
+		File dataTempFile;
 		try {
-			dafDataTempFile = File.createTempFile(FILE_NAME_PREFIX_TEMP, FILE_NAME_SUFFIX_DAF_DATA);
+			dataTempFile = File.createTempFile(TEMP_FILE_NAME_PREFIX, FILE_NAME_SUFFIX_DAF_DATA);
 		}
 		catch(IOException e) {
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (001)");
@@ -149,67 +132,21 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 			return FORM_VIEW;
 		}
 		
-		String dataUrl = dafDataTempFile.getParentFile().getAbsolutePath();
-		String dataFileBase = dafDataTempFile.getName().replaceAll(FILE_NAME_SUFFIX_REGEX_DAF_DATA, "");
-		File dafSpecTempFile = new File(dataUrl, dataFileBase + FILE_NAME_SUFFIX_DAF_SPEC);
+		String dataUrl = dataTempFile.getParentFile().getAbsolutePath();
+		String dataFileBase = dataTempFile.getName().replaceAll(DATA_FILE_NAME_SUFFIX_REGEX, "");
+		File specTempFile = new File(dataUrl, dataFileBase + FILE_NAME_SUFFIX_DAF_SPEC);
 		
 		ConverterMap converterRequestMap = new LinkedHashConverterMap();
 		
-		Facility facility = facilityAuthzDAO.get("CLS").get();
-		if(facility == null) {
-			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (101)");
-			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
-			return FORM_VIEW;
-		}
-		converterRequestMap.put(REQUEST_KEY_FACILITY, facility);
+		converterRequestMap.put(REQUEST_KEY_FACILITY_NAME, facilityName);
+		converterRequestMap.put(REQUEST_KEY_FACILITY_LONG_NAME, facilityLongName);
 		
-		List<Laboratory> laboratories = laboratoryAuthzDAO.getAllByFacilityGid(facility.getGid()).get();
+		converterRequestMap.put(REQUEST_KEY_LABORATORY_NAME, laboratoryName);
+		converterRequestMap.put(REQUEST_KEY_LABORATORY_LONG_NAME, laboratoryLongName);
 		
-		Laboratory laboratory = null;
-		for(Laboratory l : laboratories) {
-			if(l.getName().equals("VESPERS")) {
-				laboratory = l;
-				break;
-			}
-		}
-		if(laboratory == null) {
-			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (102)");
-			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
-			return FORM_VIEW;
-		}
-		converterRequestMap.put(REQUEST_KEY_LABORATORY, laboratory);
+		converterRequestMap.put(REQUEST_KEY_INSTRUMENT_NAME, instrumentName);
+		converterRequestMap.put(REQUEST_KEY_TECHNIQUE_NAME, techniqueName);
 		
-		List<Instrument> instruments = instrumentAuthzDAO.getAllByLaboratoryGid(laboratory.getGid()).get();
-			
-		Instrument instrument = null;
-		for(Instrument i : instruments) {
-			if(i.getName().equals("Microprobe")) {
-				instrument = i;
-				break;
-			}
-		}
-		if(instrument == null) {
-			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (103)");
-			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
-			return FORM_VIEW;
-		}
-		converterRequestMap.put(REQUEST_KEY_INSTRUMENT, instrument);
-		
-		List<Technique> techniques = techniqueAuthzDAO.getAllByInstrumentGid(instrument.getGid()).get();
-		
-		Technique technique = null;
-		for(Technique t : techniques) {
-			if(t.getName().equals("XRF")) {
-				technique = t;
-				break;
-			}
-		}
-		if(technique == null) {
-			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (104)");
-			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
-			return FORM_VIEW;
-		}
-		converterRequestMap.put(REQUEST_KEY_TECHNIQUE, technique);
 		converterRequestMap.put(REQUEST_KEY_PROJECT_NAME, projectName);
 		converterRequestMap.put(REQUEST_KEY_SESSION_NAME, sessionName);
 		converterRequestMap.put(REQUEST_KEY_EXPERIMENT_NAME, experimentName);
@@ -228,38 +165,37 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		converterRequestMap.put(REQUEST_KEY_SCAN_PARAMS, parameters);
 		
 		try {
-			dafDataFile.transferTo(dafDataTempFile);
+			dafDataFile.transferTo(dataTempFile);
 		}
 		catch(IOException e) {
-			dafDataTempFile.delete();
-			dafSpecTempFile.delete();
+			dataTempFile.delete();
+			specTempFile.delete();
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (105)");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE), e);
 			return FORM_VIEW;
 		}
 		
 		try {
-			dafSpecFile.transferTo(dafSpecTempFile);
+			dafSpecFile.transferTo(specTempFile);
 		}
 		catch(IOException e) {
-			dafDataTempFile.delete();
-			dafSpecTempFile.delete();
+			dataTempFile.delete();
+			specTempFile.delete();
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (106)");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE), e);
 			return FORM_VIEW;
 		}
 		
-		// Convert DAF to CDF //
+		// Convert UNKNOWN to CDF //
 		try {
 			long start = System.currentTimeMillis();
 			converterRequestMap.setToFormat(FORMAT_CDF);
-			converterRequestMap.setFromFormat(FORMAT_DAF);
 			converterFactory.getConverter(converterRequestMap).convert();
-			log.info("Complete DAF to CDF conversion: " + dafDataFile.getName() + ": " + (System.currentTimeMillis()-start)/1000.0 + " sec.");
+			log.info("Complete UNKNOWN to CDF conversion: " + dafDataFile.getName() + ": " + (System.currentTimeMillis()-start)/1000.0 + " sec.");
 		}
 		catch(ConverterException e) {
-			dafDataTempFile.delete();
-			dafSpecTempFile.delete();
+			dataTempFile.delete();
+			specTempFile.delete();
 			model.put(MODEL_KEY_ERROR_MESSAGE, "Error while converting XRF data to CDF.<br/>Please ensure that valid data and spectra files have been selected.");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE), e);
 			return FORM_VIEW;
@@ -267,8 +203,8 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		
 		File cdfTempFile = new File(dataUrl, dataFileBase + FILE_NAME_SUFFIX_CDF);
 		if(cdfTempFile.length() == 0L) {
-			dafDataTempFile.delete();
-			dafSpecTempFile.delete();
+			dataTempFile.delete();
+			specTempFile.delete();
 			cdfTempFile.delete();
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (201)");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE));
@@ -284,8 +220,8 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 			log.info("Complete CDF to CDFML conversion: " + cdfTempFile.getName() + ": " + (System.currentTimeMillis()-start)/1000.0 + " sec.");
 		}
 		catch(ConverterException e) {
-			dafDataTempFile.delete();
-			dafSpecTempFile.delete();
+			dataTempFile.delete();
+			specTempFile.delete();
 			cdfTempFile.delete();
 			model.put(MODEL_KEY_ERROR_MESSAGE, "Error while converting XRF data to CDFML.<br/>Please ensure that valid data and spectra files have been selected.");
 			log.warn(model.get(MODEL_KEY_ERROR_MESSAGE), e);
@@ -295,8 +231,8 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		File cdfmlTempFile = new File(dataUrl, dataFileBase + FILE_NAME_SUFFIX_CDFML);
 		long cdfmlFileLength = cdfmlTempFile.length();
 		if(cdfmlFileLength == 0L) {
-			dafDataTempFile.delete();
-			dafSpecTempFile.delete();
+			dataTempFile.delete();
+			specTempFile.delete();
 			cdfTempFile.delete();
 			cdfmlTempFile.delete();
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (202)");
@@ -312,8 +248,8 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 			responseOutputStream = response.getOutputStream();
 		}
 		catch(IOException e) {
-			dafDataTempFile.delete();
-			dafSpecTempFile.delete();
+			dataTempFile.delete();
+			specTempFile.delete();
 			cdfTempFile.delete();
 			cdfmlTempFile.delete();
 			model.put(MODEL_KEY_ERROR_MESSAGE, "A system error has occurred. (203)");
@@ -323,7 +259,7 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		
 		String cdfmlFileName = dafDataFile.getOriginalFilename();
 		if(cdfmlFileName.endsWith(FILE_NAME_SUFFIX_DAF_DATA)) {
-			cdfmlFileName = cdfmlFileName.replaceAll(FILE_NAME_SUFFIX_REGEX_DAF_DATA, FILE_NAME_SUFFIX_CDFML);
+			cdfmlFileName = cdfmlFileName.replaceAll(DATA_FILE_NAME_SUFFIX_REGEX, FILE_NAME_SUFFIX_CDFML);
 		} else {
 			cdfmlFileName = cdfmlFileName + FILE_NAME_SUFFIX_CDFML;
 		}
@@ -341,40 +277,53 @@ public class ConvertXRFDAFtoCDFMLController implements StdConverter, StdScanPara
 		}
 		
 		// cleanup temp files //
-		dafDataTempFile.delete();
-		dafSpecTempFile.delete();
+		dataTempFile.delete();
+		specTempFile.delete();
 		cdfTempFile.delete();
 		cdfmlTempFile.delete();
 		return null;
 	}
 	
-	
-	public FacilityAuthzDAO getFacilityAuthzDAO() {
-		return facilityAuthzDAO;
+	public String getFacilityName() {
+		return facilityName;
 	}
-	public void setFacilityAuthzDAO(FacilityAuthzDAO facilityAuthzDAO) {
-		this.facilityAuthzDAO = facilityAuthzDAO;
-	}
-
-	public InstrumentAuthzDAO getInstrumentAuthzDAO() {
-		return instrumentAuthzDAO;
-	}
-	public void setInstrumentAuthzDAO(InstrumentAuthzDAO instrumentAuthzDAO) {
-		this.instrumentAuthzDAO = instrumentAuthzDAO;
+	public void setFacilityName(String facilityName) {
+		this.facilityName = facilityName;
 	}
 
-	public LaboratoryAuthzDAO getLaboratoryAuthzDAO() {
-		return laboratoryAuthzDAO;
+	public String getFacilityLongName() {
+		return facilityLongName;
 	}
-	public void setLaboratoryAuthzDAO(LaboratoryAuthzDAO laboratoryAuthzDAO) {
-		this.laboratoryAuthzDAO = laboratoryAuthzDAO;
+	public void setFacilityLongName(String facilityLongName) {
+		this.facilityLongName = facilityLongName;
 	}
 
-	public TechniqueAuthzDAO getTechniqueAuthzDAO() {
-		return techniqueAuthzDAO;
+	public String getLaboratoryName() {
+		return laboratoryName;
 	}
-	public void setTechniqueAuthzDAO(TechniqueAuthzDAO techniqueAuthzDAO) {
-		this.techniqueAuthzDAO = techniqueAuthzDAO;
+	public void setLaboratoryName(String laboratoryName) {
+		this.laboratoryName = laboratoryName;
+	}
+
+	public String getLaboratoryLongName() {
+		return laboratoryLongName;
+	}
+	public void setLaboratoryLongName(String laboratoryLongName) {
+		this.laboratoryLongName = laboratoryLongName;
+	}
+
+	public String getInstrumentName() {
+		return instrumentName;
+	}
+	public void setInstrumentName(String instrumentName) {
+		this.instrumentName = instrumentName;
+	}
+
+	public String getTechniqueName() {
+		return techniqueName;
+	}
+	public void setTechniqueName(String techniqueName) {
+		this.techniqueName = techniqueName;
 	}
 
 	public ConverterFactory getConverterFactory() {
