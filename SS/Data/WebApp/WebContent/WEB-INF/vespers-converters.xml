@@ -13,14 +13,19 @@
 	<bean id="delegatingConverterFactory" class="ca.sciencestudio.data.converter.factory.DelegatingConverterFactory">
 		<property name="converterFactories">
 			<list>
-				<ref bean="mapXYVespersToCDFConverterFactory"/>
+				<ref bean="mapXYVespersFromAMFConverterFactory"/>
+				<ref bean="mapXYVespersFromDAFConverterFactory"/>
 				<ref bean="cdfToCDFMLConverterFactory"/>
 			</list>
 		</property>
 	</bean>
 
-	<bean id="mapXYVespersToCDFConverterFactory"
-		class="ca.sciencestudio.vespers.data.converter.factory.MapXYVespersToCDFConverterFactory">
+	<bean id="mapXYVespersFromDAFConverterFactory"
+		class="ca.sciencestudio.vespers.data.converter.factory.MapXYVespersFromDAFConverterFactory">
+		<property name="adapterFactories">
+			<list><ref bean="mapXYVespersToCDFAdapter"/></list>
+		</property>
+		
 		<property name="customRecordParsers">
 			<list><ref bean="vespersBackgroundRecordParser"/></list>
 		</property>
@@ -59,8 +64,6 @@
 		<property name="fedElapsedRealTimeOptions" ref="fedElapsedRealTimeOptions"/>
 		<property name="fedElpasedLiveTimeOptions" ref="fedElapsedLiveTimeOptions"/>
 		<property name="fedDefaultNChannels" value="2048"/>
-		
-		<property name="cdfSpectrumCompressionLevel" value="0"/>
 	</bean>
 	
 	<bean id="vespersBackgroundRecordParser"
@@ -461,5 +464,277 @@
 			</list>
 		</constructor-arg>
 	</bean>
-           
+
+	<!-- Converter factory for VESPERS AcquaMan Format -->
+
+	<bean id="mapXYVespersFromAMFConverterFactory"
+		class="ca.sciencestudio.vespers.data.converter.factory.MapXYVespersFromAMFConverterFactory">
+		<property name="adapterFactories">
+			<list><ref bean="mapXYVespersToCDFAdapter"/></list>
+		</property>
+		
+		<property name="posXSetpointOptions" ref="amfPosXSetpointOptions"/>
+		<property name="posYSetpointOptions" ref="amfPosYSetpointOptions"/>
+		<property name="posXFeedbackOptions" ref="amfPosXFeedbackOptions"/>
+		<property name="posYFeedbackOptions" ref="amfPosYFeedbackOptions"/>
+		
+		<property name="srCurrentOptions" ref="amfSrCurrentOptions"/>
+		<property name="mcsCurrentOptions" ref="amfMcsCurrentOptions"/>
+		
+		<property name="sedFastCountOptions" ref="amfSedFastCountOptions"/>
+		<property name="sedSlowCountOptions" ref="amfSedSlowCountOptions"/>
+		<property name="sedDeadTimePctOptions" ref="amfSedDeadTimePctOptions"/>
+		<property name="sedElpasedLiveTimeOptions" ref="amfSedElapsedLiveTimeOptions"/>
+		<property name="sedElapsedRealTimeOptions" ref="amfSedElapsedRealTimeOptions"/>
+		<property name="sedDefaultNChannels" value="2048"/>
+		
+		<property name="fedFastCountOptions" ref="amfFedFastCountOptions"/>
+		<property name="fedSlowCountOptions" ref="amfFedSlowCountOptions"/>
+		<property name="fedDeadTimePctOptions" ref="amfFedDeadTimePctOptions"/>
+		<property name="fedElpasedLiveTimeOptions" ref="amfFedElapsedLiveTimeOptions"/>
+		<property name="fedElapsedRealTimeOptions" ref="amfFedElapsedRealTimeOptions"/>
+		<property name="fedDefaultNChannels" value="2048"/>
+	</bean>
+
+	<!-- Parameters for the Sample Position -->
+
+	<bean id="amfPosXSetpointOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>H</value></list>
+		</property>
+	</bean>
+	
+	<bean id="amfPosYSetpointOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>V</value></list>
+		</property>
+	</bean>
+
+	<bean id="amfPosXFeedbackOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>H:fbk</value></list>
+		</property>
+	</bean>
+
+	<bean id="amfPosYFeedbackOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>V:fbk</value></list>
+		</property>
+	</bean>
+	
+	<!-- Beam Current (electron and x-ray) -->
+	
+	<bean id="amfSrCurrentOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>RingCurrent</value></list>
+		</property>
+	</bean>
+	
+	<bean id="amfMcsCurrentOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>Imini</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>Isplit</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>Iprekb</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<!-- Parameters for the Single Element Detector -->
+	
+	<bean id="amfSedFastCountOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>FastPeaks</value></list>
+		</property>
+	</bean>
+	
+	<bean id="amfSedSlowCountOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>SlowPeaks</value></list>
+		</property>
+	</bean>
+	
+	<bean id="amfSedDeadTimePctOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>DeadTime</value></list>
+		</property>
+	</bean>
+	
+	<bean id="amfSedElapsedRealTimeOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>RealTime</value></list>
+		</property>
+	</bean>
+	
+	<bean id="amfSedElapsedLiveTimeOptions"
+		class="ca.sciencestudio.data.util.ElementOptions">
+		<property name="optionsExact">
+			<list><value>LiveTime</value></list>
+		</property>
+	</bean>
+
+	<!-- Parameters for the Four Element Detector -->
+
+	<bean id="amfFedFastCountOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>FastPeaks1</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>FastPeaks2</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>FastPeaks3</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>FastPeaks4</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="amfFedSlowCountOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>SlowPeaks1</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>SlowPeaks2</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>SlowPeaks3</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>SlowPeaks4</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="amfFedDeadTimePctOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>DeadTime1</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>DeadTime2</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>DeadTime3</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>DeadTime4</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="amfFedElapsedRealTimeOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>RealTime1</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>RealTime2</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>RealTime3</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>RealTime4</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="amfFedElapsedLiveTimeOptions" class="java.util.ArrayList">
+		<constructor-arg>
+			<list>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>LiveTime1</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>LiveTime2</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>LiveTime3</value></list>
+					</property>	
+				</bean>
+				<bean class="ca.sciencestudio.data.util.ElementOptions">
+					<property name="optionsExact">
+						<list><value>LiveTime4</value></list>
+					</property>	
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<!-- Output Adapter Configuration -->
+
+	<bean id="mapXYVespersToCDFAdapter"
+		class="ca.sciencestudio.vespers.data.converter.adapter.factory.MapXYVespersToCDFAdapterFactory">
+		<property name="cdfSpectrumCompressionLevel" value="0"/>
+	</bean>
 </beans>
