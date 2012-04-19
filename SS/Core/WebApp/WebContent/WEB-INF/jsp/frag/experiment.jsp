@@ -128,7 +128,10 @@ Ext.onReady(function() {
 
 	<c:if test="${not empty instrumentTechniqueList}">
 	experimentForm.ss.stores.instrumentTechnique.loadData(<hmc:write source="${instrumentTechniqueList}"/>);
-	experimentForm.ss.stores.instrumentTechnique.filterBy(function() { return false; });
+	// Filter all techniques from the data store EXCEPT those for the currently selected instrument. //
+	experimentForm.ss.stores.instrumentTechnique.filterBy(function(record, id) { 
+		return (record.get('instrumentGid') == "${experiment.instrumentGid}");
+	});
 	</c:if>
 
 	<c:if test="${not empty experiment}">
