@@ -140,7 +140,7 @@ public class MapXYVespersToCDFAdapter implements MapXYVespersAdapter, StdCategor
 			throw new ConverterException("Destination CDF file not specified.");
 		}
 		
-		if(cdfDataFile.exists() && isForceUpdate()) {
+		if(cdfDataFile.exists()) {
 			log.debug("CDF file already exists in data directory.");
 			boolean cdfDelete = false;
 			
