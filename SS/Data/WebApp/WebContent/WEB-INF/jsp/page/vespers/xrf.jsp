@@ -19,7 +19,16 @@
 		<script type="text/javascript">
 			var scanGid = '${scan.gid}';
 			var scanFormData = <hmc:write source="${scan}"/>;
-			var vespersServletPath = '<c:url value="/vespers"/>';
+			
+			var mapxyIPath = '<c:url value="/vespers/scan/${scan.gid}/data/mapxy/I.json"/>';
+			var mapxyJPath = '<c:url value="/vespers/scan/${scan.gid}/data/mapxy/J.json"/>';
+			var mcaSpectrumPath = '<c:url value="/vespers/scan/${scan.gid}/data/mca/spectrum.json"/>';
+			
+			var cdfmlDataPath = '<c:url value="/vespers/scan/${scan.gid}/file/data.cdfml"/>';
+			var sampleImagePath = '<c:url value="/vespers/scan/${scan.gid}/file/sample.png"/>';
+			
+			var convertDAFtoCDFPath = '<c:url value="/vespers/scan/${scan.gid}/convert/DAF/CDF.json"/>';
+			var convertCDFtoCDFMLPath = '<c:url value="/vespers/scan/${scan.gid}/convert/CDF/CDFML.json"/>';
 		</script>
 		
 		<script type="text/javascript" src="/ssstatic/js/dygraph-1.2/dygraph-combined.js"></script>
@@ -42,7 +51,7 @@
 					]
 				});
 				
-				convert('DAF', 'CDF', function() {}, this);
+				convert(convertDAFtoCDFPath, function() {}, this);
 			};
 		
 			Ext.onReady(xrfMainLayout);

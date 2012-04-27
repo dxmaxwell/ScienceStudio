@@ -24,7 +24,7 @@ function spectrumGraphDataUpdate(combo, record, index) {
 	var y = spectrumPointYCmbBox.getValue();
 	if(x && y) {
 		Ext.Ajax.request({
-			url:vespersServletPath + '/scan/' + scanGid + '/data/mca/spectrum.json',
+			url:mcaSpectrumPath,
 			params:{ 'I':x, 'J':y },
 			callback:spectrumGraphDataUpdateCallback
 		});

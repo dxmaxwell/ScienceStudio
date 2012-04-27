@@ -43,11 +43,11 @@ var sampleImagePanel = new Ext.Panel({
 		autoEl:{
 			tag:'a',
 			target:'_blank',
-			href: vespersServletPath + '/scan/' + scanGid + '/file/sample.png',
+			href:sampleImagePath,
 			cn:[{
 				tag:'img',
 				alt:'Sample Image Not Available',
-				src: vespersServletPath + '/scan/' + scanGid + '/file/sample.png',
+				src:sampleImagePath,
 				style:'width:100%;'
 			}]
 		}

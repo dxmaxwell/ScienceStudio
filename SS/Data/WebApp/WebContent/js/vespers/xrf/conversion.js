@@ -7,7 +7,7 @@
  *
  */
 
-function convert(fromFormat, toFormat, complete, scope) {
+function convert(path, complete, scope) {
 	
 	var conversionDefaultMessage = 'Please wait for conversion...';
 	var conversionRequestPending = false;
@@ -18,7 +18,7 @@ function convert(fromFormat, toFormat, complete, scope) {
 	function conversionRequest() {
 		if(!conversionRequestPending) {
 			Ext.Ajax.request({
-				url: vespersServletPath + '/scan/' + scanGid + '/convert/' + fromFormat + '/' + toFormat + '.json',
+				url:path,
 				callback:conversionRequestCallback,
 				disableCaching:false,
 				scope:this

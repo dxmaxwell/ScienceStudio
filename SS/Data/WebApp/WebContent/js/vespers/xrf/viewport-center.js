@@ -33,7 +33,7 @@ var spectrumScaleCmbBox = new Ext.form.ComboBox({
 spectrumScaleCmbBox.on('select', spectrumGraphScaleUpdate);
 
 var spectrumPointXStore = new Ext.data.ArrayStore({
-	url: vespersServletPath + '/scan/' + scanGid + '/data/mapxy/I.json',
+	url:mapxyIPath,
 	restful:true,
 	root:'I',
 	success:'success',
@@ -55,7 +55,7 @@ var spectrumPointXCmbBox = new Ext.form.ComboBox({
 spectrumPointXCmbBox.on('select', spectrumGraphDataUpdate);
 
 var spectrumPointYStore = new Ext.data.ArrayStore({
-	url: vespersServletPath + '/scan/' + scanGid + '/data/mapxy/J.json',
+	url:mapxyJPath,
 	restful:true,
 	root:'.J',
 	success:'success',
@@ -81,11 +81,11 @@ var downloadCdfmlBtn = new Ext.Button({
 });
 
 downloadCdfmlBtn.on('click', function() {
-	convert('CDF', 'CDFML', downloadCdfml, this);
+	convert(convertCDFtoCDFMLPath, downloadCdfml, this);
 });
 
 function downloadCdfml() {
-	window.location = vespersServletPath + '/scan/' + scanGid + '/file/data.cdfml';
+	window.location = cdfmlDataPath;
 }
 
 var spectrumControlPanel = new Ext.Panel({
