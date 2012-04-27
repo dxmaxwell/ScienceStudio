@@ -774,7 +774,7 @@
 		</constructor-arg>
 		<constructor-arg ref="sampleStageHV"/>
 		<constructor-arg ref="scanDevice"/>
-		<property name="scale" value="0.0025"/>
+		<property name="scale" value="0.00106"/>
 	</bean>
 
 	<!-- SampleCamera (PVs) -->
